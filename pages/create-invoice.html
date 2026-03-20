@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Invoice</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+
+<div class="invoice-container">
+
+  <!-- LEFT SIDE -->
+  <div class="left-panel">
+
+    <!-- Voice Control -->
+    <div class="card">
+      <h3>VOICE CONTROL</h3>
+      <button class="record-btn">🎤 Start recording</button>
+
+      <div class="commands-box">
+        <p>Available voice commands</p>
+        <ul>
+          <li>Invoice number</li>
+          <li>Company name</li>
+          <li>Client name</li>
+          <li>Product + quantity + price</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Invoice Details -->
+    <div class="card">
+      <h3>INVOICE DETAILS</h3>
+
+      <div class="grid">
+        <input placeholder="Invoice number">
+        <input placeholder="Date">
+        <input placeholder="Due date">
+        <input placeholder="Tax (%)">
+      </div>
+
+      <h4>Your company</h4>
+      <div class="grid">
+        <input placeholder="Company name">
+        <input placeholder="Address">
+        <input placeholder="Phone">
+        <input placeholder="Email">
+      </div>
+
+      <h4>Client</h4>
+      <div class="grid">
+        <input placeholder="Client name">
+        <input placeholder="Address">
+        <input placeholder="Phone">
+        <input placeholder="Email">
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="right-panel">
+
+    <div class="preview-header">
+      <button class="preview-btn">See preview</button>
+    </div>
+
+    <div class="preview-card">
+      <h3>INVOICE</h3>
+      <p>No items yet</p>
+
+      <div class="totals">
+        <p>Subtotal: $0.00</p>
+        <p>Tax: $0.00</p>
+        <p><strong>Total: $0.00</strong></p>
+      </div>
+    </div>
+
+    <button class="return-btn">Return</button>
+
+  </div>
+
+</div>
+
+</body>
+</html>
