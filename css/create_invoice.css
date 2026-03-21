@@ -1,0 +1,413 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #efefef;
+  --card-bg: #d9d9d9;
+  --purple: #5b5484;
+  --purple-dark: #4c4673;
+  --salmon: #de7566;
+  --white: #ffffff;
+  --text: #222222;
+  --muted: #b7b7b7;
+  --shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  --radius: 8px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.invoice-page {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 28px 32px 30px;
+  display: grid;
+  grid-template-columns: 1.08fr 0.84fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-header {
+  background: var(--purple);
+  color: var(--white);
+  padding: 20px 24px;
+}
+
+.card-header h2 {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+.card-header {
+  padding: 16px 24px;
+}
+
+.card-body {
+  padding: 18px 22px 20px;
+}
+
+/* VOICE CONTROL */
+.voice-card .card-body {
+  padding-top: 16px;
+}
+
+.record-btn {
+  width: 100%;
+  border: none;
+  background: var(--salmon);
+  color: var(--white);
+  border-radius: 16px;
+  padding: 20px 24px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.commands-box {
+  background: #f5f5f5;
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  min-height: 128px;
+}
+
+.commands-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #3c476f;
+  margin-bottom: 10px;
+}
+
+.commands-box ul {
+  list-style: none;
+}
+
+.commands-box li {
+  font-size: 14px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 2px;
+}
+
+/* DETAILS CARD */
+.details-card .card-body {
+  padding-top: 10px;
+}
+
+.top-fields,
+.four-col-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.top-fields {
+  margin-bottom: 10px;
+}
+
+.section-block {
+  margin-top: 4px;
+}
+
+.section-block h3 {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.client-block {
+  margin-top: 22px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group label {
+  font-size: 14px;
+  font-weight: 400;
+  color: #2b2b2b;
+}
+
+.field-group input {
+  width: 100%;
+  height: 32px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #2d2d2d;
+  outline: none;
+}
+
+/* PREVIEW CARD */
+.preview-card {
+  min-height: 594px;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preview-btn {
+  border: none;
+  background: var(--salmon);
+  color: var(--white);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.preview-body {
+  padding: 20px 28px 22px;
+}
+
+.preview-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 26px;
+}
+
+.company-preview {
+  font-size: 18px;
+  font-weight: 400;
+  color: #222222;
+}
+
+.invoice-meta {
+  text-align: right;
+}
+
+.invoice-meta h3 {
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.invoice-meta p {
+  font-size: 18px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.invoice-meta span {
+  font-size: 14px;
+}
+
+.bill-to-box {
+  background: var(--purple);
+  color: var(--white);
+  border-radius: 3px;
+  padding: 10px 14px;
+  margin-bottom: 26px;
+}
+
+.bill-to-box span,
+.bill-to-box p {
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.invoice-table {
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.table-head {
+  background: var(--purple);
+  color: var(--white);
+  display: grid;
+  grid-template-columns: 2.2fr 0.8fr 1fr 1fr;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.table-empty {
+  min-height: 138px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-empty p {
+  font-size: 14px;
+  color: #2e2e2e;
+}
+
+.totals-box {
+  width: 42%;
+  margin-left: auto;
+  padding: 6px 14px 12px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  padding: 4px 0;
+  border-bottom: 1px solid #8e8e8e;
+}
+
+.total-row:last-child {
+  border-bottom: none;
+}
+
+.total-final {
+  font-weight: 500;
+}
+
+/* BOTTOM ACTIONS */
+.bottom-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 24px;
+  padding-right: 6px;
+}
+
+.return-btn {
+  border: none;
+  background: var(--salmon);
+  color: var(--white);
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 114px;
+}
+
+.logo-mark {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  user-select: none;
+}
+
+.logo-i {
+  color: var(--purple-dark);
+  font-size: 58px;
+  line-height: 0.85;
+  font-weight: 300;
+}
+
+.logo-v {
+  color: var(--salmon);
+  font-size: 52px;
+  line-height: 0.85;
+  font-weight: 700;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .invoice-page {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-card {
+    min-height: auto;
+  }
+
+  .bottom-actions {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 760px) {
+  .top-fields,
+  .four-col-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .preview-top {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .invoice-meta {
+    text-align: left;
+  }
+
+  .totals-box {
+    width: 100%;
+  }
+}
+.voice-card .commands-box {
+  min-height: 142px;
+}
+
+.preview-card {
+  min-height: 620px;
+}
+
+.invoice-table {
+  min-height: 265px;
+}
+
+.table-empty {
+  min-height: 165px;
+}
+
+.bottom-actions {
+  margin-top: 6px;
+  justify-content: flex-end;
+  gap: 18px;
+  padding-right: 2px;
+}
+
+.return-btn {
+  min-width: 116px;
+  padding: 12px 20px;
+}
+
+.logo-i {
+  font-size: 52px;
+}
+
+.logo-v {
+  font-size: 46px;
+}
+.totals-box {
+  padding-right: 8px;
+}
