@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>inVOICE</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/landing_page.css" />
+    <link rel="stylesheet" href="../css/color_scheme.css" />
+</head>
+
+<body>
+    <div class="card">
+        <h2 class="card-title">Contact Us</h2>
+        <form id="contact-us-form">
+            <label for="contact-us-name">
+                Your Name:
+                <input id="contact-us-name" placeholder="e.g. Donald Duck">
+            </label>
+            <label for="contact-us-email">
+                Your Email:
+                <input id="contact-us-email" placeholder="e.g. ddonald123@email.com">
+            </label>
+            <label for="contact-us-message">
+                What do you want to tell us?
+                <textarea id="contact-us-message" placeholder="I have a few questions regarding..."></textarea>
+            </label>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+
+<template id="contact-us-success">
+    <div id="contact-us-success-modal">
+        <p>Thank you for contacting us</p>
+        <p>We will get back to you as soon as possible</p>
+        <button type="button" class="orange-btn">Return home</button>
+    </div>
+</template>
+
+</html>
