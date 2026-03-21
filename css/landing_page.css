@@ -335,3 +335,84 @@
     font-size: 1rem;
   }
 }
+.invoice-container {
+  display: flex;
+  gap: 30px;
+  padding: 40px;
+}
+
+.left-panel {
+  flex: 1;
+}
+
+.right-panel {
+  width: 350px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.record-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #e17055;
+  color: white;
+  font-size: 16px;
+  margin: 15px 0;
+  cursor: pointer;
+}
+
+.commands-box {
+  background: #f1f2f6;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.preview-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.preview-btn {
+  background: #e17055;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.return-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: #dfe6e9;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+body {
+  background-color: red;
+}

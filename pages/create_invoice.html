@@ -1,139 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Invoice</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Invoice</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
   <link rel="stylesheet" href="../css/color_scheme.css" />
-  <link rel="stylesheet" href="../css/create_invoice.css">
+  <link rel="stylesheet" href="../css/create_invoice.css" />
 </head>
-
 <body>
+  <main class="invoice-page">
 
-  <div class="">
+    <section class="left-column">
+      <div class="card voice-card">
+        <div class="card-header">
+          <h2>VOICE CONTROL</h2>
+        </div>
 
-    <!-- LEFT SIDE -->
-    <div class="">
+        <div class="card-body">
+          <button class="record-btn" type="button">🎤 Start recording</button>
 
-      <!-- Voice Control -->
-      <div class="">
-        <h3>VOICE CONTROL</h3>
-        <button class="">🎤 Start recording</button>
-
-        <div id="">
-          <p>Available voice commands</p>
-          <ul>
-            <li>"Invoice number 123"</li>
-            <li>Company name</li>
-            <li>Client name</li>
-            <li>Product + quantity + price</li>
-          </ul>
+          <div class="commands-box">
+            <p class="commands-title">Available voice commands</p>
+            <ul>
+              <li>- “Invoice number 123”</li>
+              <li>- “Company [name]”</li>
+              <li>- “Client [name]”</li>
+              <li>- “Product [name], quantity [number], price [number]”</li>
+              <li>- “Tax 21 or VAT 20”</li>
+              <li>- “Due date March 15”</li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      <!-- Invoice Details -->
-      <div class="">
-        <h3>INVOICE DETAILS</h3>
-
-        <div class="">
-          <input id="" placeholder="Invoice number">
-          <label for="inv-date">Date:<input id="" type="date"></label>
-          <label for="inv-due">Due:<input id="" type="date"></label>
-          <input id="" type="number" placeholder="Tax (%)">
+      <div class="card details-card">
+        <div class="card-header">
+          <h2>INVOICE DETAILS</h2>
         </div>
 
-        <h4>Your company</h4>
-        <div class="">
-          <input id="" placeholder="Company name">
-          <input id="" placeholder="Address">
-          <input id="" placeholder="Phone">
-          <input id="" type="email" placeholder="Email">
+        <div class="card-body">
+          <div class="top-fields">
+            <div class="field-group">
+              <label for="invoice-number">Invoice number</label>
+              <input id="invoice-number" type="text" value="001" />
+            </div>
+
+            <div class="field-group">
+              <label for="invoice-date">Date</label>
+              <input id="invoice-date" type="text" value="24, February" />
+            </div>
+
+            <div class="field-group">
+              <label for="due-date">Due date</label>
+              <input id="due-date" type="text" value="13, March" />
+            </div>
+
+            <div class="field-group">
+              <label for="tax-rate">Tax (%)</label>
+              <input id="tax-rate" type="text" value="21" />
+            </div>
+          </div>
+
+          <div class="section-block">
+            <h3>Your company</h3>
+
+            <div class="four-col-grid">
+              <div class="field-group">
+                <label for="company-name">Company name</label>
+                <input id="company-name" type="text" value="xMedia Inc." />
+              </div>
+
+              <div class="field-group">
+                <label for="company-address">Address</label>
+                <input id="company-address" type="text" value="Ficticious Rd. 123" />
+              </div>
+
+              <div class="field-group">
+                <label for="company-phone">Phone</label>
+                <input id="company-phone" type="text" value="+346587452254" />
+              </div>
+
+              <div class="field-group">
+                <label for="company-email">Email</label>
+                <input id="company-email" type="email" value="hi@media.no" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section-block client-block">
+            <h3>Client</h3>
+
+            <div class="four-col-grid">
+              <div class="field-group">
+                <label for="client-name">Client co. name</label>
+                <input id="client-name" type="text" value="xClient Inc." />
+              </div>
+
+              <div class="field-group">
+                <label for="client-address">Address</label>
+                <input id="client-address" type="text" value="Ficticious Rd. 456" />
+              </div>
+
+              <div class="field-group">
+                <label for="client-phone">Phone</label>
+                <input id="client-phone" type="text" value="+346234345435" />
+              </div>
+
+              <div class="field-group">
+                <label for="client-email">Email</label>
+                <input id="client-email" type="email" value="hi@client.no" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="right-column">
+      <div class="card preview-card">
+        <div class="card-header preview-header">
+          <h2>PREVIEW</h2>
+          <button class="preview-btn" type="button">See preview</button>
         </div>
 
-        <h4>Client</h4>
-        <div class="">
-          <input id="" placeholder="Client name">
-          <input id="" placeholder="Address">
-          <input id="" placeholder="Phone">
-          <input id="" type="email" placeholder="Email">
+        <div class="preview-body">
+          <div class="preview-top">
+            <div class="company-preview">My company</div>
+
+            <div class="invoice-meta">
+              <h3>INVOICE</h3>
+              <p># ---</p>
+              <span>Date February 4, 2026</span>
+            </div>
+          </div>
+
+          <div class="bill-to-box">
+            <span>Bill to:</span>
+            <p>xClient Inc.</p>
+          </div>
+
+          <div class="invoice-table">
+            <div class="table-head">
+              <span>Description</span>
+              <span>Qty</span>
+              <span>Price</span>
+              <span>Total</span>
+            </div>
+
+            <div class="table-empty">
+              <p>No items in invoice yet</p>
+            </div>
+
+            <div class="totals-box">
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span>$0.00</span>
+              </div>
+              <div class="total-row">
+                <span>Tax (0%):</span>
+                <span>$0.00</span>
+              </div>
+              <div class="total-row total-final">
+                <span>TOTAL:</span>
+                <span>$0.00</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-    </div>
+      <div class="bottom-actions">
+        <button class="return-btn" type="button">⌂ Return</button>
 
-    <!-- RIGHT SIDE -->
-    <div class="">
-
-      <div class="">
-        <button class="">See preview</button>
-      </div>
-
-      <div class="">
-        <h3>INVOICE</h3>
-        <h4 class="">Item list</h4>
-        <table id="" class="">
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Qty</th>
-              <th>Rate</th>
-              <th>Amount</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="">
-          </tbody>
-        </table>
-        <button type="button" id="">+ Add Item</button>
-
-        <div class="">
-          <p>Subtotal: <span id="">$0.00</span></p>
-          <p>Tax: <span id="">$0.00</span></p>
-          <p><strong>Total: <span id="">$0.00</span></strong></p>
+        <div class="logo-mark" aria-label="Invoice logo">
+          <span class="logo-i">i</span><span class="logo-v">V</span>
         </div>
       </div>
+    </section>
 
-      <button class="">Return</button>
-
-    </div>
-
-  </div>
-
+  </main>
 </body>
-
-<!--display on table when there are no items-->
-<template id="">
-  <tr>
-    <td colspan="5">
-      There are currently no items in the invoice.
-    </td>
-  </tr>
-</template>
-
-<!--display items-->
-<template id="">
-  <tr class="">
-    <td>
-      <input type="text" class="" placeholder="Service/Product">
-    </td>
-    <td>
-      <input type="number" class="" value="1">
-    </td>
-    <td>
-      <input type="number" class="" value="0.00">
-    </td>
-    <td class="">
-      $<span class="">0.00</span>
-    </td>
-    <td>
-      <button type="button" class="">&times;</button>
-    </td>
-  </tr>
-</template>
-
-</html>

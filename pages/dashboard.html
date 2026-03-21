@@ -1,68 +1,84 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>inVOICE</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>inVOICE Dashboard</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="../css/dashboard.css" />
-    <link rel="stylesheet" href="../css/color_scheme.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/color_scheme.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
 </head>
-
 <body>
-    <header class="">
-        <div class="">
-            <span class=""><img src="" alt="Invoice Logo">Dashboard</span>
-        </div>
-        <!---->
-        <div id="">
-            <a href="#" id="">Welcome <span id="">User</span>! <img src="" alt="user profile picture"></a>
-        </div>
+
+  <main class="dashboard-page">
+
+    <header class="dashboard-header">
+      <div class="brand">
+        <span class="brand-in">in</span><span class="brand-voice">VOICE</span>
+        <span class="brand-dashboard">Dashboard</span>
+      </div>
+
+      <button class="user-button" type="button">
+        <span>Welcome, User!</span>
+        <span class="user-icon">◔</span>
+      </button>
     </header>
 
-    <body>
-        <div class="" id="">
-            <div class="">
-                <div class="">
-                    <h3>New Invoice</h3>
-                    <button id="">Click to record a new invoice</button>
-                </div>
-            </div>
-            <div class="" id="">
-                <div class="">
-                    <h3>Past Invoices</h3>
-                </div>
-                <div class="">
-                    <p id="">#</p>
-                    <p>Total documents</p>
-                    <button>View History</button>
-                </div>
-            </div>
-            <div class="" id="">
-                <div class="">
-                    <h3>Clients</h3>
-                </div>
-                <div class="">
-                    <p id="">#</p>
-                    <p>Registered clients</p>
-                    <button>Manage Directory</button>
-                </div>
-            </div>
+    <section class="dashboard-content">
+
+      <article class="card new-invoice-card">
+        <div class="card-header">
+          <h2>New Invoice</h2>
         </div>
-    </body>
-</body>
 
+        <div class="card-body large-card-body">
+          <button class="primary-action-btn" type="button">
+            Click to record a new invoice
+          </button>
+        </div>
+      </article>
 
-<template id="">
-    <div id="">
-        <span id="">Username</span>
-        <a href="#" id="">Sign Out</a>
+      <div class="stats-row">
+        <article class="card stat-card">
+          <div class="card-header">
+            <h2>Past Invoices</h2>
+          </div>
+
+          <div class="card-body stat-body">
+            <p class="stat-number">7</p>
+            <p class="stat-label">Total Documents</p>
+            <button class="secondary-action-btn" type="button">View History</button>
+          </div>
+        </article>
+
+        <article class="card stat-card">
+          <div class="card-header">
+            <h2>Clients</h2>
+          </div>
+
+          <div class="card-body stat-body">
+            <p class="stat-number">5</p>
+            <p class="stat-label">Registered Clients</p>
+            <button class="secondary-action-btn" type="button">Manage Directory</button>
+          </div>
+        </article>
+      </div>
+
+    </section>
+  </main>
+
+  <template id="profile-menu-template">
+    <div class="profile-menu">
+      <span class="profile-username">Username</span>
+      <a href="#" class="sign-out-link">Sign Out</a>
     </div>
-</template>
-
+  </template>
+</body>
 </html>
