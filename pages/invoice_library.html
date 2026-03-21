@@ -15,15 +15,121 @@
 </head>
 
 <body>
+    <header class="">
+        <div class="">
+            <span class=""><img src="" alt="Invoice Logo">Dashboard</span>
+        </div>
+        <!---->
+        <div id="">
+            <a href="#" id=""><img src="" alt="user profile picture"></a>
+        </div>
+    </header>
 
+    <!--Invoice library list-->
+    <!--Search bar-->
+    <form class="" id="">
+        <input type="text" class="" placeholder="search">
+        <button type="submit" class="">🔍</button>
+    </form>
+    <!--Actual list-->
+    <table>
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Client Name</th>
+                <th>Client Email</th>
+                <th>VAT</th>
+                <th>Phone #</th>
+                <th>Country</th>
+                <th>City</th>
+                <th>Country Code</th>
+                <th>ID</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+    </table>
+
+    <!--Preview window-->
+    <div id="">
+        <h2 id="" class="">Placeholder title</h2>
+        <a href="#" id=""><img src="" alt="three dots"></a>
+        <div class="" id="">
+            <iframe src="" width="100%" height="600px" style="border: none;">
+                <p>Your browser does not support iframes.
+                    <a href="../Copy of Modern-Invoice-Template-GDoc.pdf">Download the PDF</a> instead.
+                </p>
+            </iframe>
+        </div>
+        <div class="" id="">
+            <span>Tags</span>
+            <span class="flex" id="">
+                <ul>
+                </ul>
+            </span>
+        </div>
+        <div class="" id="">
+            <p>Description</p>
+            <p id=""></p>
+        </div>
+    </div>
 </body>
 
+<!--user profile menu-->
 <template id="">
-  <div id="">
-    <span id="">Username</span>
-    <a href="#" id="">Go to Dashboard</a>
-    <a href="#" id="">Sign Out</a>
-  </div>
+    <div id="">
+        <span id="">Username</span>
+        <a href="#" id="">Go to Dashboard</a>
+        <a href="#" id="">Sign Out</a>
+    </div>
+</template>
+
+<!--edit entry menu-->
+<template id="">
+    <div id="">
+        <div id=""><img src="" alt="edit logo">Edit</div>
+        <div id=""><img src="" alt="rename logo">Rename</div>
+        <div id=""><img src="" alt="download logo">Download</div>
+    </div>
+</template>
+
+<!--add tag menu-->
+<template id="">
+    <div id="">
+        <label for="">Add Tag</label>
+        <input type="text">
+        <button>+</button>
+    </div>
+</template>
+
+<!--template for tag-->
+<template id="">
+    <span>Tag <span id="" class="">#</span><a href="#">x</a></span>
+</template>
+
+<!--default when no items in library-->
+<template id="">
+    <tr>
+        <td colspan="10">
+            There are currently no items in your library.
+        </td>
+    </tr>
+</template>
+
+<!--template for item in library-->
+<template id="">
+    <tr data-db-id="">
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+        <td id="" class=""></td>
+    </tr>
 </template>
 
 </html>
