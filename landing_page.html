@@ -4,18 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>inVOICE</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/landing_page.css" />
+  <link rel="stylesheet" href="css/color_scheme.css" />
 </head>
 <body>
   <header class="navbar">
     <div class="logo">
-      <span class="logo-purple">in</span><span class="logo-orange">VOICE</span>
+      <span class="logo-purple"><img src="" alt="Invoice Logo"/></span>
     </div>
 
     <a href="#" class="nav-button">Log In/Sign Up</a>
@@ -30,7 +32,7 @@
 
       <p class="hero-subtitle">No forms. No complexity. Just speak</p>
 
-      <button class="mic-wrapper" id="recordBtn" aria-label="Start voice recording">
+      <button class="mic-wrapper" id="recordBtn">
         <span class="mic-ring ring-1"></span>
         <span class="mic-ring ring-2"></span>
         <span class="mic-ring ring-3"></span>
@@ -48,7 +50,7 @@
         </span>
 
         <span class="mic-circle">
-          <span class="mic-icon"></span>
+          <span class="mic-icon"><img src="" alt="mic circle icon"></span>
         </span>
       </button>
 
@@ -61,4 +63,30 @@
     <a href="#" class="contact-link">Contact us</a>
   </footer>
 </body>
+
+<template id="login-window">
+  <div id="login-modal" class="modal-window">
+    <div id="login-modal-header" class="box-title">
+        <h2>Login</h2>
+        <button type="button" class="close-modal">&times;</button>
+    </div>
+    <form id="login-form">
+        <div id="login-modal-body" class="box-body">
+            <div id="inputs">
+                <label for="email-login">Email: <input id="email-login" type="email" name="email"></label>
+                <label for="password-login">Password: <input id="password-login" type="password" name="password"></label>
+            </div>
+            <div id="login-button" class="login-button">
+                <button>Login</button>
+                <span>or</span>
+                <button type="button" id="sign-in-google">Sign in with Google</button>
+            </div>
+            <hr id="sign-up-separator">
+            <div id="sign-up-section" class="">
+                <button id="sign-up-button">Sign up</button>
+            </div>
+        </div>
+    </form>
+</div>
+</template>
 </html>
