@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Invoice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+  <link rel="stylesheet" href="../css/color_scheme.css" />
+  <link rel="stylesheet" href="../css/create_invoice.css">
+</head>
+
+<body>
+
+  <div class="">
+
+    <!-- LEFT SIDE -->
+    <div class="">
+
+      <!-- Voice Control -->
+      <div class="">
+        <h3>VOICE CONTROL</h3>
+        <button class="">🎤 Start recording</button>
+
+        <div id="">
+          <p>Available voice commands</p>
+          <ul>
+            <li>"Invoice number 123"</li>
+            <li>Company name</li>
+            <li>Client name</li>
+            <li>Product + quantity + price</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Invoice Details -->
+      <div class="">
+        <h3>INVOICE DETAILS</h3>
+
+        <div class="">
+          <input id="" placeholder="Invoice number">
+          <label for="inv-date">Date:<input id="" type="date"></label>
+          <label for="inv-due">Due:<input id="" type="date"></label>
+          <input id="" type="number" placeholder="Tax (%)">
+        </div>
+
+        <h4>Your company</h4>
+        <div class="">
+          <input id="" placeholder="Company name">
+          <input id="" placeholder="Address">
+          <input id="" placeholder="Phone">
+          <input id="" type="email" placeholder="Email">
+        </div>
+
+        <h4>Client</h4>
+        <div class="">
+          <input id="" placeholder="Client name">
+          <input id="" placeholder="Address">
+          <input id="" placeholder="Phone">
+          <input id="" type="email" placeholder="Email">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="">
+
+      <div class="">
+        <button class="">See preview</button>
+      </div>
+
+      <div class="">
+        <h3>INVOICE</h3>
+        <h4 class="">Item list</h4>
+        <table id="" class="">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="">
+          </tbody>
+        </table>
+        <button type="button" id="">+ Add Item</button>
+
+        <div class="">
+          <p>Subtotal: <span id="">$0.00</span></p>
+          <p>Tax: <span id="">$0.00</span></p>
+          <p><strong>Total: <span id="">$0.00</span></strong></p>
+        </div>
+      </div>
+
+      <button class="">Return</button>
+
+    </div>
+
+  </div>
+
+</body>
+
+<template id="">
+  <tr>
+    <td colspan="5">
+      There are currently no items in the invoice.
+    </td>
+  </tr>
+</template>
+
+<template id="">
+  <tr class="">
+    <td>
+      <input type="text" class="" placeholder="Service/Product">
+    </td>
+    <td>
+      <input type="number" class="" value="1">
+    </td>
+    <td>
+      <input type="number" class="" value="0.00">
+    </td>
+    <td class="">
+      <span class="">$0.00</span>
+    </td>
+    <td>
+      <button type="button" class="">&times;</button>
+    </td>
+  </tr>
+</template>
+
+</html>
