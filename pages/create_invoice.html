@@ -36,9 +36,9 @@
 
         <div class="grid">
           <input id="inv-number" placeholder="Invoice number">
-          <input id="inv-date" placeholder="Date">
-          <input id="inv-due" placeholder="Due date">
-          <input id="inv-tax" placeholder="Tax (%)">
+          <label for="inv-date">Date:<input id="inv-date" type="date"></label>
+          <label for="inv-due">Due:<input id="inv-due" type="date"></label>
+          <input id="inv-tax" type="number" placeholder="Tax (%)">
         </div>
 
         <h4>Your company</h4>
@@ -46,7 +46,7 @@
           <input id="company-name" placeholder="Company name">
           <input id="company-address" placeholder="Address">
           <input id="company-phone" placeholder="Phone">
-          <input id="company-email" placeholder="Email">
+          <input id="company-email" type="email" placeholder="Email">
         </div>
 
         <h4>Client</h4>
@@ -54,24 +54,8 @@
           <input id="client-name" placeholder="Client name">
           <input id="client-address" placeholder="Address">
           <input id="client-phone" placeholder="Phone">
-          <input id="client-email" placeholder="Email">
+          <input id="client-email" type="email" placeholder="Email">
         </div>
-
-        <table id="items-table" class="table">
-          <h4 class="">Item list</h4>
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Qty</th>
-              <th>Rate</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody id="item-list">
-          </tbody>
-        </table>
-        <button type="button" id="add-line-item">+ Add Item</button>
-        </table>
       </div>
 
     </div>
@@ -83,14 +67,28 @@
         <button class="preview-btn">See preview</button>
       </div>
 
-      <div class="preview-card">
+      <div class="invoice-editor-card">
         <h3>INVOICE</h3>
-        <p>No items yet</p>
+        <h4 class="">Item list</h4>
+        <table id="items-table" class="table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="item-list">
+          </tbody>
+        </table>
+        <button type="button" id="add-line-item">+ Add Item</button>
 
         <div class="totals">
-          <p>Subtotal: $0.00</p>
-          <p>Tax: $0.00</p>
-          <p><strong>Total: $0.00</strong></p>
+          <p>Subtotal: <span id="view-subtotal">$0.00</span></p>
+          <p>Tax: <span id="view-tax">$0.00</span></p>
+          <p><strong>Total: <span id="view-total">$0.00</span></strong></p>
         </div>
       </div>
 
@@ -101,5 +99,33 @@
   </div>
 
 </body>
+
+<template id="empty-row">
+  <tr>
+    <td colspan="5">
+      There are currently no items in the invoice.
+    </td>
+  </tr>
+</template>
+
+<template id="non-empty-row">
+  <tr class="item-row">
+    <td>
+      <input type="text" class="item-desc voice-input" placeholder="Service/Product">
+    </td>
+    <td>
+      <input type="number" class="item-qty" value="1">
+    </td>
+    <td>
+      <input type="number" class="item-rate" value="0.00">
+    </td>
+    <td class="item-total-cell">
+      <span class="item-total">$0.00</span>
+    </td>
+    <td>
+      <button type="button" class="delete-btn">&times;</button>
+    </td>
+  </tr>
+</template>
 
 </html>
