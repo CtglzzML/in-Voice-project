@@ -1,5 +1,5 @@
 [project]
-name = "ia-invoce"
+name = "ia-invoice"
 version = "0.1.0"
 description = "Invoice AI Agent"
 readme = "README.md"
