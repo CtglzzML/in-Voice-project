@@ -1,5 +1,6 @@
 # src/agent/tools.py
 import asyncio
+import json
 from decimal import Decimal
 from enum import Enum
 from typing import Any
@@ -83,6 +84,14 @@ async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id:
     if invoice is None:
         return f"Facture '{invoice_id}' introuvable."
     field_key = field.value
+
+    # Parse JSON strings sent by the LLM (e.g. lines as '[{"description":...}]')
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except (json.JSONDecodeError, ValueError):
+            pass  # keep as string for text fields
+
     updates: dict[str, Any] = {field_key: value}
 
     if field_key in ("lines", "tva_rate"):
