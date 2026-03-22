@@ -24,17 +24,19 @@ async def stream(session_id: str):
     except SessionNotFound:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # Reconnection: replay last question if awaiting
-    if session["awaiting_reply"] and session["last_question"]:
-        await session["sse_queue"].put({
-            "type": "question",
-            "message": session["last_question"],
-            "awaiting": True,
-        })
+    already_connected = session["stream_connected"]
+    session["stream_connected"] = True
 
-    # Reconnection: replay done if already finished
-    if session["status"] == "done" and session["invoice_id"]:
-        await session["sse_queue"].put({"type": "done", "invoice_id": session["invoice_id"]})
+    # Reconnection only (not first connection): replay last question or done event
+    if already_connected:
+        if session["awaiting_reply"] and session["last_question"]:
+            await session["sse_queue"].put({
+                "type": "question",
+                "message": session["last_question"],
+                "awaiting": True,
+            })
+        elif session["status"] == "done" and session["invoice_id"]:
+            await session["sse_queue"].put({"type": "done", "invoice_id": session["invoice_id"]})
 
     async def event_generator():
         while True:

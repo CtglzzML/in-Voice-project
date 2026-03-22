@@ -26,6 +26,7 @@ class SessionStore:
             "last_question": None,
             "invoice_id": None,
             "status": "active",  # active | awaiting_reply | done | error
+            "stream_connected": False,
         }
         return session_id
 

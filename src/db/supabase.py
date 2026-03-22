@@ -27,7 +27,7 @@ def get_user(user_id: str) -> Optional[UserProfile]:
 
 
 def search_clients(name: str, user_id: str) -> list[ClientModel]:
-    data = _get_client().table("clients").select("*").eq("user_id", user_id).ilike("name", f"%{name}%").execute().data
+    data = _get_client().rpc("search_clients_fuzzy", {"p_name": name, "p_user_id": user_id}).execute().data
     return [ClientModel(**row) for row in (data or [])]
 
 

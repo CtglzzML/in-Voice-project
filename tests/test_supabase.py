@@ -20,7 +20,7 @@ def test_get_user_returns_none_if_not_found(mock_supabase):
 
 def test_search_clients_returns_list(mock_supabase):
     from src.db.supabase import search_clients
-    mock_supabase.table.return_value.select.return_value.eq.return_value.ilike.return_value.execute.return_value.data = [
+    mock_supabase.rpc.return_value.execute.return_value.data = [
         {"id": "c1", "user_id": "user-1", "name": "Marie Dupont", "email": None, "address": "2 rue Lyon", "company": None}
     ]
     results = search_clients("Marie", "user-1")
@@ -29,6 +29,6 @@ def test_search_clients_returns_list(mock_supabase):
 
 def test_search_clients_returns_empty_list_when_none(mock_supabase):
     from src.db.supabase import search_clients
-    mock_supabase.table.return_value.select.return_value.eq.return_value.ilike.return_value.execute.return_value.data = None
+    mock_supabase.rpc.return_value.execute.return_value.data = None
     results = search_clients("Unknown", "user-1")
     assert results == []
