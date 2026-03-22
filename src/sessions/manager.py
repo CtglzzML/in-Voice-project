@@ -42,6 +42,7 @@ class SessionStore:
         session = self.get(session_id)
         if not session["awaiting_reply"]:
             raise SessionNotAwaiting(session_id)
+        session["awaiting_reply"] = False
         await session["reply_queue"].put(reply)
 
     def cleanup(self, session_id: str) -> None:

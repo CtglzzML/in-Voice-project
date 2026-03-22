@@ -31,10 +31,10 @@ async def test_reply_to_awaiting_session(store):
     reply = await asyncio.wait_for(store.get(sid)["reply_queue"].get(), timeout=1)
     assert reply == "20"
 
-def test_reply_to_non_awaiting_raises(store):
+async def test_reply_to_non_awaiting_raises(store):
     sid = store.create("user-1")
     with pytest.raises(SessionNotAwaiting):
-        asyncio.get_event_loop().run_until_complete(store.push_reply(sid, "20"))
+        await store.push_reply(sid, "20")
 
 def test_cleanup_removes_session(store):
     sid = store.create("user-1")
