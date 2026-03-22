@@ -1,6 +1,6 @@
 # src/agent/runner.py
 import asyncio
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
@@ -82,11 +82,11 @@ def _make_tools(session_id: str, user_id: str):
 
 async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
     """Background task: runs the LangChain agent for a session."""
-    from src.config import ANTHROPIC_API_KEY
+    from src.config import OPENAI_API_KEY
 
-    llm = ChatAnthropic(
-        model="claude-sonnet-4-6",
-        api_key=ANTHROPIC_API_KEY,
+    llm = ChatOpenAI(
+        model="gpt-4o",
+        api_key=OPENAI_API_KEY,
         temperature=0,
     )
 
