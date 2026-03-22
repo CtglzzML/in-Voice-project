@@ -56,6 +56,17 @@ async def tool_search_client(name: str, user_id: str, session_id: str) -> str:
     return f"Plusieurs clients trouvés : {[r.model_dump_json() for r in results]}. Demande lequel choisir, puis appelle update_invoice_field('client_id', id_choisi, invoice_id)."
 
 
+async def tool_create_client(name: str, address: str, user_id: str, session_id: str, email: str = "", company: str = "") -> str:
+    """Creates a new client record and returns the client_id UUID.
+    After calling this, use update_invoice_field('client_id', <returned_id>, invoice_id).
+    """
+    await session_store.push_event(session_id, {"type": "thinking", "message": f"Création du client '{name}'..."})
+    client = Client(id="", user_id=user_id, name=name, address=address, email=email or None, company=company or None)
+    created = create_client_record(client)
+    await session_store.push_event(session_id, {"type": "invoice_update", "field": "client_name", "value": name})
+    return f"Client créé. client_id={created.id}. Appelle maintenant update_invoice_field('client_id', '{created.id}', invoice_id)."
+
+
 async def tool_create_invoice_draft(user_id: str, session_id: str) -> str:
     await session_store.push_event(session_id, {"type": "thinking", "message": "Création du brouillon de facture..."})
     invoice_id = db_create_draft(user_id, session_id)

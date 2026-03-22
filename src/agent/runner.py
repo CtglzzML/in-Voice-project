@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from src.agent.tools import (
     tool_get_user_profile,
     tool_search_client,
+    tool_create_client,
     tool_create_invoice_draft,
     tool_update_invoice_field,
     tool_ask_user_question,
@@ -25,6 +26,12 @@ def _make_tools(session_id: str, user_id: str):
 
     class SearchClientInput(BaseModel):
         name: str = Field(description="Nom ou partie du nom du client")
+
+    class CreateClientInput(BaseModel):
+        name: str = Field(description="Nom complet du client")
+        address: str = Field(description="Adresse postale du client")
+        email: str = Field(default="", description="Email du client (optionnel)")
+        company: str = Field(default="", description="Nom de la société (optionnel)")
 
     class CreateDraftInput(BaseModel):
         pass
@@ -52,6 +59,12 @@ def _make_tools(session_id: str, user_id: str):
             name="search_client",
             description="Recherche un client par nom dans la base.",
             args_schema=SearchClientInput,
+        ),
+        StructuredTool.from_function(
+            coroutine=lambda name, address, email="", company="", **kw: tool_create_client(name, address, user_id, session_id, email, company),
+            name="create_client",
+            description="Crée une fiche client (nom + adresse obligatoires). Retourne le client_id à utiliser dans update_invoice_field.",
+            args_schema=CreateClientInput,
         ),
         StructuredTool.from_function(
             coroutine=lambda **kw: tool_create_invoice_draft(user_id, session_id),
@@ -96,10 +109,13 @@ async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
         "Crée une facture complète en appelant les outils dans cet ordre :\n"
         "1. get_user_profile\n"
         "2. search_client (nom extrait du transcript)\n"
+        "   - Si client trouvé → update_invoice_field('client_id', <id>, invoice_id)\n"
+        "   - Si client NON trouvé → demande l'adresse avec ask_user_question, puis appelle create_client(name, address), puis update_invoice_field('client_id', <id retourné>, invoice_id)\n"
         "3. create_invoice_draft\n"
-        "4. update_invoice_field pour chaque info disponible\n"
+        "4. update_invoice_field pour chaque info disponible dans le transcript\n"
         f"5. ask_user_question pour chaque champ obligatoire manquant : {MANDATORY_FIELDS}\n"
         "6. finalize_invoice quand tout est complet\n\n"
+        "RÈGLE IMPORTANTE : Ne jamais passer un nom ou une adresse dans client_id. client_id doit toujours être un UUID retourné par search_client ou create_client.\n"
         f"Ne finalise que lorsque TOUS ces champs sont renseignés : {MANDATORY_FIELDS}.\n"
         "Pose UNE seule question à la fois."
     )
