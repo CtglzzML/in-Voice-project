@@ -45,6 +45,7 @@ class InvoiceTotals(BaseModel):
 
 
 def compute_totals(lines: list[InvoiceLine], tva_rate: Decimal) -> InvoiceTotals:
-    subtotal = sum(line.total for line in lines)
+    subtotal = sum(line.total for line in lines).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     tva_amount = (subtotal * tva_rate / 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    return InvoiceTotals(subtotal=subtotal, tva_amount=tva_amount, total=subtotal + tva_amount)
+    total = (subtotal + tva_amount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return InvoiceTotals(subtotal=subtotal, tva_amount=tva_amount, total=total)
