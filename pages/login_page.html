@@ -6,61 +6,78 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    />
+
     <title>inVOICE - Login</title>
-    <link rel="stylesheet" href="../css/color_scheme.css">
-    <link rel="stylesheet" href="../css/login_page.css">
+
+    <link rel="stylesheet" href="../css/color_scheme.css" />
+    <link rel="stylesheet" href="../css/login_page.css" />
 </head>
 <body>
 
-    <header class="">
-        <div class="">
-            <span class=""><img src="" alt="Invoice Logo"></span>
+    <header class="page-header">
+        <div class="logo-wrapper">
+            <img src="./assets/logo.png" alt="inVOICE Logo" class="logo" />
         </div>
     </header>
 
-    <main class="">
-        <div class="">
-            <div class="">
-                <header class="">
+    <main class="login-page">
+        <section class="login-container">
+            <div class="login-card">
+                <header class="login-card-header">
                     <h2>Log in</h2>
                 </header>
-                
-                <form class="">
-                    <div class="">
+
+                <form class="login-form">
+                    <div class="form-group">
                         <label for="email">Email :</label>
-                        <input type="email" id="" name="email" placeholder="Email" required>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Company@pro.com"
+                            required
+                        />
                     </div>
 
-                    <div class="">
+                    <div class="form-group">
                         <label for="password">Password :</label>
-                        <input type="password" id="" name="password" placeholder="Password" required>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="SafePassword123"
+                            required
+                        />
                     </div>
 
-                    <div class="">
-                        <button type="submit" class="">Log in</button>
+                    <div class="login-button-wrapper">
+                        <button type="submit" class="login-button">Log in</button>
                     </div>
 
-                    <div class="">
-                        <div class=""></div>
-                        <span class="">or</span>
-                        <div class=""></div>
+                    <div class="divider">
+                        <span class="divider-line"></span>
+                        <span class="divider-text">or</span>
+                        <span class="divider-line"></span>
                     </div>
 
-                    <div class="">
-                        <button type="button" class="">
-                            Sign in with Google
+                    <div class="google-button-wrapper">
+                        <button type="button" class="google-button">
+                            <span class="google-icon">G</span>
+                            <span>Sign in with Google</span>
                         </button>
                     </div>
                 </form>
             </div>
 
-            <div class="">
+            <div class="signup-section">
                 <p>Don't have an account?</p>
-                <button type="button" class="">Sign Up</button>
+                <button type="button" class="signup-button">Sign Up</button>
             </div>
-        </div>
+        </section>
     </main>
 
 </body>
