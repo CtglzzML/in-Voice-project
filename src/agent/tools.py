@@ -64,21 +64,22 @@ async def tool_create_invoice_draft(user_id: str, session_id: str) -> str:
     return f"Brouillon créé. invoice_id={invoice_id}"
 
 
-async def tool_update_invoice_field(field: str, value: Any, invoice_id: str, session_id: str) -> str:
+async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id: str, session_id: str) -> str:
     await session_store.push_event(session_id, {"type": "thinking", "message": f"Mise à jour du champ {field}..."})
 
-    try:
-        InvoiceField(field)
-    except ValueError:
-        return f"Champ '{field}' invalide. Champs valides : {[f.value for f in InvoiceField]}"
-
+    # field is already validated by type — use field.value as the string key
     invoice = get_invoice(invoice_id)
-    updates: dict[str, Any] = {field: value}
+    if invoice is None:
+        return f"Facture '{invoice_id}' introuvable."
+    field_key = field.value
+    updates: dict[str, Any] = {field_key: value}
 
-    if field in ("lines", "tva_rate"):
-        lines_data = value if field == "lines" else invoice.get("lines", [])
-        tva = value if field == "tva_rate" else invoice.get("tva_rate")
-        if lines_data and tva is not None:
+    if field_key in ("lines", "tva_rate"):
+        lines_data = value if field_key == "lines" else invoice.get("lines", [])
+        tva = value if field_key == "tva_rate" else invoice.get("tva_rate")
+        if field_key == "lines" and not value:
+            updates.update({"subtotal": 0.0, "tva_amount": 0.0, "total": 0.0})
+        elif lines_data and tva is not None:
             parsed_lines = [InvoiceLine(**l) for l in lines_data] if isinstance(lines_data[0], dict) else lines_data
             totals = compute_totals(parsed_lines, Decimal(str(tva)))
             updates["subtotal"] = float(totals.subtotal)
@@ -90,7 +91,7 @@ async def tool_update_invoice_field(field: str, value: Any, invoice_id: str, ses
     for k, v in updates.items():
         await session_store.push_event(session_id, {"type": "invoice_update", "field": k, "value": v})
 
-    return f"Champ {field} mis à jour."
+    return f"Champ {field_key} mis à jour."
 
 
 async def tool_ask_user_question(message: str, session_id: str) -> str:
@@ -101,8 +102,9 @@ async def tool_ask_user_question(message: str, session_id: str) -> str:
     try:
         reply = await asyncio.wait_for(session["reply_queue"].get(), timeout=QUESTION_TIMEOUT)
     except asyncio.TimeoutError:
+        session["status"] = "error"
         await session_store.push_event(session_id, {"type": "error", "message": "Délai d'attente dépassé."})
-        raise
+        return "Timeout: aucune réponse reçue dans les 5 minutes."
     finally:
         session["awaiting_reply"] = False
     return reply
@@ -111,6 +113,8 @@ async def tool_ask_user_question(message: str, session_id: str) -> str:
 async def tool_finalize_invoice(session_id: str, invoice_id: str) -> str:
     await session_store.push_event(session_id, {"type": "thinking", "message": "Finalisation de la facture..."})
     invoice = get_invoice(invoice_id)
+    if invoice is None:
+        return f"Facture '{invoice_id}' introuvable."
     missing = [f for f in MANDATORY_FIELDS if not invoice.get(f)]
     if missing:
         return f"Impossible de finaliser : champs manquants {missing}. Complète-les d'abord."
