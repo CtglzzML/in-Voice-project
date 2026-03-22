@@ -15,6 +15,7 @@ from src.agent.tools import (
     InvoiceField,
     MANDATORY_FIELDS,
 )
+from src.agent.extractor import extract_from_transcript
 from src.sessions.manager import session_store
 
 
@@ -103,21 +104,35 @@ async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
         temperature=0,
     )
 
+    # Pre-extract structured info from transcript
+    extracted = await extract_from_transcript(transcript, OPENAI_API_KEY)
+
     tools = _make_tools(session_id, user_id)
     system_prompt = (
-        f"Tu es un assistant de facturation. Session: {session_id}. User: {user_id}.\n"
-        "Crée une facture complète en appelant les outils dans cet ordre :\n"
-        "1. get_user_profile\n"
-        "2. search_client (nom extrait du transcript)\n"
-        "   - Si client trouvé → update_invoice_field('client_id', <id>, invoice_id)\n"
-        "   - Si client NON trouvé → demande l'adresse avec ask_user_question, puis appelle create_client(name, address), puis update_invoice_field('client_id', <id retourné>, invoice_id)\n"
+        f"Tu es un assistant de facturation. Session: {session_id}. User: {user_id}.\n\n"
+        "INFOS DÉJÀ EXTRAITES DU TRANSCRIPT :\n"
+        f"{extracted.model_dump_json(exclude_none=True)}\n\n"
+        "ORDRE DES OPÉRATIONS :\n"
+        "1. get_user_profile → récupère TVA et conditions de paiement par défaut\n"
+        "2. search_client avec le nom extrait\n"
+        "   - Trouvé → update_invoice_field('client_id', <uuid>)\n"
+        "   - Non trouvé → create_client(name, address) puis update_invoice_field('client_id', <uuid retourné>)\n"
+        "     Pour un nouveau client : seuls nom et adresse sont obligatoires.\n"
+        "     Si l'adresse n'est pas dans les infos extraites, demande-la en UNE question.\n"
         "3. create_invoice_draft\n"
-        "4. update_invoice_field pour chaque info disponible dans le transcript\n"
-        f"5. ask_user_question pour chaque champ obligatoire manquant : {MANDATORY_FIELDS}\n"
-        "6. finalize_invoice quand tout est complet\n\n"
-        "RÈGLE IMPORTANTE : Ne jamais passer un nom ou une adresse dans client_id. client_id doit toujours être un UUID retourné par search_client ou create_client.\n"
-        f"Ne finalise que lorsque TOUS ces champs sont renseignés : {MANDATORY_FIELDS}.\n"
-        "Pose UNE seule question à la fois."
+        "4. update_invoice_field pour chaque info disponible dans les infos extraites\n"
+        "5. Pour les champs manquants, applique ces DEFAULTS avant de poser une question :\n"
+        "   - tva_rate → utilise default_tva du profil utilisateur\n"
+        "   - due_date → date du jour + 30 jours\n"
+        "   - payment_terms → utilise payment_terms du profil si disponible, sinon '30 jours'\n"
+        "   - qty → 1 si non mentionné\n"
+        "6. Ne pose une question QUE si l'info est introuvable dans le transcript ET sans default possible.\n"
+        "7. finalize_invoice quand tous les champs obligatoires sont remplis.\n\n"
+        "RÈGLES STRICTES :\n"
+        "- client_id doit TOUJOURS être un UUID (jamais un nom ou une adresse)\n"
+        "- Pose UNE seule question à la fois\n"
+        "- N'invente aucune valeur : utilise uniquement les infos extraites ou les defaults ci-dessus\n"
+        f"- Champs obligatoires : {MANDATORY_FIELDS}"
     )
 
     graph = create_agent(
