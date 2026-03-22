@@ -12,6 +12,7 @@ async def test_start_returns_session_id():
     with patch("src.api.routes.run_agent", new=AsyncMock()):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
             resp = await ac.post("/api/invoice/start", json={"user_id": "u1", "transcript": "test"})
+        await asyncio.sleep(0)  # flush scheduled tasks before patch exits
     assert resp.status_code == 200
     assert "session_id" in resp.json()
 
@@ -52,6 +53,7 @@ async def test_stream_receives_event_pushed_to_queue():
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         async with ac.stream("GET", f"/api/invoice/stream?session_id={sid}") as s:
+            assert "text/event-stream" in s.headers["content-type"]
             lines = []
             async for line in s.aiter_lines():
                 if line.startswith("data:"):

@@ -126,4 +126,7 @@ async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
         except Exception:
             pass  # session may already be cleaned up
     finally:
-        asyncio.create_task(_delayed_cleanup())
+        try:
+            asyncio.create_task(_delayed_cleanup())
+        except RuntimeError:
+            pass  # event loop shutting down

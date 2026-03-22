@@ -3,6 +3,14 @@ import pytest
 from unittest.mock import MagicMock
 
 
+@pytest.fixture(autouse=True)
+def reset_session_store():
+    from src.sessions.manager import session_store
+    session_store._sessions.clear()
+    yield
+    session_store._sessions.clear()
+
+
 @pytest.fixture
 def mock_supabase(monkeypatch):
     """Replaces the lazy Supabase client with a mock.
