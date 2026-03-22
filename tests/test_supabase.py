@@ -1,6 +1,5 @@
 # tests/test_supabase.py
 import pytest
-from unittest.mock import MagicMock
 
 def test_get_user_returns_user_profile(mock_supabase):
     from src.db.supabase import get_user

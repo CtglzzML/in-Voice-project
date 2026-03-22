@@ -33,7 +33,6 @@ def search_clients(name: str, user_id: str) -> list[ClientModel]:
 
 def create_client_record(client: ClientModel) -> ClientModel:
     data = _get_client().table("clients").insert({
-        "id": str(uuid.uuid4()),
         "user_id": client.user_id,
         "name": client.name,
         "email": client.email,
@@ -67,7 +66,13 @@ def get_invoice(invoice_id: str) -> Optional[dict]:
 
 
 def assign_invoice_number(invoice_id: str, user_id: str) -> str:
-    """Generates YYYY-MM-NNN number (sequential per user per month) and assigns it."""
+    """Generates YYYY-MM-NNN number (sequential per user per month) and assigns it.
+
+    NOTE: This count-then-write pattern is not atomic. Under concurrent load,
+    two simultaneous calls for the same user/month could generate duplicate numbers.
+    Production fix: replace with a Postgres function via supabase.rpc() that runs
+    the count and update in a single transaction.
+    """
     today = datetime.date.today()
     prefix = today.strftime("%Y-%m")
     count_data = _get_client().table("invoices").select("id", count="exact").eq("user_id", user_id).eq("status", "confirmed").like("invoice_number", f"{prefix}-%").execute()
