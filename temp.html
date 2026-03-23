@@ -1,24 +1,71 @@
-<div id="">
-    <h2 id="" class="">Placeholder title</h2>
-    <div class="" id="">
-        <iframe src="" width="100%" height="600px" style="border: none;">
-            <p>Your browser does not support iframes.
-                <a href="../Copy of Modern-Invoice-Template-GDoc.pdf">Download the PDF</a> instead.
-            </p>
-        </iframe>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - inVOICE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="profile-container">
+    <div class="profile-card">
+        
+        <section id="profile-view" class="active-state">
+            <div class="profile-header">
+                <img src="avatar-placeholder.png" alt="Profile Picture" class="avatar" id="view-avatar">
+                <h2 id="view-name">John Doe</h2>
+                <p id="view-email" class="text-muted">john.doe@company.com</p>
+            </div>
+            
+            <div class="profile-details">
+                <h3>About</h3>
+                <p id="view-bio">I am a freelance graphic designer specializing in brand identity.</p>
+            </div>
+
+            <div class="action-group">
+                <button type="button" id="btn-edit-mode" class="primary-btn">Edit Profile</button>
+            </div>
+        </section>
+
+        <section id="profile-edit" class="hidden-state">
+            <div class="profile-header">
+                <h2>Edit Details</h2>
+            </div>
+
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="input-name">Full Name</label>
+                    <input type="text" id="input-name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-email">Email Address</label>
+                    <input type="email" id="input-email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-bio">Bio</label>
+                    <textarea id="input-bio" name="bio" rows="4"></textarea>
+                </div>
+
+                <div class="action-group edit-actions">
+                    <button type="submit" id="btn-save" class="primary-btn">Save Changes</button>
+                    <button type="button" id="btn-cancel" class="secondary-btn">Cancel</button>
+                </div>
+            </form>
+        </section>
+
+        <hr class="divider">
+
+        <section class="danger-zone">
+            <h3>Danger Zone</h3>
+            <p>Once you delete your profile, there is no going back. Please be certain.</p>
+            <button type="button" id="btn-delete-account" class="danger-btn">Delete Account</button>
+        </section>
+
     </div>
-    <div class="" id="">
-        <span>Tags</span>
-        <span class="flex" id="">
-            <ul>
-            </ul>
-        </span>
-    </div>
-    <div class="" id="">
-        <p>Description</p>
-        <p id=""></p>
-    </div>
-</div>
-<template id="">
-    <span>Tag <span id="" class="">#</span><a href="#">x</a></span>
-</template>
+</main>
+
+</body>
+</html>
