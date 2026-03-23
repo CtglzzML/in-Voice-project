@@ -124,7 +124,12 @@ class InvoiceAgent {
     };
 
     this._eventSource.onerror = () => {
-      // Browser EventSource auto-reconnects.
+      // Browser EventSource auto-reconnects on transient errors.
+      // On permanent failures (4xx, server closed), readyState becomes CLOSED.
+      if (this._eventSource && this._eventSource.readyState === EventSource.CLOSED) {
+        this._closeStream();
+        this._onError('SSE connection closed unexpectedly');
+      }
       // _awaitingReply flag suppresses duplicate `question` events on reconnect.
     };
   }
@@ -148,13 +153,20 @@ class InvoiceAgent {
         // Suppress duplicate delivery on SSE reconnect
         if (this._awaitingReply) break;
         this._awaitingReply = true;
-        try {
-          const reply = await this._onQuestion(event.message);
-          this._awaitingReply = false;
-          await this._postReply(reply);
-        } catch (err) {
-          this._awaitingReply = false;
-          this._onError(`onQuestion handler threw: ${err.message}`);
+        {
+          // Capture sessionId before await — stop() may clear it during onQuestion
+          const sessionId = this._sessionId;
+          try {
+            const reply = await this._onQuestion(event.message);
+            this._awaitingReply = false;
+            // Only post if the session wasn't replaced or cancelled during the await
+            if (sessionId && this._sessionId === sessionId) {
+              await this._postReply(reply, sessionId);
+            }
+          } catch (err) {
+            this._awaitingReply = false;
+            this._onError(`onQuestion handler threw: ${err.message}`);
+          }
         }
         break;
 
@@ -174,13 +186,13 @@ class InvoiceAgent {
     }
   }
 
-  async _postReply(reply) {
+  async _postReply(reply, sessionId) {
     let resp;
     try {
       resp = await fetch(`${this._baseUrl}/api/v1/invoice/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: this._sessionId, reply }),
+        body: JSON.stringify({ session_id: sessionId, reply }),
       });
     } catch (err) {
       this._onError(`Network error sending reply: ${err.message}`);

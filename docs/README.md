@@ -35,11 +35,11 @@ A voice-based invoice creation API. The agent conducts a natural-language conver
     },
   });
 
-  // Start with a text transcript
-  await agent.start("Invoice Marie Dupont for 2 hours of consulting at 500 euros");
+  // Start with a text transcript — callbacks handle all results
+  agent.start("Invoice Marie Dupont for 2 hours of consulting at 500 euros");
 
   // Or start with a recorded audio Blob
-  // await agent.startFromAudio(audioBlob);
+  // agent.startFromAudio(audioBlob);
 </script>
 ```
 
