@@ -6,6 +6,7 @@ from sse_starlette.sse import EventSourceResponse
 from src.api.schemas import StartRequest, StartResponse, ReplyRequest
 from src.sessions.manager import session_store, SessionNotFound, SessionNotAwaiting
 from src.agent.runner import run_agent
+from src.db.supabase import get_invoice
 
 router = APIRouter(prefix="/invoice", tags=["Invoice"])
 
@@ -86,13 +87,12 @@ async def reply(body: ReplyRequest):
 
 
 @router.get(
-    "/{invoice_id}",
+    "/{invoice_id:uuid}",
     summary="Get invoice details",
     description="Returns the full invoice record. Available immediately after the `done` SSE event.",
 )
 async def get_invoice_detail(invoice_id: str):
-    from src.db.supabase import get_invoice
-    invoice = get_invoice(invoice_id)
+    invoice = await asyncio.get_event_loop().run_in_executor(None, get_invoice, invoice_id)
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
     return invoice
