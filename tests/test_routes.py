@@ -83,3 +83,27 @@ async def test_transcribe_returns_transcript(monkeypatch):
         )
     assert resp.status_code == 200
     assert resp.json()["transcript"] == "Invoice for Jean Dupont"
+
+
+@pytest.mark.asyncio
+async def test_transcribe_passes_language_to_whisper(monkeypatch):
+    """Language query param must be forwarded to Whisper."""
+    from unittest.mock import MagicMock, AsyncMock as AM
+    import src.api.routes.audio as audio_mod
+
+    mock_client = MagicMock()
+    mock_transcription = MagicMock()
+    mock_transcription.text = "Bonjour"
+    mock_client.audio.transcriptions.create = AM(return_value=mock_transcription)
+    monkeypatch.setattr(audio_mod, "_openai_client", lambda: mock_client)
+
+    import io
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        resp = await ac.post(
+            "/api/v1/audio/transcribe?language=en",
+            files={"audio": ("test.webm", io.BytesIO(b"data"), "audio/webm")},
+        )
+
+    assert resp.status_code == 200
+    call_kwargs = mock_client.audio.transcriptions.create.call_args.kwargs
+    assert call_kwargs["language"] == "en"
