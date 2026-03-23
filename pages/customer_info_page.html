@@ -16,83 +16,87 @@
 
 <body>
     <header class="dashboard-header">
-      <div class="brand">
-        <span class="brand-in">in</span><span class="brand-voice">VOICE</span>
-        <span class="brand-dashboard">Customer Info</span>
-      </div>
+        <div class="brand">
+            <span class="brand-in">in</span><span class="brand-voice">VOICE</span>
+            <span class="brand-dashboard">Customer Info</span>
+        </div>
 
-      <button class="user-button" type="button">
-        <span>Welcome, User!</span>
-        <span class="user-icon">◔</span>
-      </button>
+        <button class="user-button" type="button">
+            <span>Welcome, User!</span>
+            <span class="user-icon">◔</span>
+        </button>
     </header>
 
     <div class="card">
+        <form class="" id="">
+            <input type="text" class="" placeholder="search">
+            <button type="submit" class="">🔍</button>
+        </form>
         <table>
-        <thead>
-            <tr>
-                <th>File Name</th>
-                <th>Client Name</th>
-                <th>Client Email</th>
-                <th>VAT</th>
-                <th>Phone #</th>
-                <th>Country</th>
-                <th>City</th>
-                <th>Country Code</th>
-                <th>ID</th>
-                <th>Date</th>
-                <th></th>
-            </tr>
-        </thead>
-    </table>
-    <button type="button" id="add-line-item">+ Add Item</button>
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Client Name</th>
+                    <th>Client Email</th>
+                    <th>VAT</th>
+                    <th>Phone #</th>
+                    <th>Country</th>
+                    <th>City</th>
+                    <th>Country Code</th>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+        <button type="button" id="add-line-item">+ Add Item</button>
     </div>
 </body>
 
 <template id="empty-row">
-  <tr>
-    <td colspan="10">
-      There are currently no clients in library.
-    </td>
-  </tr>
+    <tr>
+        <td colspan="10">
+            There are currently no clients in library.
+        </td>
+    </tr>
 </template>
 
 <template id="non-empty-row">
-<tr class="item-row">
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td class="">
-        <input type="" class="" placeholder="">
-    </td>
-    <td>
-        <button type="button" class="delete-btn">&times;</button>
-    </td>
-</tr>
+    <tr class="item-row">
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td class="">
+            <input type="" class="" placeholder="">
+        </td>
+        <td>
+            <button type="button" class="delete-btn">&times;</button>
+        </td>
+    </tr>
 </template>
 
 <!--user profile menu-->
