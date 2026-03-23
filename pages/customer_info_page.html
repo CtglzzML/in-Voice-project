@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InVoice - Customer Info</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/invoice_library.css" />
+    <link rel="stylesheet" href="../css/color_scheme.css" />
+</head>
+
+<body>
+    <header class="dashboard-header">
+      <div class="brand">
+        <span class="brand-in">in</span><span class="brand-voice">VOICE</span>
+        <span class="brand-dashboard">Customer Info</span>
+      </div>
+
+      <button class="user-button" type="button">
+        <span>Welcome, User!</span>
+        <span class="user-icon">◔</span>
+      </button>
+    </header>
+
+    <div class="card">
+        <table>
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Client Name</th>
+                <th>Client Email</th>
+                <th>VAT</th>
+                <th>Phone #</th>
+                <th>Country</th>
+                <th>City</th>
+                <th>Country Code</th>
+                <th>ID</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+        </thead>
+    </table>
+    <button type="button" id="add-line-item">+ Add Item</button>
+    </div>
+</body>
+
+<template id="empty-row">
+  <tr>
+    <td colspan="10">
+      There are currently no clients in library.
+    </td>
+  </tr>
+</template>
+
+<template id="non-empty-row">
+<tr class="item-row">
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td class="">
+        <input type="" class="" placeholder="">
+    </td>
+    <td>
+        <button type="button" class="delete-btn">&times;</button>
+    </td>
+</tr>
+</template>
+
+<!--user profile menu-->
+<template id="">
+    <div id="">
+        <span id="">Username</span>
+        <a href="#" id="">Go to Dashboard</a>
+        <a href="#" id="">Go to Customer Library Page</a>
+        <a href="#" id="">Sign Out</a>
+    </div>
+</template>
+
+</html>
