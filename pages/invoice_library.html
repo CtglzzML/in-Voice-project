@@ -31,10 +31,13 @@
     <section class="library-layout">
 
       <section class="library-list-section">
-        <form class="search-form" role="search">
-          <input type="text" class="search-input" placeholder="Search invoices" />
-          <button type="submit" class="search-btn" aria-label="Search">🔍</button>
-        </form>
+        <div>
+            <div class="" id="">
+                <input type="text" class="" placeholder="search">
+                <button type="submit" class="">🔍</button>
+            </div>
+            <ul class="suggestion-list hidden"></ul>
+        </div>
 
         <div class="table-wrapper">
           <table class="library-table">
@@ -84,10 +87,9 @@
           <div class="preview-meta">
             <div class="tags-row">
               <span class="meta-label">Tags:</span>
-              <div class="tags-list" id="tags-list">
-                <span class="tag-chip">Sample</span>
-                <button class="add-tag-btn" type="button" aria-label="Add tag">+</button>
-              </div>
+              <ul class="tags-list" id="tags-list">
+                <li><button class="add-tag-btn" type="button" aria-label="Add tag">+</button></li>
+              </ul>
             </div>
 
             <div class="description-block">
@@ -132,9 +134,7 @@
 
 <!-- template for tag -->
 <template id="tag-template">
-  <span class="tag-chip">
-    Tag <span class="tag-hash">#</span><a href="#">x</a>
-  </span>
+  <li class="tag-chip"><button>⚪</button>Sample</li>
 </template>
 
 <!-- default when no items in library -->
