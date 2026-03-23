@@ -38,6 +38,7 @@ def create_client_record(client: ClientModel) -> ClientModel:
         "email": client.email,
         "address": client.address,
         "company": client.company,
+        "phone": client.phone,
     }).execute().data[0]
     return ClientModel(**data)
 
@@ -66,17 +67,14 @@ def get_invoice(invoice_id: str) -> Optional[dict]:
 
 
 def assign_invoice_number(invoice_id: str, user_id: str) -> str:
-    """Generates YYYY-MM-NNN number (sequential per user per month) and assigns it.
+    """Atomically assigns the next YYYY-MM-NNN number via a Postgres RPC.
 
-    NOTE: This count-then-write pattern is not atomic. Under concurrent load,
-    two simultaneous calls for the same user/month could generate duplicate numbers.
-    Production fix: replace with a Postgres function via supabase.rpc() that runs
-    the count and update in a single transaction.
+    The function uses pg_advisory_xact_lock to serialize concurrent calls
+    for the same user+month, eliminating the previous race condition.
+    Migration: supabase/migrations/001_assign_invoice_number_atomic.sql
     """
-    today = datetime.date.today()
-    prefix = today.strftime("%Y-%m")
-    count_data = _get_client().table("invoices").select("id", count="exact").eq("user_id", user_id).eq("status", "confirmed").like("invoice_number", f"{prefix}-%").execute()
-    n = (count_data.count or 0) + 1
-    number = f"{prefix}-{n:03d}"
-    update_invoice_in_db(invoice_id, {"invoice_number": number})
-    return number
+    result = _get_client().rpc(
+        "assign_invoice_number_atomic",
+        {"p_invoice_id": invoice_id, "p_user_id": user_id},
+    ).execute()
+    return result.data

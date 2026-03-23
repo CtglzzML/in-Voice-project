@@ -32,3 +32,17 @@ def test_search_clients_returns_empty_list_when_none(mock_supabase):
     mock_supabase.rpc.return_value.execute.return_value.data = None
     results = search_clients("Unknown", "user-1")
     assert results == []
+
+def test_assign_invoice_number_calls_rpc(mock_supabase):
+    """assign_invoice_number must use the atomic RPC, not count-then-write."""
+    from src.db.supabase import assign_invoice_number
+
+    mock_supabase.rpc.return_value.execute.return_value.data = "2026-03-001"
+
+    result = assign_invoice_number("inv-1", "user-1")
+
+    mock_supabase.rpc.assert_called_once_with(
+        "assign_invoice_number_atomic",
+        {"p_invoice_id": "inv-1", "p_user_id": "user-1"},
+    )
+    assert result == "2026-03-001"
