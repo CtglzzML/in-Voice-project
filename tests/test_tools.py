@@ -129,7 +129,7 @@ async def test_finalize_invoice_returns_error_when_fields_missing(store, session
         with patch("src.agent.tools.session_store", store):
             from src.agent.tools import tool_finalize_invoice
             result = await tool_finalize_invoice(session_id, "inv-1")
-    assert "manquants" in result.lower()
+    assert "missing" in result.lower()
 
 
 async def test_update_invoice_field_rejects_invalid_field(store, session_id):

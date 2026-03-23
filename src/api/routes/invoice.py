@@ -7,6 +7,7 @@ from src.api.schemas import StartRequest, StartResponse, ReplyRequest
 from src.sessions.manager import session_store, SessionNotFound, SessionNotAwaiting
 from src.agent.runner import run_agent
 from src.db.supabase import get_invoice
+from src.db.models import InvoiceDetailResponse
 
 router = APIRouter(prefix="/invoice", tags=["Invoice"])
 
@@ -88,6 +89,7 @@ async def reply(body: ReplyRequest):
 
 @router.get(
     "/{invoice_id:uuid}",
+    response_model=InvoiceDetailResponse,
     summary="Get invoice details",
     description="Returns the full invoice record. Available immediately after the `done` SSE event.",
 )

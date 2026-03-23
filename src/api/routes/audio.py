@@ -2,15 +2,10 @@
 import io
 from fastapi import APIRouter, HTTPException, UploadFile, File, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
 from src.config import OPENAI_API_KEY
+from src.db.models import TTSRequest
 
 router = APIRouter(prefix="/audio", tags=["Audio"])
-
-
-class TTSRequest(BaseModel):
-    text: str
-    voice: str = "alloy"
 
 
 def _openai_client():

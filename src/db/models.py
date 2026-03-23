@@ -1,5 +1,5 @@
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, computed_field
 
 
@@ -25,6 +25,7 @@ class Client(BaseModel):
     email: Optional[str] = None
     address: Optional[str] = None
     company: Optional[str] = None
+    phone: Optional[str] = None
 
 
 class InvoiceLine(BaseModel):
@@ -49,3 +50,31 @@ def compute_totals(lines: list[InvoiceLine], tva_rate: Decimal) -> InvoiceTotals
     tva_amount = (subtotal * tva_rate / 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     total = (subtotal + tva_amount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     return InvoiceTotals(subtotal=subtotal, tva_amount=tva_amount, total=total)
+
+
+class InvoiceLineResponse(BaseModel):
+    description: str
+    qty: float
+    unit_price: float
+    total: float
+
+
+class InvoiceDetailResponse(BaseModel):
+    id: str
+    user_id: str
+    status: str
+    invoice_number: Optional[str] = None
+    issue_date: str
+    due_date: Optional[str] = None
+    payment_terms: Optional[str] = None
+    client_id: Optional[str] = None
+    lines: list[InvoiceLineResponse] = []
+    tva_rate: Optional[float] = None
+    subtotal: Optional[float] = None
+    tva_amount: Optional[float] = None
+    total: Optional[float] = None
+
+
+class TTSRequest(BaseModel):
+    text: str
+    voice: Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"] = "alloy"
