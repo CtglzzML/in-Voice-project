@@ -289,16 +289,22 @@ input:focus {
 }
 
 .return-btn {
-  align-self: flex-end;
+  margin: 10px 22px 0 auto;
+  display: block;
+
   min-width: 148px;
   min-height: 52px;
+
   border: none;
   border-radius: 14px;
+
   background: var(--accent);
   color: #fff;
+
   font-family: "Inter", sans-serif;
   font-size: 1rem;
   font-weight: 700;
+
   cursor: pointer;
   transition: transform 0.18s ease, opacity 0.18s ease;
 }
@@ -329,7 +335,7 @@ input:focus {
   }
 
   .return-btn {
-    align-self: flex-start;
+    align-self: center;
   }
 }
 
@@ -398,7 +404,7 @@ input:focus {
   padding-bottom: 24px;
 }
 .invoice-editor-card {
-  padding: 0;
+  padding: 0 0 20px;
   overflow: hidden;
 }
 
@@ -585,4 +591,148 @@ input:focus {
 .card .grid {
   padding-left: 10px;
   padding-right: 10px;
+}
+/* ===== INVOICE ITEMS TABLE ===== */
+
+.item-list {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #fff;
+}
+
+.item-list tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.item-list tr:last-child {
+  border-bottom: none;
+}
+
+.item-list td {
+  padding: 12px 14px;
+  vertical-align: middle;
+  font-size: 0.92rem;
+  color: #222;
+}
+
+.item-list td:nth-child(1) {
+  width: 44%;
+}
+
+.item-list td:nth-child(2) {
+  width: 14%;
+}
+
+.item-list td:nth-child(3) {
+  width: 18%;
+}
+
+.item-list td:nth-child(4) {
+  width: 16%;
+  text-align: right;
+}
+
+.item-list td:nth-child(5) {
+  width: 8%;
+  text-align: right;
+}
+
+.item-list td[colspan="5"] {
+  text-align: center;
+  color: #555;
+  padding: 28px 14px;
+  font-size: 0.94rem;
+}
+
+/* Row inputs inside invoice preview */
+.item-row input {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 10px;
+  background: #efefef;
+  color: #222;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.item-row input:focus {
+  box-shadow: 0 0 0 2px rgba(98, 88, 143, 0.18);
+}
+
+.item-total-cell {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.item-total {
+  font-weight: 600;
+  color: #111;
+}
+
+/* Delete button */
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+/* Add item button */
+#add-line-item {
+  margin-top: 14px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+/* Small adjustment so table + button breathe nicely */
+.preview-table {
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.preview-totals {
+  width: 200px;
+  margin-left: auto;
+  margin-top: 18px;
+}
+
+@media (max-width: 700px) {
+  .item-list td {
+    padding: 10px 8px;
+  }
+
+  .item-row input {
+    min-height: 34px;
+    font-size: 0.85rem;
+    padding: 0 8px;
+  }
+
+  #add-line-item {
+    width: 100%;
+    margin-top: 12px;
+  }
 }
