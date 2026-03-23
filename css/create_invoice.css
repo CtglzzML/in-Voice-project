@@ -123,11 +123,22 @@
   font-weight: 400;
 }
 
+.grid input {
+  height: 42px;
+}
+
 .card h4 {
   margin: 8px 0 12px;
+  margin-top: 18px;
   color: #000;
   font-size: 0.95rem;
   font-weight: 400;
+}
+
+.card h4,
+.card .grid {
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 input {
@@ -158,7 +169,7 @@ input:focus {
 
 .preview-btn {
   min-width: 150px;
-  min-height: 48px;
+  min-height: 40px;
   border: none;
   border-radius: 14px;
   background: var(--accent);
@@ -173,232 +184,7 @@ input:focus {
 .invoice-editor-card {
   display: flex;
   flex-direction: column;
-  padding-bottom: 18px;
-}
-
-.invoice-editor-card h4 {
-  margin: 18px 22px 12px;
-  color: #000;
-  font-size: 1rem;
-  font-weight: 400;
-}
-
-.table {
-  width: calc(100% - 44px);
-  margin: 0 22px 14px;
-  border-collapse: collapse;
-  background: #efefef;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.table thead {
-  background: #62588f;
-  color: #fff;
-}
-
-.table th {
-  padding: 13px 10px;
-  text-align: left;
-  font-size: 0.92rem;
-  font-weight: 400;
-}
-
-.table td {
-  padding: 12px 10px;
-  font-size: 0.92rem;
-  color: #222;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  vertical-align: middle;
-}
-
-.table tbody tr:first-child td {
-  border-top: none;
-}
-
-#item-list td[colspan="5"] {
-  text-align: center;
-  color: #444;
-  padding: 26px 10px;
-}
-
-.item-row input {
-  min-height: 36px;
-  padding: 0 10px;
-  border-radius: 10px;
-  background: #fff;
-}
-
-.item-total-cell {
-  white-space: nowrap;
-}
-
-.item-total {
-  font-weight: 600;
-}
-
-.delete-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-
-#add-line-item {
-  margin: 0 22px 18px;
-  align-self: flex-start;
-  min-height: 40px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 12px;
-  background: #62588f;
-  color: #fff;
-  font-family: "Inter", sans-serif;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-
-.totals {
-  margin: 0 22px;
-  align-self: flex-end;
-  min-width: 240px;
-}
-
-.totals p {
-  margin: 0 0 8px;
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  color: #111;
-  font-size: 0.95rem;
-}
-
-.totals p strong {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.return-btn {
-  align-self: flex-end;
-  min-width: 148px;
-  min-height: 52px;
-  border: none;
-  border-radius: 14px;
-  background: var(--accent);
-  color: #fff;
-  font-family: "Inter", sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-
-@media (max-width: 1200px) {
-  .invoice-container {
-    padding: 28px 24px 24px;
-    gap: 22px;
-  }
-
-  .grid {
-    gap: 12px 14px;
-  }
-}
-
-@media (max-width: 980px) {
-  .invoice-container {
-    flex-direction: column;
-  }
-
-  .left-panel,
-  .right-panel {
-    width: 100%;
-  }
-
-  .preview-header {
-    justify-content: flex-start;
-  }
-
-  .return-btn {
-    align-self: flex-start;
-  }
-}
-
-@media (max-width: 700px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .record-btn {
-    min-height: 68px;
-    font-size: 0.98rem;
-  }
-
-  .table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-}
-
-@media (max-width: 520px) {
-  .invoice-container {
-    padding: 18px 14px 20px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card h3,
-  .invoice-editor-card h3 {
-    padding: 14px 16px;
-    font-size: 1rem;
-  }
-
-  .card > *:not(h3),
-  .invoice-editor-card h4,
-  .table,
-  #add-line-item,
-  .totals {
-    margin-left: 16px;
-    margin-right: 16px;
-  }
-
-  .record-btn {
-    width: calc(100% - 32px);
-  }
-
-  .preview-btn,
-  .return-btn {
-    width: 100%;
-  }
-
-  .totals {
-    min-width: 0;
-    width: calc(100% - 32px);
-  }
-}
-.grid input {
-  height: 42px;
-}
-.card h4 {
-  margin-top: 18px;
-}
-.invoice-editor-card {
-  padding-bottom: 24px;
-}
-.invoice-editor-card {
-  padding: 0;
+  padding: 0 0 20px;
   overflow: hidden;
 }
 
@@ -418,12 +204,6 @@ input:focus {
   font-size: 1.1rem;
   font-weight: 400;
   color: #fff;
-}
-
-.preview-btn {
-  min-width: 150px;
-  min-height: 40px;
-  border-radius: 14px;
 }
 
 .preview-sheet {
@@ -506,18 +286,116 @@ input:focus {
   font-weight: 400;
 }
 
-.preview-empty {
-  min-height: 135px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 26px;
+/* ===== INVOICE ITEMS TABLE ===== */
+
+.item-list {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #fff;
 }
 
-.preview-empty p {
-  margin: 0;
-  font-size: 0.95rem;
+.item-list tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.item-list tr:last-child {
+  border-bottom: none;
+}
+
+.item-list td {
+  padding: 12px 14px;
+  vertical-align: middle;
+  font-size: 0.92rem;
+  color: #222;
+}
+
+.item-list td:nth-child(1) {
+  width: 44%;
+}
+
+.item-list td:nth-child(2) {
+  width: 14%;
+}
+
+.item-list td:nth-child(3) {
+  width: 18%;
+}
+
+.item-list td:nth-child(4) {
+  width: 16%;
+  text-align: right;
+}
+
+.item-list td:nth-child(5) {
+  width: 8%;
+  text-align: right;
+}
+
+.item-list td[colspan="5"] {
+  text-align: center;
+  color: #555;
+  padding: 28px 14px;
+  font-size: 0.94rem;
+}
+
+.item-row input {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 10px;
+  background: #efefef;
+  color: #222;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.item-row input:focus {
+  box-shadow: 0 0 0 2px rgba(98, 88, 143, 0.18);
+}
+
+.item-total-cell {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.item-total {
+  font-weight: 600;
   color: #111;
+}
+
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+#add-line-item {
+  margin-top: 14px;
+  margin-left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
 }
 
 .preview-totals {
@@ -545,7 +423,63 @@ input:focus {
   font-weight: 400;
 }
 
+.return-btn {
+  margin: 10px 22px 0 auto;
+  display: block;
+  min-width: 148px;
+  min-height: 52px;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+@media (max-width: 1200px) {
+  .invoice-container {
+    padding: 28px 24px 24px;
+    gap: 22px;
+  }
+
+  .grid {
+    gap: 12px 14px;
+  }
+}
+
+@media (max-width: 980px) {
+  .invoice-container {
+    flex-direction: column;
+  }
+
+  .left-panel,
+  .right-panel {
+    width: 100%;
+  }
+
+  .preview-header {
+    justify-content: flex-start;
+  }
+
+  .return-btn {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 @media (max-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .record-btn {
+    min-height: 68px;
+    font-size: 0.98rem;
+  }
+
   .editor-topbar {
     flex-direction: column;
     align-items: flex-start;
@@ -577,12 +511,47 @@ input:focus {
     padding: 11px 10px;
   }
 
+  .item-list td {
+    padding: 10px 8px;
+  }
+
+  .item-row input {
+    min-height: 34px;
+    font-size: 0.85rem;
+    padding: 0 8px;
+  }
+
+  #add-line-item {
+    width: 100%;
+    margin-top: 12px;
+  }
+
   .preview-totals {
     width: 100%;
   }
 }
-.card h4,
-.card .grid {
-  padding-left: 10px;
-  padding-right: 10px;
+
+@media (max-width: 520px) {
+  .invoice-container {
+    padding: 18px 14px 20px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card h3,
+  .invoice-editor-card h3 {
+    padding: 14px 16px;
+    font-size: 1rem;
+  }
+
+  .record-btn {
+    width: calc(100% - 32px);
+  }
+
+  .preview-btn,
+  .return-btn {
+    width: 100%;
+  }
 }
