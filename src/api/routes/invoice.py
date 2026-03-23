@@ -4,7 +4,7 @@ import json
 from fastapi import APIRouter, HTTPException
 from sse_starlette.sse import EventSourceResponse
 from src.api.schemas import StartRequest, StartResponse, ReplyRequest
-from src.sessions.manager import session_store, SessionNotFound, SessionNotAwaiting
+from src.sessions.manager import session_store
 from src.agent.runner import run_agent
 from src.db.supabase import get_invoice
 from src.db.models import InvoiceDetailResponse
@@ -37,10 +37,7 @@ async def start(body: StartRequest):
     ),
 )
 async def stream(session_id: str):
-    try:
-        session = session_store.get(session_id)
-    except SessionNotFound:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session = session_store.get(session_id)  # raises SessionNotFound → caught globally
 
     already_connected = session["stream_connected"]
     session["stream_connected"] = True
@@ -78,12 +75,7 @@ async def stream(session_id: str):
     ),
 )
 async def reply(body: ReplyRequest):
-    try:
-        await session_store.push_reply(body.session_id, body.reply)
-    except SessionNotFound:
-        raise HTTPException(status_code=404, detail="Session not found")
-    except SessionNotAwaiting:
-        raise HTTPException(status_code=409, detail="Session is not awaiting a reply")
+    await session_store.push_reply(body.session_id, body.reply)
     return {}
 
 

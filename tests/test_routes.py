@@ -107,3 +107,23 @@ async def test_transcribe_passes_language_to_whisper(monkeypatch):
     assert resp.status_code == 200
     call_kwargs = mock_client.audio.transcriptions.create.call_args.kwargs
     assert call_kwargs["language"] == "en"
+
+
+@pytest.mark.asyncio
+async def test_session_not_found_returns_404_from_handler():
+    """SessionNotFound raised in route must be caught by the global handler."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        resp = await ac.get("/api/v1/invoice/stream?session_id=does-not-exist")
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Session not found"
+
+
+@pytest.mark.asyncio
+async def test_session_not_awaiting_returns_409_from_handler():
+    """SessionNotAwaiting raised in route must be caught by the global handler."""
+    from src.sessions.manager import session_store
+    sid = session_store.create("u1")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        resp = await ac.post("/api/v1/invoice/reply", json={"session_id": sid, "reply": "hi"})
+    assert resp.status_code == 409
+    assert resp.json()["detail"] == "Session is not awaiting a reply"
