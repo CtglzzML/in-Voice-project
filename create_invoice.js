@@ -59,8 +59,8 @@ if (returnBtn) {
 }
 
 const seePreviewBtn = document.querySelector('.preview-btn');
-if (returnBtn) {
-    returnBtn.addEventListener('click', () => {
+if (seePreviewBtn) {
+    seePreviewBtn.addEventListener('click', () => {
         window.location.href = 'invoice_preview.html';
     });
 }
