@@ -104,6 +104,17 @@ body {
 #contact-us-success-modal,
 #contact-us-failure-modal {
   display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1000;
+  width: min(400px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  padding: 24px 22px;
+  text-align: center;
 }
 
 .orange-btn {

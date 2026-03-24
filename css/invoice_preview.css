@@ -148,6 +148,51 @@
 .popup-card {
   display: none;
 }
+.popup-card {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1000;
+  width: min(420px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  padding: 24px 22px;
+  text-align: center;
+}
+
+.popup-card p {
+  margin: 0 0 18px;
+  color: #111;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.popup-card .btn {
+  width: 100%;
+}
+
+.popup-card .btn + .btn {
+  margin-top: 12px;
+}
+
+.small-popup {
+  width: min(360px, calc(100vw - 32px));
+  padding: 22px 20px;
+}
+
+.small-popup-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.small-popup-actions .btn {
+  flex: 1;
+  width: auto;
+}
 
 @media (max-width: 1100px) {
   .preview-page {
