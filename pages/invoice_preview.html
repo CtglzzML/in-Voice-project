@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice Preview</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/color_scheme.css" />
+  <link rel="stylesheet" href="../css/invoice_preview.css" />
+</head>
+<body>
+  <main class="preview-page">
+
+    <section class="preview-card">
+      <h2 class="card-title">INVOICE PREVIEW</h2>
+
+      <div class="pdf-frame">
+        <p>Invoice preview will appear here</p>
+    </div>
+    </section>
+
+    <section class="details-card">
+      <h2 class="card-title">INVOICE DETAILS</h2>
+
+      <div class="details-content">
+        <h3 class="section-label">Client</h3>
+
+        <div class="details-grid">
+          <div class="field-group">
+            <label for="client-name">Client co. name</label>
+            <input id="client-name" type="text" value="xClient Inc." />
+          </div>
+
+          <div class="field-group">
+            <label for="client-address">Address</label>
+            <input id="client-address" type="text" value="Ficticious Rd. 456" />
+          </div>
+
+          <div class="field-group">
+            <label for="client-email">Email</label>
+            <input id="client-email" type="email" value="hi@client.no" />
+          </div>
+
+          <div class="field-group">
+            <label for="client-phone">Phone</label>
+            <input id="client-phone" type="text" value="+346234345435" />
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button type="button" class="btn btn-secondary">Go back to edit</button>
+          <button type="button" class="btn btn-primary">Create invoice</button>
+        </div>
+
+        <p class="note">*Note: Final invoice can’t be changed</p>
+      </div>
+    </section>
+
+    <div class="logo-mark" aria-label="Invoice logo">
+      <span class="logo-i">i</span><span class="logo-v">V</span>
+    </div>
+
+  </main>
+
+  <template id="invoice-created-template">
+    <div class="popup-card">
+      <p>Invoice Created!</p>
+      <button class="btn btn-secondary">Login to save invoice</button>
+      <button class="btn btn-secondary">Go to dashboard</button>
+      <button class="btn btn-primary">Download PDF</button>
+    </div>
+  </template>
+
+  <template id="has-account-template">
+    <div class="popup-card small-popup">
+      <p>Already have an account?</p>
+      <div class="small-popup-actions">
+        <button class="btn btn-secondary" name="has-account">Yes</button>
+        <button class="btn btn-primary" name="has-account">No</button>
+      </div>
+    </div>
+  </template>
+</body>
+</html>
