@@ -381,7 +381,6 @@ input:focus {
 
 #add-line-item {
   margin-top: 14px;
-  margin-left: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -519,11 +518,6 @@ input:focus {
     min-height: 34px;
     font-size: 0.85rem;
     padding: 0 8px;
-  }
-
-  #add-line-item {
-    width: 100%;
-    margin-top: 12px;
   }
 
   .preview-totals {
