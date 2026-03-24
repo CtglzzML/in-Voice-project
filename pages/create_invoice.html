@@ -1,17 +1,14 @@
-
-<!--use this one below instead:-->
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Invoice</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Invoice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet" />
   <link rel="stylesheet" href="../css/color_scheme.css" />
   <link rel="stylesheet" href="../css/create_invoice.css">
 </head>
@@ -87,59 +84,59 @@
     <div class="right-panel">
 
       <div class="invoice-editor-card">
-  <div class="editor-topbar">
-    <h3>PREVIEW</h3>
-    <button class="preview-btn">See preview</button>
-  </div>
-
-  <div class="preview-sheet">
-    <div class="preview-top">
-      <div class="preview-company">My company</div>
-
-      <div class="preview-invoice-meta">
-        <h4>INVOICE</h4>
-        <p># ---</p>
-        <span>Date February 4, 2026</span>
-      </div>
-    </div>
-
-    <div class="bill-box">
-      <span>Bill to:</span>
-      <p>xClient Inc.</p>
-    </div>
-
-    <div class="preview-table">
-      <div class="preview-table-head">
-        <span>Description</span>
-        <span>Qty</span>
-        <span>Price</span>
-        <span>Total</span>
-      </div>
-
-      <table class="item-list">
-        <tbody id="item-list-body">
-        </tbody>
-      </table>
-      <button type="button" id="add-line-item">+ Add item</button>
-
-      <div class="preview-totals">
-        <div class="preview-total-row">
-          <span>Subtotal:</span>
-          <span id="total-subtotal">$0.00</span>
+        <div class="editor-topbar">
+          <h3>PREVIEW</h3>
+          <button class="preview-btn">See preview</button>
         </div>
-        <div class="preview-total-row">
-          <span id="total-tva-label">Tax (0%):</span>
-          <span id="total-tva">$0.00</span>
-        </div>
-        <div class="preview-total-divider"></div>
-        <div class="preview-total-row preview-total-final">
-          <span>TOTAL:</span>
-          <span id="total-final">$0.00</span>
+
+        <div class="preview-sheet">
+          <div class="preview-top">
+            <div class="preview-company">My company</div>
+
+            <div class="preview-invoice-meta">
+              <h4>INVOICE</h4>
+              <p># ---</p>
+              <span>Date February 4, 2026</span>
+            </div>
+          </div>
+
+          <div class="bill-box">
+            <span>Bill to:</span>
+            <p>xClient Inc.</p>
+          </div>
+
+          <div class="preview-table">
+            <div class="preview-table-head">
+              <span>Description</span>
+              <span>Qty</span>
+              <span>Price</span>
+              <span>Total</span>
+            </div>
+
+            <table class="item-list">
+              <tbody id="item-list-body">
+              </tbody>
+            </table>
+            <button type="button" id="add-line-item">+ Add item</button>
+
+            <div class="preview-totals">
+              <div class="preview-total-row">
+                <span>Subtotal:</span>
+                <span id="total-subtotal">$0.00</span>
+              </div>
+              <div class="preview-total-row">
+                <span id="total-tva-label">Tax (0%):</span>
+                <span id="total-tva">$0.00</span>
+              </div>
+              <div class="preview-total-divider"></div>
+              <div class="preview-total-row preview-total-final">
+                <span>TOTAL:</span>
+                <span id="total-final">$0.00</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
       <button class="return-btn">Return</button>
 
@@ -153,6 +150,7 @@
   <script src="../js/form-updater.js"></script>
   <script src="../js/agent-stream.js"></script>
   <script src="../js/recorder.js"></script>
+  <script src="../js/create_invoice.js"></script>
 
 </body>
 
