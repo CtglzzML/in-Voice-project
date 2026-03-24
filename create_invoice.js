@@ -54,6 +54,13 @@ taxInput.addEventListener('input', calculateInvoice);
 const returnBtn = document.querySelector('.return-btn');
 if (returnBtn) {
     returnBtn.addEventListener('click', () => {
-        window.location.href = 'dashboard.html';
+        window.location.href = 'landing_page.html';
+    });
+}
+
+const seePreviewBtn = document.querySelector('.preview-btn');
+if (returnBtn) {
+    returnBtn.addEventListener('click', () => {
+        window.location.href = 'invoice_preview.html';
     });
 }

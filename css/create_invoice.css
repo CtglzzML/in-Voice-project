@@ -114,8 +114,8 @@
   align-items: end;
 }
 .grid textarea {
-    width: 200px;
-    height: 7em;
+    width: 300px;
+    height: 8em;
     text-align: left;
     background: #efefef;
     border: none;
