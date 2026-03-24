@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>inVoice - Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="../css/color_scheme.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+</head>
+
+<body>
+
+  <main class="dashboard-page">
+
+    <header class="dashboard-header">
+      <img src="../images/logo.png" alt="inVoice Logo">
+
+      <button class="user-button" type="button">
+        <span>Welcome, User!</span>
+        <span class="user-icon"></span>
+      </button>
+    </header>
+
+    <section class="dashboard-content">
+
+      <article class="card new-invoice-card">
+        <div class="card-header">
+          <h2>New Invoice</h2>
+        </div>
+
+        <div class="card-body large-card-body">
+          <button class="primary-action-btn" type="button">
+            Click to record a new invoice
+          </button>
+        </div>
+      </article>
+
+      <div class="stats-row">
+        <article class="card stat-card">
+          <div class="card-header">
+            <h2>Past Invoices</h2>
+          </div>
+
+          <div class="card-body stat-body">
+            <p class="stat-number" id="past-invoices-stat">0</p>
+            <p class="stat-label">Total Documents</p>
+            <button class="secondary-action-btn" type="button" id="view-history-btn">View History</button>
+          </div>
+        </article>
+
+        <article class="card stat-card">
+          <div class="card-header">
+            <h2>Clients</h2>
+          </div>
+
+          <div class="card-body stat-body">
+            <p class="stat-number" id="clients-stat">5</p>
+            <p class="stat-label">Registered Clients</p>
+            <button class="secondary-action-btn" type="button" id="manage-directory-btn">Manage Directory</button>
+          </div>
+        </article>
+      </div>
+
+    </section>
+  </main>
+
+  <template id="profile-menu-template">
+    <div class="profile-menu">
+      <div class="">
+        <span class="profile-username">Username</span>
+        <img src="" alt="profile picture">
+      </div>
+      <div class="">
+        <a href="#" class="sign-out-link">Sign Out</a>
+      </div>
+    </div>
+  </template>
+  
+</body>
+
+</html>

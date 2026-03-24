@@ -1,0 +1,261 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    font-family: "Inter", sans-serif;
+    background-color: #f3f3f3;
+    color: #1f1f1f;
+}
+
+.page-header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 180px;
+    height: auto;
+    display: block;
+}
+
+.login-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background-color: #d9d9d9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.login-card-header {
+    background-color: #59508a;
+    color: #ffffff;
+    text-align: center;
+    padding: 1rem;
+}
+
+.login-card-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.login-form {
+    padding: 1.2rem 1.5rem 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+
+.form-group label {
+    min-width: 80px;
+    text-align: right;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #222222;
+}
+
+.form-group input {
+    width: 170px;
+    height: 28px;
+    border: none;
+    outline: none;
+    border-radius: 14px;
+    background-color: #f8f8f8;
+    padding: 0 0.9rem;
+    font-size: 0.9rem;
+    color: #222222;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.form-group input::placeholder {
+    color: #555555;
+}
+
+.login-button-wrapper,
+.google-button-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.login-button-wrapper {
+    margin-top: 1.3rem;
+    margin-bottom: 1.1rem;
+}
+
+.login-button {
+    min-width: 122px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background-color: #de7466;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.login-button:hover {
+    background-color: #c86457;
+}
+
+.login-button:active {
+    background-color: #8d4d42;
+    transform: scale(0.98);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.95rem;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background-color: #3a3a3a;
+}
+
+.divider-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #222222;
+}
+
+.google-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid #dadce0;    
+    border-radius: 8px;
+    background-color: #ffffff;
+    background: #fff;
+    color: #222222;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.google-button:hover {
+    background-color: #f5f5f5;
+}
+
+.google-button:active {
+    transform: scale(0.98);
+}
+
+.google-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #4285f4;
+}
+
+.signup-section {
+    margin-top: 0.9rem;
+    text-align: center;
+}
+
+.signup-section p {
+    margin-bottom: 0.45rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1f1f1f;
+}
+
+.signup-button {
+    min-width: 122px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background-color: #59508a;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.signup-button:hover {
+    background-color: #4b4375;
+}
+
+.signup-button:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 520px) {
+    .page-header {
+        padding: 1.5rem 1rem 0;
+    }
+
+    .logo {
+        width: 150px;
+    }
+
+    .login-page {
+        padding: 1rem;
+    }
+
+    .login-card {
+        max-width: 100%;
+    }
+
+    .login-form {
+        padding: 1rem;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-group label {
+        min-width: auto;
+        text-align: left;
+    }
+
+    .form-group input {
+        width: 100%;
+    }
+
+    .divider {
+        gap: 0.4rem;
+    }
+}

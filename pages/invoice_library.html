@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>inVoice - Library</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../css/color_scheme.css" />
+  <link rel="stylesheet" href="../css/invoice_library.css" />
+</head>
+
+<body>
+  <main class="library-page">
+
+    <header class="library-header">
+      <div class="library-brand">
+        <img src="../images/logo.png" alt="inVoice Logo" class="library-logo">
+        <h1>Library</h1>
+      </div>
+
+      <button class="user-button" type="button" aria-label="User menu">
+        <span class="user-icon"></span>
+      </button>
+    </header>
+
+    <section class="library-layout">
+
+      <section class="library-list-section">
+        <div>
+            <div class="" id="">
+                <input type="text" class="" placeholder="search">
+                <button type="submit" class="">🔍</button>
+            </div>
+            <ul class="suggestion-list hidden"></ul>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="library-table">
+            <thead>
+              <tr>
+                <th>File name</th>
+                <th>Client</th>
+                <th>Email</th>
+                <th>VAT</th>
+                <th>Phone</th>
+                <th>Country</th>
+                <th>City</th>
+                <th>Code</th>
+                <th>ID</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+
+            <tbody id="library-items">
+              <tr class="empty-state-row">
+                <td colspan="10">
+                  <div class="empty-state">
+                    <p class="empty-state-title">No invoices yet</p>
+                    <p class="empty-state-text">Your saved invoices will appear here once you create them.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="preview-panel">
+        <div class="preview-card">
+          <div class="preview-card-header">
+            <h2 class="preview-title">Invoice preview</h2>
+            <button class="preview-menu-btn" type="button" aria-label="More options">•••</button>
+          </div>
+
+          <div class="preview-sheet">
+            <div class="preview-placeholder">
+              <p class="preview-placeholder-title">No invoice selected</p>
+              <p class="preview-placeholder-text">Select an invoice from the library to preview it here.</p>
+            </div>
+          </div>
+
+          <div class="preview-meta">
+            <div class="tags-row">
+              <span class="meta-label">Tags:</span>
+              <div class="tags-list" id="tags-list">
+  <button class="add-tag-btn" type="button" aria-label="Add tag">+</button>
+</div>
+            </div>
+
+            <div class="description-block">
+              <p class="meta-label">Description</p>
+              <p class="description-text">No description available yet.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </section>
+  </main>
+</body>
+
+<!-- user profile menu -->
+<template id="user-profile-menu-template">
+  <div class="profile-menu">
+    <span class="profile-username">Username</span>
+    <a href="#">Go to Dashboard</a>
+    <a href="#">Go to Customer Info Page</a>
+    <a href="#">Sign Out</a>
+  </div>
+</template>
+
+<!-- edit entry menu -->
+<template id="invoice-entry-menu-template">
+  <div class="entry-menu">
+    <button type="button">Edit</button>
+    <button type="button">Rename</button>
+    <button type="button">Download</button>
+  </div>
+</template>
+
+<!-- add tag menu -->
+<template id="add-tag-menu-template">
+  <div class="add-tag-menu">
+    <label for="new-tag-input">Add tag</label>
+    <input id="new-tag-input" type="text" placeholder="Type a tag" />
+    <button type="button">+</button>
+  </div>
+</template>
+
+<!-- template for tag -->
+<template id="tag-template">
+  <li class="tag-chip"><button>⚪</button>Sample</li>
+</template>
+
+<!-- default when no items in library -->
+<template id="empty-library-row-template">
+  <tr class="empty-state-row">
+    <td colspan="10">
+      <div class="empty-state">
+        <p class="empty-state-title">No invoices yet</p>
+        <p class="empty-state-text">Your saved invoices will appear here once you create them.</p>
+      </div>
+    </td>
+  </tr>
+</template>
+
+<!-- template for item in library -->
+<template id="library-item-row-template">
+  <tr data-db-id="">
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</template>
+
+</html>
