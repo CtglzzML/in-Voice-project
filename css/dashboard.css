@@ -154,6 +154,59 @@
 
 .profile-menu {
   display: none;
+  position: absolute;
+  top: 88px;
+  right: 32px;
+  z-index: 1000;
+  min-width: 220px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.profile-menu > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.profile-username {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.profile-menu img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #efefef;
+}
+
+.profile-menu > div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.sign-out-link {
+  display: block;
+  padding: 9px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.sign-out-link:hover {
+  background: #f3f3f3;
 }
 
 @media (max-width: 900px) {

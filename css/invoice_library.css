@@ -307,6 +307,132 @@
 .add-tag-menu {
   display: none;
 }
+.profile-menu,
+.entry-menu,
+.add-tag-menu {
+  position: absolute;
+  z-index: 20;
+  min-width: 180px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.profile-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-username {
+  display: block;
+  padding: 6px 8px 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.profile-menu a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #222;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.profile-menu a:hover {
+  background: #f3f3f3;
+}
+
+.entry-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entry-menu button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  color: #222;
+  cursor: pointer;
+}
+
+.entry-menu button:hover {
+  background: #f3f3f3;
+}
+
+.add-tag-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.add-tag-menu label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.add-tag-menu input {
+  flex: 1;
+  min-height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 10px;
+  background: #efefef;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.add-tag-menu input:focus {
+  box-shadow: 0 0 0 2px rgba(98, 88, 143, 0.18);
+}
+
+.add-tag-menu button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: #333;
+  font-size: 0.88rem;
+}
+
+.tag-chip button {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--accent);
+  cursor: pointer;
+}
 
 @media (max-width: 1150px) {
   .library-page {
