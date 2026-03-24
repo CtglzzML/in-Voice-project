@@ -43,12 +43,12 @@
   padding: 16px 22px;
 }
 
-.card > *:not(h3) {
+.card>*:not(h3) {
   margin-left: 22px;
   margin-right: 22px;
 }
 
-.card > :last-child {
+.card> :last-child {
   margin-bottom: 20px;
 }
 
@@ -113,12 +113,13 @@
   margin-bottom: 18px;
   align-items: end;
 }
+
 .grid textarea {
-    width: 300px;
-    height: 8em;
-    text-align: left;
-    background: #efefef;
-    border: none;
+  width: 300px;
+  height: 8em;
+  text-align: left;
+  background: #efefef;
+  border: none;
 }
 
 .grid label {
@@ -284,6 +285,7 @@ input:focus {
 
 .preview-table-head {
   background: #62588f;
+  display: flex;
   color: #fff;
   display: grid;
   grid-template-columns: 2.3fr 0.8fr 1fr 1fr;
@@ -346,9 +348,16 @@ input:focus {
   font-size: 0.94rem;
 }
 
+.item-row {
+  display: grid;
+  grid-template-columns: 1.6fr 0.7fr 0.9fr 0.9fr 20px;
+  justify-content: start;
+}
+
 .item-row input {
   width: 100%;
   min-height: 38px;
+  min-width: 5em;
   padding: 0 10px;
   border: none;
   border-radius: 10px;
@@ -366,6 +375,7 @@ input:focus {
 .item-total-cell {
   white-space: nowrap;
   text-align: right;
+  align-self: center;
 }
 
 .item-total {
@@ -384,6 +394,7 @@ input:focus {
   line-height: 1;
   cursor: pointer;
   transition: transform 0.18s ease, opacity 0.18s ease;
+  align-self: end;
 }
 
 #add-line-item {
@@ -511,7 +522,10 @@ input:focus {
   }
 
   .preview-table-head {
-    grid-template-columns: 1.6fr 0.7fr 0.9fr 0.9fr;
+    box-sizing: border-box;
+    grid-template-columns: 1.6fr 0.7fr 0.9fr 0.9fr 20px;
+    justify-content: start;
+    max-width: 100%;
     font-size: 0.82rem;
     gap: 8px;
     padding: 11px 10px;

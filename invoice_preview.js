@@ -25,3 +25,27 @@ if (createBtn) {
         });
     });
 }
+
+const fileInput = document.getElementById('company-logo');
+const preview = document.getElementById('logo-preview');
+const labelText = document.getElementById('label-text');
+
+fileInput.addEventListener('change', function() {
+  const file = this.files[0]; // Get the first selected file
+
+  if (file) {
+    const reader = new FileReader();
+
+    // When the file is finished being read...
+    reader.addEventListener('load', function() {
+      // 1. Set the <img> src to the file data
+      preview.setAttribute('src', this.result);
+      // 2. Show the image
+      preview.style.display = 'block';
+      // 3. Hide the placeholder text
+      labelText.style.display = 'none';
+    });
+
+    reader.readAsDataURL(file);
+  }
+});

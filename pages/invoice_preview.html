@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,14 +8,13 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
 
   <link rel="stylesheet" href="../css/color_scheme.css" />
   <link rel="stylesheet" href="../css/invoice_preview.css" />
 </head>
+
 <body>
   <main class="preview-page">
 
@@ -23,7 +23,7 @@
 
       <div class="pdf-frame">
         <p>Invoice preview will appear here</p>
-    </div>
+      </div>
     </section>
 
     <section class="details-card">
@@ -33,8 +33,11 @@
 
         <div class="details-grid">
           <div class="field-group">
-            <label for="company-logo" class="custom-file-upload"></label>
-            <input id="company-logo" type="file" accept="image/*" value="xClient Inc." />
+            <label for="company-logo" class="custom-file-upload" id="logo-label">
+              <span id="label-text">Upload Logo</span>
+              <img id="logo-preview" src="" alt="Logo Preview">
+            </label>
+            <input id="company-logo" type="file" accept="image/*" />
           </div>
         </div>
 
@@ -74,4 +77,5 @@
 
   <script src="../invoice_preview.js"></script>
 </body>
+
 </html>
