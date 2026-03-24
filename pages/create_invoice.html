@@ -26,7 +26,21 @@
       <!-- Voice Control -->
       <div class="card">
         <h3>VOICE CONTROL</h3>
-        <button class="record-btn">🎤 Start recording</button>
+        <button id="record-btn" class="record-btn">🎤 Start recording</button>
+
+        <div id="agent-status" class="hidden">
+          <div class="spinner"></div>
+          <span id="status-text">L'agent réfléchit...</span>
+        </div>
+
+        <div id="question-box" class="hidden">
+          <p id="question-text"></p>
+          <div class="question-reply">
+            <input id="reply-input" type="text" placeholder="Votre réponse...">
+            <button id="reply-mic-btn">🎤</button>
+            <button id="reply-send-btn">Envoyer</button>
+          </div>
+        </div>
 
         <div id="suggestions">
           <p>Available voice commands</p>
@@ -103,26 +117,24 @@
       </div>
 
       <table class="item-list">
-        <tr>
-        </tr>
+        <tbody id="item-list-body">
+        </tbody>
       </table>
       <button type="button" id="add-line-item">+ Add item</button>
 
       <div class="preview-totals">
-
-      <div class="preview-totals">
         <div class="preview-total-row">
           <span>Subtotal:</span>
-          <span>$0.00</span>
+          <span id="total-subtotal">$0.00</span>
         </div>
         <div class="preview-total-row">
-          <span>Tax (0%):</span>
-          <span>$0.00</span>
+          <span id="total-tva-label">Tax (0%):</span>
+          <span id="total-tva">$0.00</span>
         </div>
         <div class="preview-total-divider"></div>
         <div class="preview-total-row preview-total-final">
           <span>TOTAL:</span>
-          <span>$0.00</span>
+          <span id="total-final">$0.00</span>
         </div>
       </div>
     </div>
@@ -134,6 +146,13 @@
     </div>
 
   </div>
+
+  <script>
+    window.INVOICE_USER_ID = "test-user-1"; // TODO: remplacer par l'ID de session réel
+  </script>
+  <script src="../js/form-updater.js"></script>
+  <script src="../js/agent-stream.js"></script>
+  <script src="../js/recorder.js"></script>
 
 </body>
 
