@@ -30,6 +30,60 @@ function getStoredInvoice() {
     }
 }
 
+function getSavedInvoices() {
+    const raw = localStorage.getItem('savedInvoices');
+    if (!raw) return [];
+
+    try {
+        return JSON.parse(raw);
+    } catch (error) {
+        console.error('Error reading saved invoices:', error);
+        return [];
+    }
+}
+
+function saveInvoiceToLibrary() {
+    const currentInvoice = getStoredInvoice();
+    if (!currentInvoice) return false;
+
+    const savedInvoices = getSavedInvoices();
+
+    const invoiceToSave = {
+        dbId: Date.now().toString(),
+        fileName: currentInvoice.invoiceNumber
+            ? `INV-${currentInvoice.invoiceNumber}`
+            : `INV-${Date.now()}`,
+        client: currentInvoice.clientName || '-',
+        email: currentInvoice.clientEmail || '-',
+        vat: currentInvoice.taxPercent != null ? `${currentInvoice.taxPercent}%` : '0%',
+        phone: currentInvoice.clientPhone || '-',
+        country: currentInvoice.clientAddress || '-',
+        city: '-',
+        code: '-',
+        id: currentInvoice.invoiceNumber || Date.now().toString(),
+        date: currentInvoice.invoiceDate || '',
+        description: currentInvoice.comment || 'No description available yet.',
+        tags: [],
+        fullInvoice: currentInvoice
+    };
+
+    const alreadyExists = savedInvoices.some(invoice => {
+        return (
+            invoice.fullInvoice &&
+            invoice.fullInvoice.invoiceNumber === currentInvoice.invoiceNumber &&
+            invoice.fullInvoice.invoiceDate === currentInvoice.invoiceDate &&
+            invoice.fullInvoice.clientName === currentInvoice.clientName
+        );
+    });
+
+    if (!alreadyExists) {
+        savedInvoices.unshift(invoiceToSave);
+        localStorage.setItem('savedInvoices', JSON.stringify(savedInvoices));
+    }
+
+    return true;
+}
+
 function renderInvoicePreview() {
     const data = getStoredInvoice();
 
@@ -125,6 +179,25 @@ function renderInvoicePreview() {
     `;
 }
 
+function hidePopupBeforePrint() {
+    const popup = document.querySelector('.popup-card');
+    if (popup) {
+        popup.dataset.previousDisplay = popup.style.display || 'block';
+        popup.style.display = 'none';
+    }
+}
+
+function restorePopupAfterPrint() {
+    const popup = document.querySelector('.popup-card');
+    if (popup) {
+        popup.style.display = popup.dataset.previousDisplay || 'block';
+    }
+}
+
+window.addEventListener('afterprint', () => {
+    restorePopupAfterPrint();
+});
+
 if (backBtn) {
     backBtn.addEventListener('click', () => {
         window.location.href = 'create_invoice.html';
@@ -133,6 +206,12 @@ if (backBtn) {
 
 if (createBtn) {
     createBtn.addEventListener('click', () => {
+        const savedOk = saveInvoiceToLibrary();
+        if (!savedOk) {
+            alert('No invoice data found to save.');
+            return;
+        }
+
         if (document.querySelector('.popup-card')) return;
 
         const template = document.getElementById('invoice-created-template');
@@ -145,12 +224,15 @@ if (createBtn) {
         popup.addEventListener('click', (e) => {
             if (e.target.tagName !== 'BUTTON') return;
 
-            if (e.target.innerText === 'Login to save invoice') {
-                window.location.href = 'login_page.html';
-            } else if (e.target.innerText === 'Go to dashboard') {
-                window.location.href = 'dashboard.html';
+            if (e.target.innerText === 'Go to invoice library') {
+                window.location.href = 'invoice_library.html';
             } else if (e.target.innerText === 'Download PDF') {
+                hidePopupBeforePrint();
                 window.print();
+
+                setTimeout(() => {
+                    restorePopupAfterPrint();
+                }, 500);
             }
         });
     });
