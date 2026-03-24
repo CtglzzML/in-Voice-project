@@ -558,7 +558,7 @@ input:focus {
 
 /* AI Agent zones */
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 #agent-status {

@@ -1,8 +1,6 @@
 // js/recorder.js
 // Responsabilité : capture audio (Web Speech API + fallback Whisper)
 
-const BASE_URL = 'http://localhost:8000/api/v1';
-
 const recorder = (() => {
   let recognition = null;
   let mediaRecorder = null;
@@ -15,14 +13,14 @@ const recorder = (() => {
     const replyInput = document.querySelector('#reply-input');
 
     // Guards : si un ID est manquant dans le HTML, log clair au lieu d'un crash silencieux
-    if (!recordBtn) { console.error('recorder.js: #record-btn introuvable dans le HTML'); return; }
-    if (!replyMicBtn) { console.error('recorder.js: #reply-mic-btn introuvable'); return; }
-    if (!replySendBtn) { console.error('recorder.js: #reply-send-btn introuvable'); return; }
-    if (!replyInput) { console.error('recorder.js: #reply-input introuvable'); return; }
+    if (!recordBtn) { console.error('recorder.js: #record-btn not found in HTML'); return; }
+    if (!replyMicBtn) { console.error('recorder.js: #reply-mic-btn not found'); return; }
+    if (!replySendBtn) { console.error('recorder.js: #reply-send-btn not found'); return; }
+    if (!replyInput) { console.error('recorder.js: #reply-input not found'); return; }
 
     recordBtn.addEventListener('click', () => {
       recordBtn.disabled = true;
-      recordBtn.textContent = '🎤 Écoute...';
+      recordBtn.textContent = '🎤 Listening...';
       isRecordingForReply = false;
       _startCapture(_onMainTranscript);
     });
@@ -100,8 +98,8 @@ const recorder = (() => {
         }
       }, 10000);
     }).catch(err => {
-      console.error('Accès micro refusé:', err);
-      _showError('Accès au microphone refusé.');
+      console.error('Microphone access denied:', err);
+      _showError('Microphone access denied.');
     });
   }
 
@@ -117,14 +115,14 @@ const recorder = (() => {
       const data = await res.json();
       return data.transcript || '';
     } catch (e) {
-      _showError(`Erreur transcription : ${e.message}`);
+      _showError(`Transcription error: ${e.message}`);
       return '';
     }
   }
 
   function _onMainTranscript(transcript) {
     if (!transcript) {
-      _showError('Aucun texte capté. Réessayez.');
+      _showError('No speech detected. Try again.');
       const btn = document.querySelector('#record-btn');
       btn.disabled = false;
       btn.textContent = '🎤 Start recording';

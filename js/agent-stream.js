@@ -1,20 +1,54 @@
 // js/agent-stream.js
-// Responsabilité : SSE + POST /start + POST /reply
+// Responsibility: SSE connection + POST /start + POST /reply
 
-const BASE_URL = 'http://localhost:8000/api/v1';
+const BASE_URL = window.INVOICE_BASE_URL ?? 'http://localhost:8000/api/v1';
 
 const agentStream = (() => {
   let sessionId = null;
   let eventSource = null;
 
-  async function start(transcript) {
-    const userId = window.INVOICE_USER_ID;
-    if (!userId) {
-      _showError('INVOICE_USER_ID manquant dans window.');
-      return;
-    }
+  // Cache static DOM nodes once — they never change
+  const _statusBox = document.querySelector('#agent-status');
+  const _statusText = document.querySelector('#status-text');
+  const _spinner = _statusBox?.querySelector('.spinner');
 
-    _showStatus('Démarrage de l\'agent...');
+  // -- Status box helpers --
+
+  function _setStatusBox(message, { color = '', showSpinner }) {
+    if (_statusBox) { _statusBox.classList.remove('hidden'); _statusBox.style.color = color; }
+    if (_spinner) _spinner.style.display = showSpinner ? 'block' : 'none';
+    if (_statusText) _statusText.textContent = message;
+  }
+
+  function _showStatus(message) {
+    _setStatusBox(message, { showSpinner: true });
+  }
+
+  function _showError(message) {
+    _setStatusBox(`Error: ${message}`, { color: 'red', showSpinner: false });
+    _resetRecordBtn();
+  }
+
+  function _onDone(invoiceId, invoiceNumber) {
+    _setStatusBox('✓ Invoice created! You can edit the fields below.', { color: 'green', showSpinner: false });
+    _hideQuestion();
+    if (invoiceNumber) formUpdater.setInvoiceNumber(invoiceNumber);
+    formUpdater.unlockForm();
+    _resetRecordBtn();
+    eventSource.close();
+  }
+
+  // -- Core flow --
+
+  async function start(transcript) {
+    // Close any previous session before starting a new one
+    if (eventSource) { eventSource.close(); eventSource = null; }
+    sessionId = null;
+
+    const userId = window.INVOICE_USER_ID;
+    if (!userId) { _showError('INVOICE_USER_ID missing.'); return; }
+
+    _showStatus('Starting agent...');
 
     try {
       const res = await fetch(`${BASE_URL}/invoice/start`, {
@@ -25,7 +59,7 @@ const agentStream = (() => {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        _showError(`Erreur démarrage : ${err.detail || res.status}`);
+        _showError(`Start error: ${err.detail || res.status}`);
         _resetRecordBtn();
         return;
       }
@@ -34,7 +68,7 @@ const agentStream = (() => {
       sessionId = data.session_id;
       _openStream();
     } catch (e) {
-      _showError(`Erreur réseau : ${e.message}`);
+      _showError(`Network error: ${e.message}`);
       _resetRecordBtn();
     }
   }
@@ -43,12 +77,11 @@ const agentStream = (() => {
     eventSource = new EventSource(`${BASE_URL}/invoice/stream?session_id=${sessionId}`);
 
     eventSource.onmessage = (e) => {
-      const event = JSON.parse(e.data);
-      _handleEvent(event);
+      _handleEvent(JSON.parse(e.data));
     };
 
     eventSource.onerror = () => {
-      _showError('Connexion SSE interrompue.');
+      _showError('Connection lost.');
       eventSource.close();
     };
   }
@@ -56,7 +89,7 @@ const agentStream = (() => {
   function _handleEvent(event) {
     switch (event.type) {
       case 'thinking':
-        _showStatus(event.message || 'L\'agent réfléchit...');
+        _showStatus(event.message || 'Agent thinking...');
         break;
 
       case 'profile':
@@ -65,6 +98,7 @@ const agentStream = (() => {
 
       case 'invoice_update':
         formUpdater.update(event.field, event.value);
+        // Recalc only when user edits the form manually — backend sends totals as separate events
         break;
 
       case 'question':
@@ -72,16 +106,15 @@ const agentStream = (() => {
         break;
 
       case 'done':
-        _onDone(event.invoice_id);
+        _onDone(event.invoice_id, event.invoice_number);
         break;
 
       case 'error':
-        _showError(event.message || 'Erreur agent.');
+        _showError(event.message || 'Agent error.');
         eventSource.close();
         break;
 
       case 'ping':
-        // keepalive, rien à faire
         break;
     }
   }
@@ -103,25 +136,24 @@ const agentStream = (() => {
       });
 
       if (!res.ok) {
-        // 409 = double envoi, ignorer silencieusement
+        // 409 = double send (reply already received), ignore silently
         if (res.status !== 409) {
-          _showError(`Erreur envoi réponse : ${res.status}`);
+          _showError(`Reply error: ${res.status}`);
+          sendBtn.disabled = false;
+          return;
         }
       }
     } catch (e) {
-      _showError(`Erreur réseau : ${e.message}`);
+      _showError(`Network error: ${e.message}`);
+      sendBtn.disabled = false;
+      return;
     }
 
     _hideQuestion();
-    _showStatus('L\'agent réfléchit...');
+    _showStatus('Agent thinking...');
   }
 
-  function _showStatus(message) {
-    const box = document.querySelector('#agent-status');
-    const text = document.querySelector('#status-text');
-    if (box) box.classList.remove('hidden');
-    if (text) text.textContent = message;
-  }
+  // -- UI helpers --
 
   function _showQuestion(message) {
     const box = document.querySelector('#question-box');
@@ -137,26 +169,6 @@ const agentStream = (() => {
   function _hideQuestion() {
     const box = document.querySelector('#question-box');
     if (box) box.classList.add('hidden');
-  }
-
-  function _showError(message) {
-    const box = document.querySelector('#agent-status');
-    const text = document.querySelector('#status-text');
-    if (box) { box.classList.remove('hidden'); box.style.color = 'red'; }
-    if (text) text.textContent = `Erreur : ${message}`;
-    _resetRecordBtn();
-  }
-
-  function _onDone(invoiceId) {
-    const box = document.querySelector('#agent-status');
-    const text = document.querySelector('#status-text');
-    if (box) box.classList.remove('hidden');
-    if (text) text.textContent = 'Facture créée ! Vous pouvez modifier les champs.';
-    _hideQuestion();
-    formUpdater.unlockForm();
-    eventSource.close();
-    // invoiceId disponible pour redirection future
-    console.log('Invoice ID:', invoiceId);
   }
 
   function _resetRecordBtn() {

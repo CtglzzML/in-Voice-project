@@ -91,18 +91,27 @@
 
         <div class="preview-sheet">
           <div class="preview-top">
-            <div class="preview-company">My company</div>
+            <div class="preview-issuer">
+              <div class="preview-company"></div>
+              <div id="preview-company-address"></div>
+              <div id="preview-company-phone"></div>
+              <div id="preview-company-email"></div>
+            </div>
 
             <div class="preview-invoice-meta">
               <h4>INVOICE</h4>
-              <p># ---</p>
-              <span>Date February 4, 2026</span>
+              <p id="preview-invoice-number"># ---</p>
+              <span id="preview-date"></span>
+              <span id="preview-due-date"></span>
             </div>
           </div>
 
           <div class="bill-box">
             <span>Bill to:</span>
-            <p>xClient Inc.</p>
+            <p id="preview-client-name"></p>
+            <p id="preview-client-address"></p>
+            <p id="preview-client-email"></p>
+            <p id="preview-client-phone"></p>
           </div>
 
           <div class="preview-table">
@@ -145,7 +154,7 @@
   </div>
 
   <script>
-    window.INVOICE_USER_ID = "test-user-1"; // TODO: remplacer par l'ID de session réel
+    window.INVOICE_USER_ID = "8412b4dd-7ee4-4915-86ed-4d5bec0f702f";
   </script>
   <script src="../js/form-updater.js"></script>
   <script src="../js/agent-stream.js"></script>

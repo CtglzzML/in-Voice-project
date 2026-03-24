@@ -31,15 +31,32 @@ MANDATORY_FIELDS = ["client_id", "due_date", "payment_terms", "lines", "tva_rate
 QUESTION_TIMEOUT = 300  # 5 minutes
 
 
+async def _push_client_fields(session_id: str, name: str, address: str, email: str, phone: str) -> None:
+    """Push client fields as invoice_update events so the frontend updates in real time."""
+    for field, value in [
+        ("client_name", name),
+        ("client_address", address),
+        ("client_email", email),
+        ("client_phone", phone),
+    ]:
+        if value:
+            await session_store.push_event(session_id, {"type": "invoice_update", "field": field, "value": value})
+
+
 async def tool_get_user_profile(user_id: str, session_id: str) -> str:
-    await session_store.push_event(session_id, {"type": "thinking", "message": "Chargement du profil utilisateur..."})
+    await session_store.push_event(session_id, {"type": "thinking", "message": "Loading user profile..."})
     profile = get_user(user_id)
+    if profile:
+        await session_store.push_event(session_id, {
+            "type": "profile",
+            "data": profile.model_dump(mode='json')
+        })
     if not profile:
-        return f"Utilisateur {user_id} introuvable en base de données."
+        return f"User {user_id} not found in database."
     missing = profile.missing_mandatory_fields()
     if missing:
-        return f"Profil chargé. Champs manquants obligatoires : {missing}. Demande ces informations à l'utilisateur."
-    return f"Profil chargé : {profile.model_dump_json()}"
+        return f"Profile loaded. Missing mandatory fields: {missing}. Ask the user for this information."
+    return f"Profile loaded: {profile.model_dump_json()}"
 
 
 async def tool_search_client(name: str, user_id: str, session_id: str) -> str:
@@ -48,41 +65,39 @@ async def tool_search_client(name: str, user_id: str, session_id: str) -> str:
     After calling this tool, the agent MUST call update_invoice_field("client_id", <id>, invoice_id)
     to link the client to the invoice.
     """
-    await session_store.push_event(session_id, {"type": "thinking", "message": f"Recherche du client '{name}'..."})
+    await session_store.push_event(session_id, {"type": "thinking", "message": f"Searching for '{name}'..."})
     results = search_clients(name, user_id)
     if not results:
-        return f"Client '{name}' introuvable. Demande à l'utilisateur l'adresse du client pour créer une fiche. Ensuite appelle update_invoice_field avec client_id."
+        return f"Client '{name}' not found. Ask the user for the client's address to create a new record. Then call update_invoice_field with client_id."
     if len(results) == 1:
-        return f"Client trouvé : {results[0].model_dump_json()}. Appelle maintenant update_invoice_field('client_id', '{results[0].id}', invoice_id)."
-    return f"Plusieurs clients trouvés : {[r.model_dump_json() for r in results]}. Demande lequel choisir, puis appelle update_invoice_field('client_id', id_choisi, invoice_id)."
+        c = results[0]
+        await _push_client_fields(session_id, c.name, c.address or "", c.email or "", c.phone or "")
+        return f"Client found: {c.model_dump_json()}. Now call update_invoice_field('client_id', '{c.id}', invoice_id)."
+    return f"Multiple clients found: {[r.model_dump_json() for r in results]}. Ask which one to use, then call update_invoice_field('client_id', chosen_id, invoice_id)."
 
 
-async def tool_create_client(name: str, address: str, user_id: str, session_id: str, email: str = "", company: str = "") -> str:
+async def tool_create_client(name: str, address: str, user_id: str, session_id: str, email: str = "", company: str = "", phone: str = "") -> str:
     """Creates a new client record and returns the client_id UUID.
     After calling this, use update_invoice_field('client_id', <returned_id>, invoice_id).
     """
-    await session_store.push_event(session_id, {"type": "thinking", "message": f"Création du client '{name}'..."})
-    client = Client(id="", user_id=user_id, name=name, address=address, email=email or None, company=company or None)
+    await session_store.push_event(session_id, {"type": "thinking", "message": f"Creating client '{name}'..."})
+    client = Client(id="", user_id=user_id, name=name, address=address, email=email or None, company=company or None, phone=phone or None)
     created = create_client_record(client)
-    await session_store.push_event(session_id, {"type": "invoice_update", "field": "client_name", "value": name})
-    return f"Client créé. client_id={created.id}. Appelle maintenant update_invoice_field('client_id', '{created.id}', invoice_id)."
+    await _push_client_fields(session_id, name, address, email, phone)
+    return f"Client created. client_id={created.id}. Now call update_invoice_field('client_id', '{created.id}', invoice_id)."
 
 
 async def tool_create_invoice_draft(user_id: str, session_id: str) -> str:
-    await session_store.push_event(session_id, {"type": "thinking", "message": "Création du brouillon de facture..."})
+    await session_store.push_event(session_id, {"type": "thinking", "message": "Creating invoice draft..."})
     invoice_id = db_create_draft(user_id, session_id)
     session_store.get(session_id)["invoice_id"] = invoice_id
     await session_store.push_event(session_id, {"type": "invoice_update", "field": "status", "value": "draft"})
-    return f"Brouillon créé. invoice_id={invoice_id}"
+    return f"Draft created. invoice_id={invoice_id}"
 
 
 async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id: str, session_id: str) -> str:
-    await session_store.push_event(session_id, {"type": "thinking", "message": f"Mise à jour du champ {field}..."})
+    await session_store.push_event(session_id, {"type": "thinking", "message": f"Updating {field}..."})
 
-    # field is already validated by type — use field.value as the string key
-    invoice = get_invoice(invoice_id)
-    if invoice is None:
-        return f"Facture '{invoice_id}' introuvable."
     field_key = field.value
 
     # Parse JSON strings sent by the LLM (e.g. lines as '[{"description":...}]')
@@ -95,11 +110,20 @@ async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id:
     updates: dict[str, Any] = {field_key: value}
 
     if field_key in ("lines", "tva_rate"):
+        # Fetch invoice only when we need existing data to recompute totals
+        invoice = get_invoice(invoice_id)
+        if invoice is None:
+            return f"Invoice '{invoice_id}' not found."
         lines_data = value if field_key == "lines" else invoice.get("lines", [])
         tva = value if field_key == "tva_rate" else invoice.get("tva_rate")
         if field_key == "lines" and not value:
             updates.update({"subtotal": 0.0, "tva_amount": 0.0, "total": 0.0})
         elif lines_data and tva is not None:
+            if isinstance(lines_data[0], str):
+                try:
+                    lines_data = [json.loads(l) for l in lines_data]
+                except (json.JSONDecodeError, ValueError):
+                    return f"Invalid lines format: expected list of objects."
             parsed_lines = [InvoiceLine(**l) for l in lines_data] if isinstance(lines_data[0], dict) else lines_data
             totals = compute_totals(parsed_lines, Decimal(str(tva)))
             updates["subtotal"] = float(totals.subtotal)
@@ -111,7 +135,7 @@ async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id:
     for k, v in updates.items():
         await session_store.push_event(session_id, {"type": "invoice_update", "field": k, "value": v})
 
-    return f"Champ {field_key} mis à jour."
+    return f"Field {field_key} updated."
 
 
 async def tool_ask_user_question(message: str, session_id: str) -> str:
@@ -123,25 +147,25 @@ async def tool_ask_user_question(message: str, session_id: str) -> str:
         reply = await asyncio.wait_for(session["reply_queue"].get(), timeout=QUESTION_TIMEOUT)
     except asyncio.TimeoutError:
         session["status"] = "error"
-        await session_store.push_event(session_id, {"type": "error", "message": "Délai d'attente dépassé."})
-        return "Timeout: aucune réponse reçue dans les 5 minutes."
+        await session_store.push_event(session_id, {"type": "error", "message": "Call timed out."})
+        return "Timeout: no reply received within 5 minutes."
     finally:
         session["awaiting_reply"] = False
     return reply
 
 
 async def tool_finalize_invoice(session_id: str, invoice_id: str) -> str:
-    await session_store.push_event(session_id, {"type": "thinking", "message": "Finalisation de la facture..."})
+    await session_store.push_event(session_id, {"type": "thinking", "message": "Finalizing invoice..."})
     invoice = get_invoice(invoice_id)
     if invoice is None:
-        return f"Facture '{invoice_id}' introuvable."
+        return f"Invoice '{invoice_id}' not found."
     missing = [f for f in MANDATORY_FIELDS if not invoice.get(f)]
     if missing:
-        return f"Impossible de finaliser : champs manquants {missing}. Complète-les d'abord."
+        return f"Cannot finalize: missing fields {missing}. Fill them in first."
 
     session = session_store.get(session_id)
     number = assign_invoice_number(invoice_id, session["user_id"])
     update_invoice_in_db(invoice_id, {"status": "confirmed", "invoice_number": number})
     session["status"] = "done"
-    await session_store.push_event(session_id, {"type": "done", "invoice_id": invoice_id})
-    return f"Facture confirmée. Numéro : {number}"
+    await session_store.push_event(session_id, {"type": "done", "invoice_id": invoice_id, "invoice_number": number})
+    return f"Invoice confirmed. Number: {number}"
