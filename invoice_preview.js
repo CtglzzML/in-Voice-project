@@ -1,5 +1,202 @@
 const backBtn = document.querySelector('.btn-secondary');
 const createBtn = document.querySelector('.btn-primary');
+const pdfFrame = document.querySelector('.pdf-frame');
+
+function formatCurrency(value) {
+    return `$${Number(value).toFixed(2)}`;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '---';
+    const date = new Date(dateString);
+    if (isNaN(date)) return '---';
+
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+function getStoredInvoice() {
+    const raw = sessionStorage.getItem('invoiceDraft');
+    if (!raw) return null;
+
+    try {
+        return JSON.parse(raw);
+    } catch (error) {
+        console.error('Error reading stored invoice:', error);
+        return null;
+    }
+}
+
+function getSavedInvoices() {
+    const raw = localStorage.getItem('savedInvoices');
+    if (!raw) return [];
+
+    try {
+        return JSON.parse(raw);
+    } catch (error) {
+        console.error('Error reading saved invoices:', error);
+        return [];
+    }
+}
+
+function saveInvoiceToLibrary() {
+    const currentInvoice = getStoredInvoice();
+    if (!currentInvoice) return false;
+
+    const savedInvoices = getSavedInvoices();
+
+    const invoiceToSave = {
+        dbId: Date.now().toString(),
+        fileName: currentInvoice.invoiceNumber
+            ? `INV-${currentInvoice.invoiceNumber}`
+            : `INV-${Date.now()}`,
+        client: currentInvoice.clientName || '-',
+        email: currentInvoice.clientEmail || '-',
+        vat: currentInvoice.taxPercent != null ? `${currentInvoice.taxPercent}%` : '0%',
+        phone: currentInvoice.clientPhone || '-',
+        country: currentInvoice.clientAddress || '-',
+        city: '-',
+        code: '-',
+        id: currentInvoice.invoiceNumber || Date.now().toString(),
+        date: currentInvoice.invoiceDate || '',
+        description: currentInvoice.comment || 'No description available yet.',
+        tags: [],
+        fullInvoice: currentInvoice
+    };
+
+    const alreadyExists = savedInvoices.some(invoice => {
+        return (
+            invoice.fullInvoice &&
+            invoice.fullInvoice.invoiceNumber === currentInvoice.invoiceNumber &&
+            invoice.fullInvoice.invoiceDate === currentInvoice.invoiceDate &&
+            invoice.fullInvoice.clientName === currentInvoice.clientName
+        );
+    });
+
+    if (!alreadyExists) {
+        savedInvoices.unshift(invoiceToSave);
+        localStorage.setItem('savedInvoices', JSON.stringify(savedInvoices));
+    }
+
+    return true;
+}
+
+function renderInvoicePreview() {
+    const data = getStoredInvoice();
+
+    if (!data) {
+        pdfFrame.innerHTML = `<p>No invoice data found.</p>`;
+        return;
+    }
+
+    const itemsHtml = data.items && data.items.length > 0
+        ? data.items.map(item => `
+            <tr>
+                <td>${item.description || '-'}</td>
+                <td>${item.qty}</td>
+                <td>${formatCurrency(item.rate)}</td>
+                <td>${formatCurrency(item.total)}</td>
+            </tr>
+        `).join('')
+        : `
+            <tr>
+                <td colspan="4" style="text-align:center; padding: 20px; color: #666;">
+                    There are currently no items in the invoice.
+                </td>
+            </tr>
+        `;
+
+    pdfFrame.innerHTML = `
+        <div style="width: 100%; max-width: 700px; margin: 0 auto; color: #111; font-family: Inter, sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px;">
+                <div style="font-size: 1rem; font-weight: 500;">
+                    ${data.companyName || 'My company'}
+                </div>
+
+                <div style="text-align: right;">
+                    <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">INVOICE</h3>
+                    <p style="margin: 4px 0;"># ${data.invoiceNumber || '---'}</p>
+                    <p style="margin: 0;">Date ${formatDate(data.invoiceDate)}</p>
+                    <p style="margin: 4px 0 0;">Due ${formatDate(data.dueDate)}</p>
+                </div>
+            </div>
+
+            <div style="background: #62588f; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
+                <div>Bill to:</div>
+                <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
+            </div>
+
+            <div style="margin-bottom: 18px; line-height: 1.6;">
+                <div><strong>From:</strong> ${data.companyAddress || '-'}</div>
+                <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
+                <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
+            </div>
+
+            <div style="margin-bottom: 18px; line-height: 1.6;">
+                <div><strong>Client address:</strong> ${data.clientAddress || '-'}</div>
+                <div><strong>Client phone:</strong> ${data.clientPhone || '-'}</div>
+                <div><strong>Client email:</strong> ${data.clientEmail || '-'}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background: #62588f; color: #fff;">
+                        <th style="text-align: left; padding: 12px;">Description</th>
+                        <th style="text-align: left; padding: 12px;">Qty</th>
+                        <th style="text-align: left; padding: 12px;">Price</th>
+                        <th style="text-align: left; padding: 12px;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
+            </table>
+
+            <div style="width: 220px; margin-left: auto; line-height: 1.8;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Subtotal:</span>
+                    <span>${formatCurrency(data.subtotal || 0)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Tax (${data.taxPercent || 0}%):</span>
+                    <span>${formatCurrency(data.taxAmount || 0)}</span>
+                </div>
+                <div style="height: 1px; background: rgba(0,0,0,0.5); margin: 8px 0;"></div>
+                <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                    <span>TOTAL:</span>
+                    <span>${formatCurrency(data.totalAmount || 0)}</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 28px;">
+                <strong>Comments:</strong>
+                <p style="margin-top: 8px; white-space: pre-wrap;">${data.comment || 'Nothing to add'}</p>
+            </div>
+        </div>
+    `;
+}
+
+function hidePopupBeforePrint() {
+    const popup = document.querySelector('.popup-card');
+    if (popup) {
+        popup.dataset.previousDisplay = popup.style.display || 'block';
+        popup.style.display = 'none';
+    }
+}
+
+function restorePopupAfterPrint() {
+    const popup = document.querySelector('.popup-card');
+    if (popup) {
+        popup.style.display = popup.dataset.previousDisplay || 'block';
+    }
+}
+
+window.addEventListener('afterprint', () => {
+    restorePopupAfterPrint();
+});
 
 if (backBtn) {
     backBtn.addEventListener('click', () => {
@@ -9,22 +206,39 @@ if (backBtn) {
 
 if (createBtn) {
     createBtn.addEventListener('click', () => {
+        const savedOk = saveInvoiceToLibrary();
+        if (!savedOk) {
+            alert('No invoice data found to save.');
+            return;
+        }
+
+        if (document.querySelector('.popup-card')) return;
+
         const template = document.getElementById('invoice-created-template');
         const clone = template.content.cloneNode(true);
         document.body.appendChild(clone);
-        
-        // Handle popup buttons after they appear
-        document.querySelector('.popup-card').addEventListener('click', (e) => {
-            if (e.target.innerText === 'Login to save invoice') {
-                window.location.href = 'login_page.html';
-            } else if (e.target.innerText === 'Go to dashboard') {
-                window.location.href = 'dashboard.html';
+
+        const popup = document.querySelector('.popup-card');
+        popup.style.display = 'block';
+
+        popup.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') return;
+
+            if (e.target.innerText === 'Go to invoice library') {
+                window.location.href = 'invoice_library.html';
             } else if (e.target.innerText === 'Download PDF') {
+                hidePopupBeforePrint();
                 window.print();
+
+                setTimeout(() => {
+                    restorePopupAfterPrint();
+                }, 500);
             }
         });
     });
 }
+
+renderInvoicePreview();
 
 const fileInput = document.getElementById('company-logo');
 const preview = document.getElementById('logo-preview');

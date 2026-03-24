@@ -32,33 +32,31 @@
 
       <section class="library-list-section">
         <div>
-            <div class="" id="">
-                <input type="text" class="" placeholder="search">
-                <button type="submit" class="">🔍</button>
-            </div>
-            <ul class="suggestion-list hidden"></ul>
+          <div>
+            <input type="text" placeholder="search">
+            <button type="submit">🔍</button>
+          </div>
+          <ul class="suggestion-list hidden"></ul>
         </div>
 
         <div class="table-wrapper">
           <table class="library-table">
             <thead>
               <tr>
-                <th>File name</th>
-                <th>Client</th>
-                <th>Email</th>
-                <th>VAT</th>
-                <th>Phone</th>
-                <th>Country</th>
-                <th>City</th>
-                <th>Code</th>
-                <th>ID</th>
+                <th>Invoice</th>
                 <th>Date</th>
+                <th>Due</th>
+                <th>Company</th>
+                <th>Client</th>
+                <th>Client Email</th>
+                <th>Client Phone</th>
+                <th>Total</th>
               </tr>
             </thead>
 
             <tbody id="library-items">
               <tr class="empty-state-row">
-                <td colspan="10">
+                <td colspan="8">
                   <div class="empty-state">
                     <p class="empty-state-title">No invoices yet</p>
                     <p class="empty-state-text">Your saved invoices will appear here once you create them.</p>
@@ -84,12 +82,16 @@
             </div>
           </div>
 
+          <div class="preview-actions">
+            <button class="download-invoice-btn" type="button">Download PDF</button>
+          </div>
+
           <div class="preview-meta">
             <div class="tags-row">
               <span class="meta-label">Tags:</span>
               <div class="tags-list" id="tags-list">
-  <button class="add-tag-btn" type="button" aria-label="Add tag">+</button>
-</div>
+                <button class="add-tag-btn" type="button" aria-label="Add tag">+</button>
+              </div>
             </div>
 
             <div class="description-block">
@@ -101,68 +103,35 @@
       </aside>
 
     </section>
+
+    <button class="create-invoice-btn" type="button">+ Create Invoice</button>
   </main>
+
+  <template id="empty-library-row-template">
+    <tr class="empty-state-row">
+      <td colspan="8">
+        <div class="empty-state">
+          <p class="empty-state-title">No invoices yet</p>
+          <p class="empty-state-text">Your saved invoices will appear here once you create them.</p>
+        </div>
+      </td>
+    </tr>
+  </template>
+
+  <template id="library-item-row-template">
+    <tr data-db-id="">
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </template>
+
+  <script src="../invoice_library.js"></script>
 </body>
-
-<!-- user profile menu -->
-<template id="user-profile-menu-template">
-  <div class="profile-menu">
-    <span class="profile-username">Username</span>
-    <a href="#">Go to Dashboard</a>
-    <a href="#">Go to Customer Info Page</a>
-    <a href="#">Sign Out</a>
-  </div>
-</template>
-
-<!-- edit entry menu -->
-<template id="invoice-entry-menu-template">
-  <div class="entry-menu">
-    <button type="button">Edit</button>
-    <button type="button">Rename</button>
-    <button type="button">Download</button>
-  </div>
-</template>
-
-<!-- add tag menu -->
-<template id="add-tag-menu-template">
-  <div class="add-tag-menu">
-    <label for="new-tag-input">Add tag</label>
-    <input id="new-tag-input" type="text" placeholder="Type a tag" />
-    <button type="button">+</button>
-  </div>
-</template>
-
-<!-- template for tag -->
-<template id="tag-template">
-  <li class="tag-chip"><button>⚪</button>Sample</li>
-</template>
-
-<!-- default when no items in library -->
-<template id="empty-library-row-template">
-  <tr class="empty-state-row">
-    <td colspan="10">
-      <div class="empty-state">
-        <p class="empty-state-title">No invoices yet</p>
-        <p class="empty-state-text">Your saved invoices will appear here once you create them.</p>
-      </div>
-    </td>
-  </tr>
-</template>
-
-<!-- template for item in library -->
-<template id="library-item-row-template">
-  <tr data-db-id="">
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-</template>
 
 </html>
