@@ -1,4 +1,3 @@
-
 <!--use this one below instead:-->
 
 <!DOCTYPE html>
@@ -6,14 +5,15 @@
 
 <head>
   <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Invoice</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Invoice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="../css/color_scheme.css" />
   <link rel="stylesheet" href="../css/create_invoice.css">
+  <script src="../create_invoice.js"></script>
 </head>
 
 <body>
@@ -42,7 +42,7 @@
       <!-- Invoice Details -->
       <div class="card">
         <h3>INVOICE DETAILS</h3>
-
+        <h4>Invoice Information:</h4>
         <div class="grid">
           <input id="inv-number" placeholder="Invoice number">
           <label for="inv-date">Date:<input id="inv-date" type="date"></label>
@@ -50,7 +50,7 @@
           <input id="inv-tax" type="number" placeholder="Tax (%)">
         </div>
 
-        <h4>Your company</h4>
+        <h4>Your Information</h4>
         <div class="grid">
           <input id="company-name" placeholder="Company name">
           <input id="company-address" placeholder="Address">
@@ -58,12 +58,23 @@
           <input id="company-email" type="email" placeholder="Email">
         </div>
 
-        <h4>Client</h4>
+        <h4>Client Information</h4>
         <div class="grid">
           <input id="client-name" placeholder="Client name">
           <input id="client-address" placeholder="Address">
           <input id="client-phone" placeholder="Phone">
           <input id="client-email" type="email" placeholder="Email">
+        </div>
+
+        <h4>Additional Information</h4>
+        <div class="grid-top-aligned">
+          <input id="" type="number" placeholder="Shipping $">
+          <input id="" type="number" placeholder="Handling $">
+          <label>
+            Comment:
+            <textarea id="comment" class="" placeholder="">
+            </textarea>
+          </label>
         </div>
       </div>
 
@@ -73,67 +84,67 @@
     <div class="right-panel">
 
       <div class="invoice-editor-card">
-  <div class="editor-topbar">
-    <h3>PREVIEW</h3>
-    <button class="preview-btn">See preview</button>
-  </div>
-
-  <div class="preview-sheet">
-    <div class="preview-top">
-      <div class="preview-company">My company</div>
-
-      <div class="preview-invoice-meta">
-        <h4>INVOICE</h4>
-        <p># ---</p>
-        <span>Date February 4, 2026</span>
-      </div>
-    </div>
-
-    <div class="bill-box">
-      <span>Bill to:</span>
-      <p>xClient Inc.</p>
-    </div>
-
-    <div class="preview-table">
-      <div class="preview-table-head">
-        <span>Description</span>
-        <span>Qty</span>
-        <span>Price</span>
-        <span>Total</span>
-      </div>
-
-      <table class="item-list">
-        <tr>
-        </tr>
-      </table>
-      <button type="button" id="add-line-item">+ Add item</button>
-
-      <div class="preview-totals">
-
-      <div class="preview-totals">
-        <div class="preview-total-row">
-          <span>Subtotal:</span>
-          <span>$0.00</span>
+        <div class="editor-topbar">
+          <h3>PREVIEW</h3>
+          <button class="preview-btn">See preview</button>
         </div>
-        <div class="preview-total-row">
-          <span>Tax (0%):</span>
-          <span>$0.00</span>
+
+        <div class="preview-sheet">
+          <div class="preview-top">
+            <div class="preview-company">My company</div>
+
+            <div class="preview-invoice-meta">
+              <h4>INVOICE</h4>
+              <p># ---</p>
+              <span>Date February 4, 2026</span>
+            </div>
+          </div>
+
+          <div class="bill-box">
+            <span>Bill to:</span>
+            <p>xClient Inc.</p>
+          </div>
+
+          <div class="preview-table">
+            <div class="preview-table-head">
+              <span>Description</span>
+              <span>Qty</span>
+              <span>Price</span>
+              <span>Total</span>
+            </div>
+
+            <table class="item-list">
+              <tr>
+              </tr>
+            </table>
+            <button type="button" id="add-line-item">+ Add item</button>
+
+            <div class="preview-totals">
+
+              <div class="preview-totals">
+                <div class="preview-total-row">
+                  <span>Subtotal:</span>
+                  <span>$0.00</span>
+                </div>
+                <div class="preview-total-row">
+                  <span>Tax (0%):</span>
+                  <span>$0.00</span>
+                </div>
+                <div class="preview-total-divider"></div>
+                <div class="preview-total-row preview-total-final">
+                  <span>TOTAL:</span>
+                  <span>$0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="preview-total-divider"></div>
-        <div class="preview-total-row preview-total-final">
-          <span>TOTAL:</span>
-          <span>$0.00</span>
-        </div>
+
+        <button class="return-btn">Return</button>
+
       </div>
-    </div>
-  </div>
-</div>
-
-      <button class="return-btn">Return</button>
 
     </div>
-
-  </div>
 
 </body>
 
