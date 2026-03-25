@@ -671,3 +671,455 @@ input:focus {
   margin-bottom: 20px;
 }
 
+/* =========================
+   FIXES FOR CREATE INVOICE
+   ========================= */
+
+/* Hide the second mic button but keep it in DOM so JS doesn't break */
+#reply-mic-btn {
+  display: none;
+}
+
+/* Purple invoice blocks instead of black */
+.bill-box,
+.preview-table-head {
+  background: #62588f;
+  border: 1px solid #62588f;
+  color: #ffffff;
+}
+
+/* Better spacing and structure in the right preview area */
+.preview-issuer {
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-issuer p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #222;
+}
+
+.bill-box span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.bill-box p {
+  margin: 2px 0;
+}
+
+/* Table header layout */
+.preview-table-head {
+  display: grid;
+  grid-template-columns: 1.6fr 0.7fr 0.9fr 0.9fr;
+  align-items: center;
+}
+
+/* Make comments area cleaner */
+.preview-note {
+  margin: 16px 2px 5px;
+  color: #111;
+}
+
+.preview-note-content {
+  margin-top: 4px;
+  color: #444;
+}
+
+/* Slightly cleaner button alignment */
+.reply-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.reply-row input {
+  flex: 1;
+}
+
+.reply-send-btn,
+.new-client-btn {
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.reply-send-btn:hover,
+.new-client-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.94;
+}
+
+/* =========================
+   VOICE CONTROL CLEANUP
+   ========================= */
+
+.voice-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 22px 22px;
+}
+
+.record-btn {
+  width: 100%;
+  margin: 0;
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.voice-zone > div:not(.question-box):not(.client-suggestions-box):not(.suggestions):not(#agent-status) {
+  margin: 0;
+}
+
+.voice-zone > div {
+  color: #3f4370;
+  font-size: 0.95rem;
+}
+
+#question-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-bubble {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agent-avatar {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #62588f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+#question-text {
+  margin: 0;
+  color: #d64545;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.reply-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+#reply-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 5px;
+  background: #efefef;
+  color: #222;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+#reply-input:focus {
+  box-shadow: 0 0 0 2px rgba(98, 88, 143, 0.18);
+}
+
+.reply-send-btn {
+  min-width: 70px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.reply-send-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.94;
+}
+
+.client-suggestions-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  margin-top: -6px;
+}
+
+#client-suggestions-msg {
+  margin: 0;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.new-client-btn {
+  align-self: flex-start;
+  min-height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.new-client-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.94;
+}
+
+#suggestions,
+.suggestions {
+  margin: 0;
+  background: #efefef;
+  border-radius: 5px;
+  padding: 16px 18px;
+}
+
+#suggestions p,
+.suggestions p {
+  margin: 0 0 10px;
+  color: #3f4370;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+#suggestions ul,
+.suggestions ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+#suggestions li,
+.suggestions li {
+  margin: 0 0 6px;
+  color: #9a9a9a;
+  font-size: 0.92rem;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+#agent-status {
+  margin: 0;
+}
+
+.agent-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+@media (max-width: 700px) {
+  .voice-zone {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .reply-row {
+    grid-template-columns: 1fr;
+  }
+
+  .reply-send-btn,
+  .new-client-btn {
+    width: 100%;
+  }
+}
+.voice-divider {
+  color: #4a4f7a;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: -2px 0 2px;
+}
+/* =========================
+   VOICE CONTROL REFINED LAYOUT
+   ========================= */
+
+.manual-entry-card {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.question-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.question-box.hidden {
+  display: none;
+}
+
+.agent-bubble {
+  min-height: 34px;
+}
+
+.agent-bubble:empty {
+  display: none;
+}
+
+.agent-avatar {
+  margin-top: 1px;
+}
+
+#question-text:empty {
+  display: none;
+}
+
+#question-text:empty + * {
+  display: none;
+}
+
+.manual-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.reply-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+#reply-input {
+  min-width: 0;
+}
+
+.reply-send-btn {
+  min-width: 84px;
+}
+
+.new-client-btn {
+  min-width: 192px;
+}
+
+.suggestions {
+  margin-top: 2px;
+}
+
+.voice-divider {
+  color: #3f4370;
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin: 2px 0 0;
+}
+
+@media (max-width: 700px) {
+  .manual-entry-card {
+    padding: 14px;
+  }
+
+  .manual-actions {
+    flex-direction: column;
+  }
+
+  .new-client-btn,
+  .reply-send-btn {
+    width: 100%;
+  }
+
+  .reply-row {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================
+   AI BADGE - CLEAN TECH LOOK
+   ========================= */
+
+.agent-bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-height: auto;
+}
+
+.agent-avatar {
+  display: none;
+}
+
+.agent-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(98, 88, 143, 0.16), rgba(98, 88, 143, 0.08));  border: 1px solid rgba(98, 88, 143, 0.28);
+  box-shadow: 0 6px 18px rgba(98, 88, 143, 0.12);
+  backdrop-filter: blur(6px);
+}
+
+.agent-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #62588f;
+  box-shadow: 0 0 10px rgba(98, 88, 143, 0.45);
+  flex-shrink: 0;
+}
+
+.agent-badge-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #62588f;
+  line-height: 1;
+}
+
+#question-text {
+  margin: 0;
+  text-align: center;
+  color: #d64545;
+  font-size: 0.96rem;
+  line-height: 1.45;
+  max-width: 460px;
+}
+
