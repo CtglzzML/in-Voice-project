@@ -160,8 +160,16 @@ function buildInvoicePreviewHtml(invoice) {
                     <div style="font-size: 1rem; font-weight: 500;">
                         ${data.companyName || 'My company'}
                     </div>
+                    <div style="margin-bottom: 18px; line-height: 1.6;">
+                    
+                    </div>
                 </div>
-
+                <div>
+                    <div><strong>Address:</strong> ${data.companyAddress || '-'}</div>
+                    <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
+                    <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
+                </div>
+                
                 <div style="text-align: right;">
                     <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">INVOICE</h3>
                     <p style="margin: 4px 0;"># ${data.invoiceNumber || '---'}</p>
@@ -173,12 +181,6 @@ function buildInvoicePreviewHtml(invoice) {
             <div style="background: #000; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
                 <div>Bill to:</div>
                 <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
-            </div>
-
-            <div style="margin-bottom: 18px; line-height: 1.6;">
-                <div><strong>From:</strong> ${data.companyAddress || '-'}</div>
-                <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
-                <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
             </div>
 
             <div style="margin-bottom: 18px; line-height: 1.6;">
