@@ -664,3 +664,8 @@ input:focus {
   background-color: rgb(255, 255, 255);
   box-shadow: 0 0 10px #0000001f;
 }
+
+.preview-info {
+  color: black;
+  margin-bottom: 20px;
+}

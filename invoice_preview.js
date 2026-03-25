@@ -86,6 +86,8 @@ function saveInvoiceToLibrary() {
 
 function renderInvoicePreview() {
     const data = getStoredInvoice();
+    // 1. Fetch the logo from storage
+    const savedLogo = localStorage.getItem('invoiceLogo');
 
     if (!data) {
         pdfFrame.innerHTML = `<p>No invoice data found.</p>`;
@@ -112,8 +114,12 @@ function renderInvoicePreview() {
     pdfFrame.innerHTML = `
         <div style="width: 100%; max-width: 700px; margin: 0 auto; color: #111; font-family: Inter, sans-serif;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px;">
-                <div style="font-size: 1rem; font-weight: 500;">
-                    ${data.companyName || 'My company'}
+                
+                <div>
+                    ${savedLogo ? `<img src="${savedLogo}" alt="Logo" style="max-width: 140px; max-height: 70px; object-fit: contain; display: block; margin-bottom: 12px;">` : ''}
+                    <div style="font-size: 1rem; font-weight: 500;">
+                        ${data.companyName || 'My company'}
+                    </div>
                 </div>
 
                 <div style="text-align: right;">
