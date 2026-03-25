@@ -214,11 +214,11 @@ function downloadInvoicePDF() {
         filename: `Invoice_${Date.now()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 }, // Higher scale = better quality
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' }
     };
 
     // New Promise-based usage:
-    html2pdf().set(opt).from(element).save();
+    window.html2pdf().set(opt).from(element).save();
 }
 
 function hidePopupBeforePrint() {
@@ -281,7 +281,6 @@ if (createBtn) {
         });
     });
 }
-
 renderInvoicePreview();
 
 const fileInput = document.getElementById('company-logo');

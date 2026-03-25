@@ -106,7 +106,7 @@ export const recorder = (() => {
     r.onerror = once((err) => {
       console.warn('SpeechRecognition error:', err.error);
       if (err.error === 'not-allowed') {
-        _showError('Accès au microphone refusé.');
+        _showError('Access to microphone refused.');
         callback('');
       } else {
         _startWhisper(callback);
@@ -186,7 +186,7 @@ export const recorder = (() => {
         const blob = new Blob(chunks, { type: 'audio/webm' });
         
         const loader = _showAutoSendCountdown(() => {});
-        loader.innerHTML = '<span>Transcription en cours...</span>';
+        loader.innerHTML = '<span>Transcription in progress...</span>';
         
         const transcript = await _transcribeWhisper(blob);
         loader.remove();
@@ -202,7 +202,7 @@ export const recorder = (() => {
       }, 15000);
       
     }).catch(() => {
-      _showError('Accès au microphone refusé.');
+      _showError('Access to microphone refused.');
       callback('');
     });
   }
@@ -226,7 +226,7 @@ export const recorder = (() => {
     btn.disabled = active;
     btn.classList.toggle('recording', active);
     const label = btn.querySelector('.record-btn-label');
-    if (label) label.textContent = active ? "Je t'écoute…" : 'Start recording';
+    if (label) label.textContent = active ? "I'm listening…" : 'Start recording';
   }
 
   function _setAutoListenState(active) {
@@ -252,7 +252,7 @@ export const recorder = (() => {
   function _onMainTranscript(transcript) {
     _setRecordingState(false);
     if (!transcript) {
-      _showError('Aucune voix détectée — réessayez (ou tapez votre demande en dessous).');
+      _showError('No voice detected — try again (or write your request down below).');
       return;
     }
     agentStream.start(transcript);
