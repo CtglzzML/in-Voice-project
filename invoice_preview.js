@@ -124,7 +124,7 @@ function renderInvoicePreview() {
                 </div>
             </div>
 
-            <div style="background: #62588f; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
+            <div style="background: #000; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
                 <div>Bill to:</div>
                 <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
             </div>
@@ -143,7 +143,7 @@ function renderInvoicePreview() {
 
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <thead>
-                    <tr style="background: #62588f; color: #fff;">
+                    <tr style="background: #000; color: #fff;">
                         <th style="text-align: left; padding: 12px;">Description</th>
                         <th style="text-align: left; padding: 12px;">Qty</th>
                         <th style="text-align: left; padding: 12px;">Price</th>
@@ -226,6 +226,8 @@ if (createBtn) {
 
             if (e.target.innerText === 'Go to invoice library') {
                 window.location.href = 'invoice_library.html';
+            } else if (e.target.innerText === 'Create another invoice') {
+                window.location.href = 'create_invoice.html'
             } else if (e.target.innerText === 'Download PDF') {
                 hidePopupBeforePrint();
                 window.print();
