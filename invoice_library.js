@@ -14,10 +14,6 @@ const previewSheet = document.querySelector('.preview-sheet');
 const descriptionText = document.querySelector('.description-text');
 const tagsList = document.getElementById('tags-list');
 const downloadBtn = document.querySelector('.download-invoice-btn');
-const createInvoiceBtn = document.querySelector('.create-invoice-btn');
-
-const searchForm = document.getElementById('library-search-form');
-const searchInput = document.querySelector('.search-input');
 
 let savedInvoices = [];
 let filteredInvoices = [];
@@ -247,11 +243,9 @@ function renderTags(tags) {
 
 function renderEmptyPreview() {
     selectedInvoice = null;
-<<<<<<< HEAD
     selectedLibraryItem = null;
     previewTitle.textContent = 'Invoice preview';
-=======
->>>>>>> 2cde5cda246ba31452c9177575e911287b67f90f
+
 
     previewSheet.innerHTML = `
         <div class="preview-placeholder">
@@ -267,7 +261,7 @@ function renderEmptyPreview() {
     renderTags([]);
 }
 
-<<<<<<< HEAD
+
 function getInvoiceTags(inv) {
     const directTags = Array.isArray(inv?.tags) ? inv.tags : [];
     const fullInvoiceTags = Array.isArray(inv?.fullInvoice?.tags) ? inv.fullInvoice.tags : [];
@@ -382,14 +376,14 @@ function showPreview(item) {
         chip.appendChild(removeBtn);
         tagsList.appendChild(chip);
     });
-=======
+}
+
 function renderPreview(invoice) {
     previewSheet.innerHTML = buildInvoicePreviewHtml(invoice);
 
     if (descriptionText) {
         descriptionText.textContent = invoice.description || 'No description available yet.';
     }
->>>>>>> 2cde5cda246ba31452c9177575e911287b67f90f
 
     renderTags(invoice.tags || []);
 }
@@ -463,7 +457,6 @@ function buildPrintableDocument(invoiceHtml) {
     `;
 }
 
-<<<<<<< HEAD
 function handleSearch() {
     const invoices = getSavedInvoices();
     const searchState = getSearchState();
@@ -551,7 +544,8 @@ if (tagsListEl) {
 if (createInvoiceBtn) {
     createInvoiceBtn.addEventListener('click', () => {
         window.location.href = 'create_invoice.html';
-=======
+    });
+}
 function downloadSelectedInvoicePdf() {
     if (!selectedInvoice) {
         alert('Please select an invoice first.');
@@ -625,7 +619,7 @@ function initSearch() {
 
     searchInput.addEventListener('input', () => {
         applySearch();
->>>>>>> 2cde5cda246ba31452c9177575e911287b67f90f
+
     });
 
     searchInput.addEventListener('keydown', (e) => {

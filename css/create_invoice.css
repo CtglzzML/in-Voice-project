@@ -595,8 +595,7 @@ input:focus {
 .custom-file-upload {
   width: 100px;
   height: 100px;
-  background: #efefef;
-  border: 2px dashed #a7a7a7;
+  background: #efefef00;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
@@ -609,8 +608,7 @@ input:focus {
 }
 
 .custom-file-upload:hover {
-  border-color: #62588f;
-  background: #f4f3f9;
+  background: #f4f3f922;
 }
 
 /* 3. Style the preview image */
@@ -647,8 +645,10 @@ input:focus {
 }
 
 #delete-logo-btn {
+  object-fit: cover;
   height: 30px;
   width: 30px;
+  
   background-color: rgb(239, 239, 239);
   border: none;
   border-radius: 5px;
