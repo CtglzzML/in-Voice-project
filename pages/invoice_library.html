@@ -32,10 +32,15 @@
 
       <section class="library-list-section">
         <div>
-          <div>
-            <input type="text" placeholder="search">
-            <button type="submit">🔍</button>
-          </div>
+          <form class="search-form" id="library-search-form">
+            <input
+              class="search-input"
+              type="text"
+              placeholder="Search invoices, clients, emails, or tags"
+              autocomplete="off"
+            />
+            <button class="search-btn" type="submit" aria-label="Search">🔍</button>
+          </form>
           <ul class="suggestion-list hidden"></ul>
         </div>
 
