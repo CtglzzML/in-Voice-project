@@ -36,10 +36,12 @@ CRITICAL RULES:
 - IGNORE voice command artefacts: words like "mets", "ajoute", "crée", "facture pour", "start",
   "record", "ok", "hey", "canine", "voice", "fort" and similar are NOT product descriptions.
   They are recognition noise — discard them entirely.
-- description: must be a clearly identifiable service or product name (e.g. "Web development",
-  "Logo design", "Consulting"). If you cannot identify one with confidence, leave it null.
-  Remove any quantity or duration from it: "3h web dev" → description="Web development", qty=3
-- qty: number of units/hours/days (default 1)
+- description: MUST ONLY contain the clean service or product name (e.g. "Web development",
+  "Logo design", "Consulting"). ALL quantities, durations, or measurements MUST be EXCLUDED from
+  the description. Example: "3 hours of web development" -> description="Web development", qty=3.
+  If you cannot identify a clean service name with confidence, leave it null.
+- qty: exactly the number of units/hours/days mentioned (default 1). If the description mentions
+  "a", "one", "2 hours", extract the number into qty and remove it from the description.
 - unit_price: price per unit. If only a total is given: unit_price=total/qty.
 - Leave all fields null if the information is not clearly stated.
 - For client name: separate first name and last name if both are present.

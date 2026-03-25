@@ -22,7 +22,10 @@
 
       <!-- Voice Control -->
       <div class="card">
-        <h3>VOICE CONTROL</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin-bottom: 0;">VOICE CONTROL</h3>
+          <button id="abandon-btn" class="btn btn-secondary" style="display: none; padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid #ff4d4f; color: #ff4d4f; background: transparent; border-radius: 4px; cursor: pointer;">Abandon invoice</button>
+        </div>
 
         <div class="voice-zone">
 
@@ -52,8 +55,6 @@
     <span class="field-chip missing" data-field="client_id">· Client</span>
     <span class="field-chip missing" data-field="lines">· Lignes</span>
     <span class="field-chip missing" data-field="tva_rate">· TVA</span>
-    <span class="field-chip missing" data-field="due_date">· Échéance</span>
-    <span class="field-chip missing" data-field="payment_terms">· Conditions</span>
   </div>
 
   <!-- Agent question (chat bubble) -->
@@ -61,38 +62,32 @@
     <div class="agent-bubble">
   <div class="agent-badge">
     <span class="agent-badge-dot"></span>
-    <span class="agent-badge-text">AI ASSISTANT</span>
-    <span class="tts-bars">
+    <span class="tts-bars hidden">
       <span></span><span></span><span></span>
     </span>
   </div>
   <p id="question-text"></p>
 </div>
     <div class="reply-row">
-      <input id="reply-input" type="text" placeholder="Type your reply..." autocomplete="off">
-      <button id="reply-mic-btn" class="reply-icon-btn" title="Voice reply" aria-hidden="true">🎤</button>
+      <input id="reply-input" type="text" placeholder="Tell me about your invoice..." autocomplete="off">
       <button id="reply-send-btn" class="reply-send-btn">Send</button>
     </div>
-  </div>
 
-  <div class="manual-actions">
-    <button id="new-client-btn" class="new-client-btn">+ Create a new client</button>
+    <!-- Inline Client Creation Form -->
+    <div id="inline-client-form" class="inline-client-form hidden">
+      <div class="icf-fields">
+        <div class="icf-title" style="font-size: 0.9rem; margin-bottom: 0.5rem; color: #62588f;">Enter contact details:</div>
+        <input id="icf-name" type="text" placeholder="Client Name" autocomplete="off" required>
+        <input id="icf-email" type="email" placeholder="Email (optional)" autocomplete="off">
+        <input id="icf-phone" type="tel" placeholder="Phone (optional)" autocomplete="off">
+      </div>
+      <p id="icf-error" class="icf-error"></p>
+      <button id="icf-submit" class="icf-submit-btn">Create client</button>
+    </div>
   </div>
 </div>
 
-<!-- New Client Creation Form -->
-<div id="new-client-form" class="new-client-form hidden">
-  <p class="ncf-title">Client introuvable — créez-en un nouveau</p>
-  <div class="ncf-fields">
-    <input id="ncf-name"    type="text"  placeholder="Nom complet *" autocomplete="off">
-    <input id="ncf-address" type="text"  placeholder="Adresse *"     autocomplete="off">
-    <input id="ncf-email"   type="email" placeholder="Email"         autocomplete="off">
-    <input id="ncf-phone"   type="tel"   placeholder="Téléphone"     autocomplete="off">
-  </div>
-  <p id="ncf-error" class="ncf-error"></p>
-  <button id="ncf-submit" class="ncf-submit-btn">Créer le client</button>
-</div>
-
+<!-- Client suggestions / static forms have been removed for inline conversation flow -->
 <!-- Client Suggestions Box -->
 <div id="client-suggestions-box" class="client-suggestions-box hidden">
   <p id="client-suggestions-msg"></p>
@@ -124,11 +119,6 @@
   <label>
     Date
     <input id="inv-date" type="date">
-  </label>
-
-  <label>
-    Due
-    <input id="inv-due" type="date">
   </label>
 
   <label>
@@ -210,7 +200,6 @@
     <h4>INVOICE</h4>
     <p id="preview-invoice-number"># ---</p>
     <span id="preview-date"></span>
-    <span id="preview-due-date"></span>
   </div>
 </div>
 

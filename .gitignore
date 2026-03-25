@@ -11,6 +11,4 @@ wheels/
 
 # Environment variables
 .env
-
-# Claude
-.claude/
+.claude

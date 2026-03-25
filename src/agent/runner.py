@@ -31,7 +31,7 @@ def _make_tools(session_id: str, user_id: str):
 
     class CreateClientInput(BaseModel):
         name: str = Field(description="Client full name (first + last)")
-        address: str = Field(description="Client postal address")
+        address: str = Field(default="", description="Client postal address")
         email: str = Field(default="", description="Client email")
         phone: str = Field(default="", description="Client phone number")
         company: str = Field(default="", description="Company name (optional)")
@@ -41,7 +41,7 @@ def _make_tools(session_id: str, user_id: str):
 
     class UpdateFieldInput(BaseModel):
         field: str = Field(description="Field to update. Possible values: client_id, due_date, payment_terms, lines, tva_rate")
-        value: Any = Field(description="New value for the field. For 'lines', pass a list of objects.")
+        value: Any = Field(description="New value for the field. For 'lines', pass a list of objects exactly matching [{'description': 'clean service/product name', 'qty': numeric_quantity, 'unit_price': numeric_price}]. Ensure description NEVER contains the quantity or duration (e.g. NO '1 hour' in description).")
         invoice_id: str = Field(description="Invoice ID (returned by create_invoice_draft)")
 
     class AskQuestionInput(BaseModel):
@@ -126,28 +126,29 @@ async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
 
         tools = _make_tools(session_id, user_id)
         system_prompt = (
-            f"You are a friendly, concise voice invoicing assistant speaking French. Session: {session_id}. User: {user_id}.\n"
-            "Your GOAL is to create an invoice step by step. Do NOT combine steps.\n\n"
-            "RULES:\n"
-            "1. Keep spoken responses short. No Markdown. No bullet points.\n"
-            "2. Invoice field updates are done silently via tools — just confirm briefly.\n"
-            "3. Use pre-extracted values directly. Only ask if a mandatory field is missing.\n\n"
-            "CLIENT IDENTIFICATION:\n"
-            "- Call search_client ONCE with the client name.\n"
-            "- The tool handles everything: it waits for user selection (multiple matches) or waits for the user to fill a creation form (no match).\n"
-            "- When search_client returns:\n"
-            "  * 'Client found: ...' → say 'Client sélectionné.' and proceed.\n"
-            "  * 'Client selected: ...' → say 'Client sélectionné.' and proceed.\n"
-            "  * 'User submitted new client data: {...}' → call create_client with the provided fields, then say 'Nouveau client créé.'\n"
-            "- After obtaining client_id, call update_invoice_field('client_id', <id>, invoice_id).\n\n"
+            f"You are a friendly, concise voice invoicing assistant speaking English. Session: {session_id}. User: {user_id}.\n"
+            "Your GOAL is to create an invoice step by step via voice.\n\n"
+            "CRITICAL UX RULES:\n"
+            "1. ALWAYS respond in English. NEVER use French.\n"
+            "2. Ensure a conversation that guides the UI seamlessly = The user should NEVER have to think about where to click.\n"
+            "3. Your messages MUST be short, actionable, and single-threaded (max 1 sentence, NEVER ask multiple questions at once).\n"
+            "4. NO technical jargon or unnecessary chatter.\n"
+            "5. Always use the pre-extracted values provided above.\n"
+            "6. After get_user_profile, use profile.default_tva as tva_rate if not extracted.\n\n"
+            "CLIENT WORKFLOW (ONLY 2 PATHS):\n"
+            "- Step 1: Call `search_client` ONCE with the client name.\n"
+            "- PATH A: If search_client returns 'Client found', call `update_invoice_field` with the `client_id`, then continue.\n"
+            "- PATH B: If search_client returns 'User submitted form data...', immediately call `create_client` with the provided data. After receiving `client_id`, call `update_invoice_field`.\n"
+            "Do NOT ask for client details verbally if they are missing.\n\n"
             "FLOW:\n"
-            "1. Call search_client → get client_id.\n"
-            "2. Call get_user_profile ONCE, then create_invoice_draft.\n"
-            "3. Call update_invoice_field for all known fields (client_id, lines, tva_rate, due_date, payment_terms).\n"
-            "4. For any missing mandatory field, ask exactly ONE question using ask_user_question.\n"
-            "5. Final confirmation: 'Facture pour [client]: [description] [qty]×[price]€ = [total]€ HT, [rate]% TVA, due le [date]. Tout est bon ?'\n"
-            "6. If yes, call finalize_invoice.\n\n"
-            f"MANDATORY to finalize: {MANDATORY_FIELDS}"
+            "1. Call `get_user_profile` to load the profile, then call `create_invoice_draft`.\n"
+            "2. Ensure profile details are injected.\n"
+            "3. Search for the client using the paths above.\n"
+            "4. Call `update_invoice_field` to apply any known details.\n"
+            "5. Answer any user questions and seamlessly gather missing fields using exactly ONE `ask_user_question` tool call at a time.\n"
+            "6. Once ALL mandatory fields are filled, you MUST use `ask_user_question` to ask: 'Your invoice is ready. Do you want to modify anything?'\n"
+            "7. If they say no/it's good, call `finalize_invoice`.\n\n"
+            f"MANDATORY FIELDS: {MANDATORY_FIELDS}"
         )
 
         graph = create_agent(
@@ -159,7 +160,33 @@ async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
         messages = [{"role": "user", "content": transcript}]
         if extracted_context:
             messages.insert(0, {"role": "system", "content": extracted_context})
-        await graph.ainvoke({"messages": messages})
+            
+        session = session_store.get(session_id)
+        
+        while session["status"] not in ("done", "error"):
+            result = await graph.ainvoke({"messages": messages})
+            
+            # Send final agent conversational message to UI to unblock 'thinking' state
+            if result and "messages" in result and result["messages"]:
+                last_msg = result["messages"][-1]
+                if last_msg.type == "ai" and str(last_msg.content).strip():
+                    session["awaiting_reply"] = True
+                    await session_store.push_event(session_id, {
+                        "type": "question",
+                        "message": str(last_msg.content).strip()
+                    })
+                    
+            if session["status"] in ("done", "error"):
+                break
+                
+            try:
+                # Wait for user's next response since the graph iteration finished
+                next_reply = await asyncio.wait_for(session["reply_queue"].get(), timeout=300)
+                messages = result["messages"] + [{"role": "user", "content": next_reply}]
+            except asyncio.TimeoutError:
+                session["status"] = "error"
+                await session_store.push_event(session_id, {"type": "error", "message": "Session timed out after 5 minutes of inactivity."})
+                break
     except Exception as e:
         import traceback
         traceback.print_exc()

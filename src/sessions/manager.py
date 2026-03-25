@@ -27,6 +27,8 @@ class SessionStore:
             "invoice_id": None,
             "status": "active",  # active | awaiting_reply | done | error
             "stream_connected": False,
+            "invoice_draft": {},  # live copy of filled fields
+            "missing_fields": ["client_id", "due_date", "payment_terms", "lines", "tva_rate"],
         }
         return session_id
 

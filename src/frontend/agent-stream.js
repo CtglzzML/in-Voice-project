@@ -9,25 +9,71 @@ export const agentStream = (() => {
 
   const _statusBox = document.querySelector('#agent-status');
   const _statusText = document.querySelector('#status-text');
-  const _spinner = _statusBox?.querySelector('.spinner');
 
-  function _setStatusBox(message, { color = '', showSpinner }) {
-    if (_statusBox) { _statusBox.classList.remove('hidden'); _statusBox.style.color = color; }
-    if (_spinner) _spinner.style.display = showSpinner ? 'block' : 'none';
+  let _listenForReplyFn = null;
+  let _ttsInProgress = false;
+
+  function registerListenCallback(fn) { _listenForReplyFn = fn; }
+
+  function _showTtsBars(show) {
+    const bars = document.querySelector('.tts-bars');
+    if (bars) {
+      if (show) bars.classList.remove('hidden');
+      else bars.classList.add('hidden');
+    }
+  }
+
+  async function _playTTS(text) {
+    const res = await fetch(`${window.INVOICE_BASE_URL || 'http://localhost:8000/api/v1'}/audio/tts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voice: 'alloy' })
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    _showTtsBars(true);
+    return new Promise(resolve => {
+      audio.onended = () => { _showTtsBars(false); URL.revokeObjectURL(url); resolve(); };
+      audio.onerror = () => { _showTtsBars(false); URL.revokeObjectURL(url); resolve(); };
+      audio.play();
+    });
+  }
+
+  function _setStatusBox(message) {
+    if (_statusBox) { _statusBox.classList.remove('hidden'); }
     if (_statusText) _statusText.textContent = message;
   }
 
   function _showStatus(message) {
-    _setStatusBox(message, { showSpinner: true });
+    if (_statusBox) {
+      _statusBox.classList.add('thinking');
+      _statusBox.classList.remove('done', 'error');
+    }
+    _setStatusBox(message);
+    const dot = document.querySelector('.ai-status-dot');
+    if (dot) dot.classList.add('pulse');
   }
 
   function _showError(message) {
-    _setStatusBox(`Error: ${message}`, { color: 'red', showSpinner: false });
+    if (_statusBox) {
+      _statusBox.classList.add('error');
+      _statusBox.classList.remove('thinking', 'done');
+    }
+    _setStatusBox(`Error: ${message}`);
+    const dot = document.querySelector('.ai-status-dot');
+    if (dot) dot.classList.remove('pulse');
     _resetRecordBtn();
   }
 
   function _onDone(invoiceId, invoiceNumber) {
-    _setStatusBox('✓ Invoice created! You can edit the fields below.', { color: 'green', showSpinner: false });
+    if (_statusBox) {
+      _statusBox.classList.add('done');
+      _statusBox.classList.remove('thinking', 'error');
+    }
+    _setStatusBox('✓ Invoice created! You can edit the fields below.');
+    const dot = document.querySelector('.ai-status-dot');
+    if (dot) dot.classList.remove('pulse');
     _hideQuestion();
     if (invoiceNumber) formUpdater.setInvoiceNumber(invoiceNumber);
     formUpdater.unlockForm();
@@ -64,6 +110,10 @@ export const agentStream = (() => {
 
       const data = await res.json();
       sessionId = data.session_id;
+      
+      const abandonBtn = document.querySelector('#abandon-btn');
+      if (abandonBtn) abandonBtn.style.display = 'inline-block';
+      
       _openStream(0);
     } catch (e) {
       _showError(`Network error: ${e.message}`);
@@ -89,14 +139,16 @@ export const agentStream = (() => {
 
   function _handleEvent(event) {
     switch (event.type) {
-      case 'thinking':
-        _showStatus(event.message || 'Agent thinking...');
+      case 'message':
+      case 'thinking': // fallback for older events
+        _showStatus(event.message || event.content || 'Agent processing...');
         break;
       case 'profile':
         formUpdater.updateProfile(event.data);
         break;
       case 'invoice_update':
         formUpdater.update(event.field, event.value);
+        _markFieldFilled(event.field);
         break;
       case 'question':
         _showQuestion(event.message);
@@ -104,8 +156,10 @@ export const agentStream = (() => {
       case 'client_suggestions':
         _showClientSuggestions(event.message, event.suggestions);
         break;
-      case 'client_form_needed':
-        _showNewClientForm(event.extracted_name || '');
+      case 'ui_action':
+        if (event.action === 'show_create_client_inline') {
+          _showInlineClientForm(event.data?.name || '');
+        }
         break;
       case 'done':
         _onDone(event.invoice_id, event.invoice_number);
@@ -135,8 +189,12 @@ export const agentStream = (() => {
         body: JSON.stringify({ session_id: sessionId, reply: text })
       });
 
-      if (!res.ok && res.status !== 409) {
-        _showError(`Reply error: ${res.status}`);
+      if (!res.ok) {
+        if (res.status === 409) {
+          _showStatus('Not expecting a reply at the moment.');
+        } else {
+          _showError(`Reply error: ${res.status}`);
+        }
         sendBtn.disabled = false;
         return;
       }
@@ -150,38 +208,83 @@ export const agentStream = (() => {
     _showStatus('Agent thinking...');
   }
 
-  function _showQuestion(message) {
+  let _autoListenTimeout = null;
+
+  async function _showQuestion(message) {
     const box     = document.querySelector('#question-box');
     const text    = document.querySelector('#question-text');
     const input   = document.querySelector('#reply-input');
     const sendBtn = document.querySelector('#reply-send-btn');
     const micBtn  = document.querySelector('#reply-mic-btn');
+    
     if (box)     box.classList.remove('hidden');
     if (text)    text.textContent = message;
-    if (input)   { input.value = ''; input.focus(); }
-    if (sendBtn) sendBtn.disabled = false;
+    
+    if (input) { 
+      input.classList.remove('hidden');
+      input.value = ''; 
+      input.focus(); 
+    }
+    if (sendBtn) {
+      sendBtn.classList.remove('hidden');
+      sendBtn.disabled = false;
+    }
     if (micBtn)  micBtn.classList.add('auto-listening');
-    _setStatusBox('Waiting for your reply…', { showSpinner: false });
+    _setStatusBox('Waiting for your reply…');
+    
+    if (_statusBox) {
+      _statusBox.classList.remove('thinking', 'done', 'error');
+    }
+    const dot = document.querySelector('.ai-status-dot');
+    if (dot) dot.classList.remove('pulse');
+
+    if (!_ttsInProgress) {
+      _ttsInProgress = true;
+      await _playTTS(message);
+      _ttsInProgress = false;
+      clearTimeout(_autoListenTimeout);
+      
+      const form = document.querySelector('#inline-client-form');
+      if (form && !form.classList.contains('hidden')) {
+        // If inline form is visible, do not auto listen
+        return;
+      }
+
+      _autoListenTimeout = setTimeout(() => {
+        _listenForReplyFn?.();
+        if (input) {
+          const oldPlaceholder = input.placeholder;
+          input.placeholder = 'Listening...';
+          setTimeout(() => { input.placeholder = oldPlaceholder; }, 5000);
+        }
+      }, 1000);
+    }
   }
 
   function _hideQuestion() {
+    _ttsInProgress = false;
+    clearTimeout(_autoListenTimeout);
     const box = document.querySelector('#question-box');
     if (box) box.classList.add('hidden');
     _hideClientSuggestions();
-    _hideNewClientForm();
+    _hideInlineClientForm();
   }
 
   function _showClientSuggestions(message, suggestions) {
     const box  = document.querySelector('#client-suggestions-box');
     const msg  = document.querySelector('#client-suggestions-msg');
     const list = document.querySelector('#client-suggestions-list');
-    const newBtn = document.querySelector('#new-client-btn');
 
     if (!box || !list) return;
 
     box.classList.remove('hidden');
     if (msg) msg.textContent = message;
-    _setStatusBox('Sélectionnez un client ou créez-en un nouveau', { showSpinner: false });
+    _setStatusBox('Select a client or create a new one');
+    if (_statusBox) {
+      _statusBox.classList.remove('thinking', 'done', 'error');
+    }
+    const dot = document.querySelector('.ai-status-dot');
+    if (dot) dot.classList.remove('pulse');
 
     list.innerHTML = '';
     suggestions.forEach(c => {
@@ -194,13 +297,6 @@ export const agentStream = (() => {
       });
       list.appendChild(card);
     });
-
-    if (newBtn) {
-      newBtn.onclick = () => {
-        _hideClientSuggestions();
-        _showNewClientForm('');
-      };
-    }
   }
 
   function _hideClientSuggestions() {
@@ -208,51 +304,41 @@ export const agentStream = (() => {
     if (box) box.classList.add('hidden');
   }
 
-  function _showNewClientForm(extractedName) {
-    const form = document.querySelector('#new-client-form');
+  function _showInlineClientForm(clientName) {
+    const form = document.querySelector('#inline-client-form');
     if (!form) return;
 
-    const nameInput    = form.querySelector('#ncf-name');
-    const addressInput = form.querySelector('#ncf-address');
-    const emailInput   = form.querySelector('#ncf-email');
-    const phoneInput   = form.querySelector('#ncf-phone');
-    const submitBtn    = form.querySelector('#ncf-submit');
-    const errorMsg     = form.querySelector('#ncf-error');
+    form.dataset.clientName = clientName;
 
-    if (nameInput)    nameInput.value    = extractedName || '';
-    if (addressInput) addressInput.value = '';
+    const nameInput    = form.querySelector('#icf-name');
+    const emailInput   = form.querySelector('#icf-email');
+    const phoneInput   = form.querySelector('#icf-phone');
+    const submitBtn    = form.querySelector('#icf-submit');
+    const errorMsg     = form.querySelector('#icf-error');
+
+    if (nameInput)    nameInput.value    = clientName || '';
     if (emailInput)   emailInput.value   = '';
     if (phoneInput)   phoneInput.value   = '';
     if (errorMsg)     errorMsg.textContent = '';
 
     form.classList.remove('hidden');
-    _setStatusBox('Nouveau client — remplissez le formulaire', { showSpinner: false });
-
-    // Focus first empty field
-    if (nameInput && !nameInput.value) nameInput.focus();
-    else if (addressInput) addressInput.focus();
+    clearTimeout(_autoListenTimeout);
 
     if (submitBtn) {
       submitBtn.onclick = () => {
-        const name    = nameInput?.value.trim()    || '';
-        const address = addressInput?.value.trim() || '';
+        const name    = nameInput?.value.trim() || form.dataset.clientName || '';
         const email   = emailInput?.value.trim()   || '';
         const phone   = phoneInput?.value.trim()   || '';
 
-        if (!name || !address) {
-          if (errorMsg) errorMsg.textContent = 'Nom et adresse sont obligatoires.';
-          return;
-        }
-
         form.classList.add('hidden');
-        sendReply(JSON.stringify({ name, address, email, phone }));
-        _showStatus('Création du client...');
+        sendReply(JSON.stringify({ name, email, phone }));
+        _showStatus("Creating client...");
       };
     }
   }
 
-  function _hideNewClientForm() {
-    const form = document.querySelector('#new-client-form');
+  function _hideInlineClientForm() {
+    const form = document.querySelector('#inline-client-form');
     if (form) form.classList.add('hidden');
   }
 
@@ -265,5 +351,39 @@ export const agentStream = (() => {
     if (label) label.textContent = 'Start recording';
   }
 
-  return { start, sendReply };
+  const MANDATORY_FIELDS = ['client_id', 'lines', 'tva_rate', 'due_date', 'payment_terms'];
+  function _markFieldFilled(field) {
+    if (!MANDATORY_FIELDS.includes(field)) return;
+    const chip = document.querySelector(`#missing-fields .field-chip[data-field="${field}"]`);
+    if (!chip) return;
+    if (chip.classList.contains('filled')) return;
+    const missingFields = document.querySelector('#missing-fields');
+    if (missingFields) missingFields.classList.remove('hidden');
+    chip.classList.remove('missing');
+    chip.classList.add('filled');
+    chip.textContent = `✓ ${chip.textContent.replace('· ', '')}`;
+  }
+
+  function isActive() { return !!sessionId; }
+
+  function abandonSession() {
+    if (eventSource) { eventSource.close(); eventSource = null; }
+    sessionId = null;
+    _hideQuestion();
+    _resetRecordBtn();
+    
+    if (_statusBox) {
+      _statusBox.classList.add('hidden');
+      _statusBox.classList.remove('thinking', 'done', 'error');
+    }
+    
+    const abandonBtn = document.querySelector('#abandon-btn');
+    if (abandonBtn) abandonBtn.style.display = 'none';
+    
+    sessionStorage.removeItem('invoiceDraft');
+    localStorage.removeItem('persistentInvoiceDraft');
+    location.reload();
+  }
+
+  return { start, sendReply, registerListenCallback, isActive, abandonSession };
 })();
