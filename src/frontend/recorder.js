@@ -6,6 +6,7 @@ export const recorder = (() => {
   let mediaRecorder = null;
 
   function init() {
+    agentStream.registerListenCallback(() => listenForReply());
     const recordBtn   = document.querySelector('#record-btn');
     const replyInput  = document.querySelector('#reply-input');
     const replySendBtn = document.querySelector('#reply-send-btn');
@@ -15,9 +16,22 @@ export const recorder = (() => {
 
     recordBtn.addEventListener('click', () => {
       if (recognition || mediaRecorder) return;
+      if (typeof agentStream.isActive === 'function' && agentStream.isActive()) {
+        listenForReply();
+        return;
+      }
       _setRecordingState(true);
       _startCapture('en-US', _onMainTranscript);
     });
+    
+    const abandonBtn = document.querySelector('#abandon-btn');
+    if (abandonBtn) {
+        abandonBtn.addEventListener('click', () => {
+            if (typeof agentStream.abandonSession === 'function') {
+                agentStream.abandonSession();
+            }
+        });
+    }
 
     if (replySendBtn) replySendBtn.addEventListener('click', () => {
       agentStream.sendReply(replyInput.value);
@@ -34,12 +48,16 @@ export const recorder = (() => {
   }
 
   function listenForReply() {
+    if (recognition || mediaRecorder) return;
+
     const replyInput = document.querySelector('#reply-input');
 
     _setAutoListenState(true);
+    _setRecordingState(true);
 
     _startCapture('en-US', (transcript) => {
       _setAutoListenState(false);
+      _setRecordingState(false);
 
       if (!transcript) {
         if (replyInput) replyInput.focus();
@@ -208,7 +226,7 @@ export const recorder = (() => {
     btn.disabled = active;
     btn.classList.toggle('recording', active);
     const label = btn.querySelector('.record-btn-label');
-    if (label) label.textContent = active ? 'Listening…' : 'Start recording';
+    if (label) label.textContent = active ? "Je t'écoute…" : 'Start recording';
   }
 
   function _setAutoListenState(active) {
@@ -243,8 +261,13 @@ export const recorder = (() => {
   function _showError(msg) {
     const box  = document.querySelector('#agent-status');
     const text = document.querySelector('#status-text');
-    if (box)  { box.classList.remove('hidden'); box.style.color = 'red'; }
+    if (box)  { 
+      box.classList.remove('hidden', 'thinking', 'done'); 
+      box.classList.add('error');
+    }
     if (text) text.textContent = msg;
+    const dot = document.querySelector('.ai-status-dot');
+    if (dot) dot.classList.remove('pulse');
   }
 
   if (document.readyState === 'loading') {

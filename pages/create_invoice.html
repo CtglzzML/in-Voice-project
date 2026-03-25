@@ -39,11 +39,19 @@
 
           <div class="manual-entry-card">
             <!-- Agent thinking -->
-            <div id="agent-status" class="agent-status hidden">
-              <div class="agent-dots">
-                <span></span><span></span><span></span>
-              </div>
+            <div id="agent-status" class="ai-status hidden">
+              <div class="ai-status-dot"></div>
               <span id="status-text"></span>
+              <div class="waveform-bars">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+
+            <!-- Missing fields -->
+            <div id="missing-fields" class="missing-fields hidden">
+              <span class="field-chip missing" data-field="client_id">· Client</span>
+              <span class="field-chip missing" data-field="lines">· Lignes</span>
+              <span class="field-chip missing" data-field="tva_rate">· TVA</span>
             </div>
 
             <!-- Agent question (chat bubble) -->
@@ -51,22 +59,32 @@
               <div class="agent-bubble">
                 <div class="agent-badge">
                   <span class="agent-badge-dot"></span>
-                  <span class="agent-badge-text">AI ASSISTANT</span>
+                  <span class="tts-bars hidden">
+                    <span></span><span></span><span></span>
+                  </span>
                 </div>
                 <p id="question-text"></p>
               </div>
               <div class="reply-row">
-                <input id="reply-input" type="text" placeholder="Type your reply..." autocomplete="off">
-                <button id="reply-mic-btn" class="reply-icon-btn" title="Voice reply" aria-hidden="true">🎤</button>
+                <input id="reply-input" type="text" placeholder="Tell me about your invoice..." autocomplete="off">
                 <button id="reply-send-btn" class="reply-send-btn">Send</button>
               </div>
-            </div>
 
-            <div class="manual-actions">
-              <button id="new-client-btn" class="new-client-btn">+ Create a new client</button>
+              <!-- Inline Client Creation Form -->
+              <div id="inline-client-form" class="inline-client-form hidden">
+                <div class="icf-fields">
+                  <div class="icf-title" style="font-size: 0.9rem; margin-bottom: 0.5rem; color: #62588f;">Enter contact
+                    details:</div>
+                  <input id="icf-email" type="email" placeholder="Email (optional)" autocomplete="off">
+                  <input id="icf-phone" type="tel" placeholder="Phone (optional)" autocomplete="off">
+                </div>
+                <p id="icf-error" class="icf-error"></p>
+                <button id="icf-submit" class="icf-submit-btn">Create client</button>
+              </div>
             </div>
           </div>
 
+          <!-- Client suggestions / static forms have been removed for inline conversation flow -->
           <!-- Client Suggestions Box -->
           <div id="client-suggestions-box" class="client-suggestions-box hidden">
             <p id="client-suggestions-msg"></p>
@@ -85,13 +103,6 @@
         </div>
       </div>
 
-      <div id="error-summary" class="error-summary hidden">
-        <div class="error-header">
-          <strong>Please fix the following:</strong>
-        </div>
-        <ul id="error-list"></ul>
-      </div>
-
       <!-- Invoice Details -->
       <div class="card">
         <h3>INVOICE DETAILS</h3>
@@ -105,11 +116,6 @@
           <label>
             Date
             <input id="inv-date" type="date">
-          </label>
-
-          <label>
-            Due
-            <input id="inv-due" type="date">
           </label>
 
           <label>
@@ -191,22 +197,19 @@
               <h4>INVOICE</h4>
               <p id="preview-invoice-number"># ---</p>
               <span id="preview-date"></span>
-              <span id="preview-due-date"></span>
             </div>
           </div>
 
           <div class="bill-box">
             <span>Bill to:</span>
             <p id="preview-client-name">Client name: -</p>
-          </div>
-
-          <div class="client-info">
             <p id="preview-client-address">Client address: -</p>
             <p id="preview-client-email">Client email: -</p>
             <p id="preview-client-phone">Client phone: -</p>
           </div>
 
-          <br>
+
+
           <div class="preview-table">
             <div class="preview-table-head">
               <span>Description</span>
@@ -294,6 +297,6 @@
   </tr>
 </template>
 
-<!--<script src="../create_invoice.js"></script>-->
+<script src="../create_invoice.js"></script>
 
 </html>

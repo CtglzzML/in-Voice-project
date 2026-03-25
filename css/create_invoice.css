@@ -1127,7 +1127,121 @@ input:focus {
   max-width: 460px;
 }
 
+
+
+/* --- Inline Client Creation Form --- */
+
+.inline-client-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fcfcfc;
+  border: 1px solid rgba(98, 88, 143, 0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 8px;
+  animation: slide-up 0.3s ease;
+}
+
+.inline-client-form.hidden {
+  display: none;
+}
+
+.icf-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.icf-fields input {
+  height: 38px;
+  background: #fff;
+  border: 1px solid #d0cce8;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  color: #3d406d;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.icf-fields input:focus {
+  border-color: #62588f;
+}
+
+.icf-error {
+  color: #dc2626;
+  font-size: 0.82rem;
+  margin: 0;
+  min-height: 1em;
+}
+
+.icf-submit-btn {
+  width: 100%;
+  padding: 10px;
+  background: #62588f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.icf-submit-btn:hover {
+  background: #4e4578;
+}
+
+/* ===========================
+   AI INTERACTION REDESIGN
+   =========================== */
+
+/* Status bar */
+.ai-status { display:flex; align-items:center; gap:10px; background:rgba(98,88,143,0.08); border:1px solid rgba(98,88,143,0.28); border-radius:5px; padding:10px 14px; }
+.ai-status.hidden { display:none; }
+.ai-status-dot { width:8px; height:8px; border-radius:50%; background:#62588f; box-shadow:0 0 8px rgba(98,88,143,0.45); flex-shrink:0; }
+.ai-status.thinking .ai-status-dot { animation:dot-pulse 1.4s ease-in-out infinite; }
+@keyframes dot-pulse { 0%,100%{box-shadow:0 0 4px rgba(98,88,143,0.3)} 50%{box-shadow:0 0 12px rgba(98,88,143,0.7)} }
+
+/* Waveform bars */
+.waveform-bars { display:flex; gap:3px; align-items:center; }
+.waveform-bars span { display:inline-block; width:3px; border-radius:2px; background:#62588f; }
+.waveform-bars span:nth-child(1) { height:10px; opacity:0.4; animation:wave 1s ease-in-out infinite 0s; }
+.waveform-bars span:nth-child(2) { height:16px; opacity:0.7; animation:wave 1s ease-in-out infinite 0.15s; }
+.waveform-bars span:nth-child(3) { height:8px;  opacity:0.5; animation:wave 1s ease-in-out infinite 0.3s; }
+.waveform-bars span:nth-child(4) { height:13px; opacity:0.8; animation:wave 1s ease-in-out infinite 0.45s; }
+.waveform-bars span:nth-child(5) { height:6px;  opacity:0.3; animation:wave 1s ease-in-out infinite 0.6s; }
+@keyframes wave { 0%,100%{transform:scaleY(0.6)} 50%{transform:scaleY(1.3)} }
+
+/* Done state */
+.ai-status.done { background:#f0fdf4; border-color:#86efac; }
+.ai-status.done .ai-status-dot { background:#16a34a; box-shadow:0 0 8px rgba(22,163,74,0.45); animation:none; }
+.ai-status.done #status-text { color:#15803d; }
+
+/* Error state */
+.ai-status.error { background:#fff1f2; border-color:#fecdd3; }
+.ai-status.error .ai-status-dot { background:#dc2626; box-shadow:0 0 8px rgba(220,38,38,0.45); animation:none; }
+.ai-status.error #status-text { color:#dc2626; }
+
+/* Missing fields chips */
+.missing-fields { display:flex; gap:6px; flex-wrap:wrap; }
+.missing-fields.hidden { display:none; }
+.field-chip { font-size:0.78rem; font-weight:600; padding:3px 10px; border-radius:20px; border:1px solid; transition:all 0.2s ease; }
+.field-chip.missing { background:#fffbeb; border-color:#fde68a; color:#b45309; }
+.field-chip.filled  { background:#f0fdf4; border-color:#86efac; color:#16a34a; }
+
+/* TTS bars (in agent-badge) */
+.tts-bars { display:flex; gap:2px; align-items:center; margin-left:4px; }
+.tts-bars.hidden { display:none; }
+.tts-bars span { display:inline-block; width:2px; border-radius:1px; background:#62588f; }
+.tts-bars span:nth-child(1) { height:8px;  opacity:0.5; animation:wave 0.8s ease-in-out infinite 0s; }
+.tts-bars span:nth-child(2) { height:12px; opacity:0.9; animation:wave 0.8s ease-in-out infinite 0.2s; }
+.tts-bars span:nth-child(3) { height:6px;  opacity:0.4; animation:wave 0.8s ease-in-out infinite 0.4s; }
+
+.ai-status.thinking .waveform-bars { display:flex; }
+.ai-status:not(.thinking) .waveform-bars { display:none; }
+
 .client-info {
   color: black;
 }
-

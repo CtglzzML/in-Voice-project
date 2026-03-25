@@ -55,6 +55,11 @@ export const formUpdater = (() => {
   function setInvoiceNumber(number) {
     _setInput('#inv-number', number);
     _setText('#preview-invoice-number', `# ${number}`);
+    
+    const inputEl = document.querySelector('#inv-number');
+    if (inputEl) {
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
   }
 
   function initDate() {

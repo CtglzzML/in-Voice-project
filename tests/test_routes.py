@@ -72,15 +72,18 @@ async def test_transcribe_returns_transcript(monkeypatch):
     mock_transcription = MagicMock()
     mock_transcription.text = "Invoice for Jean Dupont"
     mock_client.audio.transcriptions.create = AM(return_value=mock_transcription)
-    monkeypatch.setattr(audio_mod, "_openai_client", lambda: mock_client)
+    app.dependency_overrides[audio_mod.get_openai_client] = lambda: mock_client
 
     import io
     audio_bytes = b"fake_audio_data"
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        resp = await ac.post(
-            "/api/v1/audio/transcribe",
-            files={"audio": ("test.webm", io.BytesIO(audio_bytes), "audio/webm")},
-        )
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            resp = await ac.post(
+                "/api/v1/audio/transcribe",
+                files={"audio": ("test.webm", io.BytesIO(audio_bytes), "audio/webm")},
+            )
+    finally:
+        app.dependency_overrides.pop(audio_mod.get_openai_client, None)
     assert resp.status_code == 200
     assert resp.json()["transcript"] == "Invoice for Jean Dupont"
 
@@ -95,14 +98,17 @@ async def test_transcribe_passes_language_to_whisper(monkeypatch):
     mock_transcription = MagicMock()
     mock_transcription.text = "Bonjour"
     mock_client.audio.transcriptions.create = AM(return_value=mock_transcription)
-    monkeypatch.setattr(audio_mod, "_openai_client", lambda: mock_client)
+    app.dependency_overrides[audio_mod.get_openai_client] = lambda: mock_client
 
     import io
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        resp = await ac.post(
-            "/api/v1/audio/transcribe?language=en",
-            files={"audio": ("test.webm", io.BytesIO(b"data"), "audio/webm")},
-        )
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            resp = await ac.post(
+                "/api/v1/audio/transcribe?language=en",
+                files={"audio": ("test.webm", io.BytesIO(b"data"), "audio/webm")},
+            )
+    finally:
+        app.dependency_overrides.pop(audio_mod.get_openai_client, None)
 
     assert resp.status_code == 200
     call_kwargs = mock_client.audio.transcriptions.create.call_args.kwargs
