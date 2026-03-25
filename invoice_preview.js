@@ -120,8 +120,16 @@ function renderInvoicePreview() {
                     <div style="font-size: 1rem; font-weight: 500;">
                         ${data.companyName || 'My company'}
                     </div>
+                    <div style="margin-bottom: 18px; line-height: 1.6;">
+                    
+                    </div>
                 </div>
-
+                <div>
+                    <div><strong>Address:</strong> ${data.companyAddress || '-'}</div>
+                    <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
+                    <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
+                </div>
+                
                 <div style="text-align: right;">
                     <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">INVOICE</h3>
                     <p style="margin: 4px 0;"># ${data.invoiceNumber || '---'}</p>
@@ -133,12 +141,6 @@ function renderInvoicePreview() {
             <div style="background: #000; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
                 <div>Bill to:</div>
                 <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
-            </div>
-
-            <div style="margin-bottom: 18px; line-height: 1.6;">
-                <div><strong>From:</strong> ${data.companyAddress || '-'}</div>
-                <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
-                <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
             </div>
 
             <div style="margin-bottom: 18px; line-height: 1.6;">
@@ -183,6 +185,22 @@ function renderInvoicePreview() {
             </div>
         </div>
     `;
+}
+
+function downloadInvoicePDF() {
+    const element = document.querySelector('.pdf-frame'); // The container holding your invoice
+
+    // Optional settings to make it look professional
+    const opt = {
+        margin: 0.5,
+        filename: `Invoice_${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 }, // Higher scale = better quality
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    // New Promise-based usage:
+    html2pdf().set(opt).from(element).save();
 }
 
 function hidePopupBeforePrint() {
@@ -236,7 +254,7 @@ if (createBtn) {
                 window.location.href = 'create_invoice.html'
             } else if (e.target.innerText === 'Download PDF') {
                 hidePopupBeforePrint();
-                window.print();
+                downloadInvoicePDF();
 
                 setTimeout(() => {
                     restorePopupAfterPrint();
@@ -252,22 +270,22 @@ const fileInput = document.getElementById('company-logo');
 const preview = document.getElementById('logo-preview');
 const labelText = document.getElementById('label-text');
 
-fileInput.addEventListener('change', function() {
-  const file = this.files[0]; // Get the first selected file
+fileInput.addEventListener('change', function () {
+    const file = this.files[0]; // Get the first selected file
 
-  if (file) {
-    const reader = new FileReader();
+    if (file) {
+        const reader = new FileReader();
 
-    // When the file is finished being read...
-    reader.addEventListener('load', function() {
-      // 1. Set the <img> src to the file data
-      preview.setAttribute('src', this.result);
-      // 2. Show the image
-      preview.style.display = 'block';
-      // 3. Hide the placeholder text
-      labelText.style.display = 'none';
-    });
+        // When the file is finished being read...
+        reader.addEventListener('load', function () {
+            // 1. Set the <img> src to the file data
+            preview.setAttribute('src', this.result);
+            // 2. Show the image
+            preview.style.display = 'block';
+            // 3. Hide the placeholder text
+            labelText.style.display = 'none';
+        });
 
-    reader.readAsDataURL(file);
-  }
+        reader.readAsDataURL(file);
+    }
 });

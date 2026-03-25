@@ -152,40 +152,48 @@ function buildInvoicePreviewHtml(invoice) {
     const itemsRows = buildItemsRows(data.items);
 
     return `
-        <div class="invoice-preview-print" style="background: #fff; width: 100%; max-width: 760px; margin: 0 auto; padding: 32px; border-radius: 18px; color: #1b1b1b; font-family: Inter, Arial, sans-serif;">
-            
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 28px;">
+       <div style="width: 100%; max-width: 700px; margin: 0 auto; color: #111; font-family: Inter, sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px;">
+                
                 <div>
-                    ${savedLogo ? `<img src="${savedLogo}" alt="Company logo" style="max-width: 150px; max-height: 80px; object-fit: contain; display: block; margin-bottom: 12px;">` : ''}
-                    <div style="font-size: 1rem; font-weight: 700;">${escapeHtml(data.companyName || 'My company')}</div>
-                    <div style="font-size: 0.92rem; color: #666; margin-top: 6px;">${escapeHtml(data.companyAddress || '-')}</div>
-                    <div style="font-size: 0.92rem; color: #666;">${escapeHtml(data.companyPhone || '-')}</div>
-                    <div style="font-size: 0.92rem; color: #666;">${escapeHtml(data.companyEmail || '-')}</div>
+                    ${savedLogo ? `<img src="${savedLogo}" alt="Logo" style="max-width: 140px; max-height: 70px; object-fit: contain; display: block; margin-bottom: 12px;">` : ''}
+                    <div style="font-size: 1rem; font-weight: 500;">
+                        ${data.companyName || 'My company'}
+                    </div>
                 </div>
 
                 <div style="text-align: right;">
-                    <div style="font-size: 2rem; font-weight: 800; color: #6f56d9; letter-spacing: 0.02em;">INVOICE</div>
-                    <div style="margin-top: 10px; font-size: 0.95rem;"><strong>#</strong> ${escapeHtml(data.invoiceNumber || '---')}</div>
-                    <div style="margin-top: 4px; font-size: 0.95rem;"><strong>Date:</strong> ${formatDate(data.invoiceDate)}</div>
-                    <div style="margin-top: 4px; font-size: 0.95rem;"><strong>Due:</strong> ${formatDate(data.dueDate)}</div>
+                    <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">INVOICE</h3>
+                    <p style="margin: 4px 0;"># ${data.invoiceNumber || '---'}</p>
+                    <p style="margin: 0;">Date ${formatDate(data.invoiceDate)}</p>
+                    <p style="margin: 4px 0 0;">Due ${formatDate(data.dueDate)}</p>
                 </div>
             </div>
 
-            <div style="background: #6f56d9; color: white; border-radius: 14px; padding: 14px 18px; margin-bottom: 24px;">
-                <div style="font-size: 0.85rem; opacity: 0.95;">Bill to</div>
-                <div style="font-size: 1.05rem; font-weight: 700; margin-top: 4px;">${escapeHtml(data.clientName || '-')}</div>
-                <div style="font-size: 0.92rem; margin-top: 6px;">${escapeHtml(data.clientAddress || '-')}</div>
-                <div style="font-size: 0.92rem;">${escapeHtml(data.clientPhone || '-')}</div>
-                <div style="font-size: 0.92rem;">${escapeHtml(data.clientEmail || '-')}</div>
+            <div style="background: #000; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
+                <div>Bill to:</div>
+                <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
             </div>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; overflow: hidden; border-radius: 14px;">
+            <div style="margin-bottom: 18px; line-height: 1.6;">
+                <div><strong>From:</strong> ${data.companyAddress || '-'}</div>
+                <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
+                <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
+            </div>
+
+            <div style="margin-bottom: 18px; line-height: 1.6;">
+                <div><strong>Client address:</strong> ${data.clientAddress || '-'}</div>
+                <div><strong>Client phone:</strong> ${data.clientPhone || '-'}</div>
+                <div><strong>Client email:</strong> ${data.clientEmail || '-'}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <thead>
-                    <tr style="background: #f3efff; color: #4b3aa3;">
-                        <th style="text-align: left; padding: 14px 10px; font-size: 0.92rem;">Description</th>
-                        <th style="text-align: left; padding: 14px 10px; font-size: 0.92rem;">Qty</th>
-                        <th style="text-align: left; padding: 14px 10px; font-size: 0.92rem;">Price</th>
-                        <th style="text-align: left; padding: 14px 10px; font-size: 0.92rem;">Total</th>
+                    <tr style="background: #000; color: #fff;">
+                        <th style="text-align: left; padding: 12px;">Description</th>
+                        <th style="text-align: left; padding: 12px;">Qty</th>
+                        <th style="text-align: left; padding: 12px;">Price</th>
+                        <th style="text-align: left; padding: 12px;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -193,25 +201,25 @@ function buildInvoicePreviewHtml(invoice) {
                 </tbody>
             </table>
 
-            <div style="width: 260px; margin-left: auto; background: #faf8ff; border: 1px solid #ece8f8; border-radius: 14px; padding: 18px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span>Subtotal</span>
-                    <span>${formatCurrency(data.subtotal)}</span>
+            <div style="width: 220px; margin-left: auto; line-height: 1.8;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Subtotal:</span>
+                    <span>${formatCurrency(data.subtotal || 0)}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span>Tax (${escapeHtml(data.taxPercent || 0)}%)</span>
-                    <span>${formatCurrency(data.taxAmount)}</span>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Tax (${data.taxPercent || 0}%):</span>
+                    <span>${formatCurrency(data.taxAmount || 0)}</span>
                 </div>
-                <div style="height: 1px; background: #ddd6fe; margin: 12px 0;"></div>
-                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.05rem; color: #4b3aa3;">
-                    <span>Total</span>
-                    <span>${formatCurrency(data.totalAmount)}</span>
+                <div style="height: 1px; background: rgba(0,0,0,0.5); margin: 8px 0;"></div>
+                <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                    <span>TOTAL:</span>
+                    <span>${formatCurrency(data.totalAmount || 0)}</span>
                 </div>
             </div>
 
-            <div style="margin-top: 26px;">
-                <div style="font-weight: 700; margin-bottom: 8px;">Comments</div>
-                <div style="line-height: 1.6; color: #555; white-space: pre-wrap;">${escapeHtml(data.comment || 'Nothing to add.')}</div>
+            <div style="margin-top: 28px;">
+                <strong>Comments:</strong>
+                <p style="margin-top: 8px; white-space: pre-wrap;">${data.comment || 'Nothing to add'}</p>
             </div>
         </div>
     `;
