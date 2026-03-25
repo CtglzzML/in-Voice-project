@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet" />
+    rel="stylesheet" />
   <link rel="stylesheet" href="../css/color_scheme.css" />
   <link rel="stylesheet" href="../css/create_invoice.css">
 </head>
@@ -34,6 +34,10 @@
               <span></span><span></span><span></span>
             </span>
           </button>
+          
+          <div>
+            or
+          </div>
 
           <!-- Agent thinking -->
           <div id="agent-status" class="agent-status hidden">
@@ -80,32 +84,48 @@
         <h3>INVOICE DETAILS</h3>
         <h4>Invoice Information:</h4>
         <div class="grid">
-          <input id="inv-number" placeholder="Invoice number">
+          <input id="inv-number" placeholder="Invoice number" required>
           <label for="inv-date">Date:<input id="inv-date" type="date"></label>
           <label for="inv-due">Due:<input id="inv-due" type="date"></label>
-          <input id="inv-tax" type="number" placeholder="Tax (%)">
+          <input id="inv-tax" type="number" placeholder="Tax (%)" required>
         </div>
 
         <h4>Your Information</h4>
         <div class="grid">
-          <input id="company-name" placeholder="Company name">
-          <input id="company-address" placeholder="Address">
+          <input id="company-name" placeholder="Company name" required>
+          <input id="company-address" placeholder="Address" required>
           <input id="company-phone" placeholder="Phone">
           <input id="company-email" type="email" placeholder="Email">
         </div>
 
         <h4>Client Information</h4>
         <div class="grid">
-          <input id="client-name" placeholder="Client name">
-          <input id="client-address" placeholder="Address">
+          <input id="client-name" placeholder="Client name" required>
+          <input id="client-address" placeholder="Address" required>
           <input id="client-phone" placeholder="Phone">
           <input id="client-email" type="email" placeholder="Email">
         </div>
 
-        <h4>Comments</h4>
+        <h4>Additional Info:</h4>
         <div class="grid">
-          <textarea id="comment" class="" placeholder="">
+          <label for="comment">
+            Comment:
+            <textarea id="comment" class="comment" placeholder="">
           </textarea>
+          </label>
+
+          <div id="logo-upload">
+            <label for="company-logo">
+              Logo:
+              <div class="custom-file-upload" id="logo-label">
+                <img src="" id="logo-preview" class="custom-file-upload" alt="Logo Preview">
+                <img src="../images/image-missing-svgrepo-com.svg" id="placeholder-logo" class="custom-file-upload"
+                  alt="placeholder logo">
+                <input id="company-logo" type="file" accept="image/*" />
+              </div>
+            </label>
+            <button id="delete-logo-btn">🗑️</button>
+          </div>
         </div>
       </div>
 
@@ -122,6 +142,16 @@
 
         <div class="preview-sheet">
           <div class="preview-top">
+            <div class="preview-header">
+              <div>
+                <div class="preview-logo-container">
+                  <img id="preview-logo-display" src="" alt="Company Logo">
+                </div>
+                <div class="preview-company">
+                  <p>My Company</p>
+                </div>
+              </div>
+            </div>
             <div class="preview-issuer">
               <div class="preview-company"></div>
               <div id="preview-company-address"></div>
@@ -145,6 +175,20 @@
             <p id="preview-client-phone"></p>
           </div>
 
+          <div class="preview-info">
+            <div class="preview-company-info">
+              <p id="preview-company-address">From: -</p>
+              <p id="preview-company-phone">Phone: -</p>
+              <p id="preview-company-email">Email: -</p>
+            </div>
+            <br>
+            <div class="preview-client-info">
+              <p id="preview-client-address">Client address: -</p>
+              <p id="preview-client-phone">Client phone: -</p>
+              <p id="preview-client-email">Client email: -</p>
+            </div>
+          </div>
+
           <div class="preview-table">
             <div class="preview-table-head">
               <span>Description</span>
@@ -159,7 +203,9 @@
             </table>
             <button type="button" id="add-line-item">+ Add item</button>
 
-            <div class="preview-totals">
+            <div class="preview-footer">
+
+              <div class="preview-totals">
               <div class="preview-total-row">
                 <span>Subtotal:</span>
                 <span id="total-subtotal">$0.00</span>
@@ -173,14 +219,25 @@
                 <span>TOTAL:</span>
                 <span id="total-final">$0.00</span>
               </div>
+              <br>
+              <div class="preview-note">
+                Comments:
+                <div class="preview-note-content">
+                  sample comment
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
-
-      <button class="return-btn">Return</button>
-
     </div>
+  </div>
+  </div>
+
+  <button class="return-btn">Return</button>
+
+  </div>
 
   </div>
 
@@ -218,5 +275,7 @@
     </td>
   </tr>
 </template>
+
+<script src="../create_invoice.js"></script>
 
 </html>

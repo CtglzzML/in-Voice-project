@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,14 +8,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
 
   <link rel="stylesheet" href="../css/color_scheme.css" />
   <link rel="stylesheet" href="../css/invoice_preview.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
+
 <body>
   <main class="preview-page">
 
@@ -23,20 +24,13 @@
 
       <div class="pdf-frame">
         <p>Invoice preview will appear here</p>
-    </div>
+      </div>
     </section>
 
     <section class="details-card">
-      <h2 class="card-title">INVOICE DETAILS</h2>
+      <h2 class="card-title">ACTIONS</h2>
 
       <div class="details-content">
-
-        <div class="details-grid">
-          <div class="field-group">
-            <label for="company-logo" class="custom-file-upload"></label>
-            <input id="company-logo" type="file" accept="image/*" value="xClient Inc." />
-          </div>
-        </div>
 
         <div class="button-row">
           <button type="button" class="btn btn-secondary">Go back to edit</button>
@@ -58,6 +52,7 @@
       <p>Invoice Created!</p>
       <button class="btn btn-primary">Download PDF</button>
       <button class="btn btn-secondary">Go to invoice library</button>
+      <button class="btn btn-primary">Create Another Invoice</button>
     </div>
   </template>
 
@@ -73,4 +68,5 @@
 
   <script src="../invoice_preview.js"></script>
 </body>
+
 </html>

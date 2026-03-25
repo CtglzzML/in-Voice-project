@@ -23,7 +23,7 @@
 .card,
 .invoice-editor-card {
   background: #cfcfcf;
-  border-radius: 4px;
+  border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
   overflow: hidden;
 }
@@ -43,15 +43,32 @@
   padding: 16px 22px;
 }
 
-.card > *:not(h3) {
+.card>*:not(h3) {
   margin-left: 22px;
   margin-right: 22px;
 }
 
-.card > :last-child {
+.card> :last-child {
   margin-bottom: 20px;
 }
 
+.record-btn {
+  width: calc(100% - 44px);
+  margin-top: 20px;
+  margin-bottom: 20px;
+  min-height: 84px;
+  border: none;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.record-btn:hover,
 .preview-btn:hover,
 .return-btn:hover,
 #add-line-item:hover,
@@ -62,7 +79,7 @@
 
 #suggestions {
   background: #efefef;
-  border-radius: 22px;
+  border-radius: 5px;
   padding: 16px 20px 14px;
   margin-bottom: 20px;
 }
@@ -96,12 +113,17 @@
   margin-bottom: 18px;
   align-items: end;
 }
+
 .grid textarea {
-    width: 300px;
-    height: 8em;
-    text-align: left;
-    background: #efefef;
-    border: none;
+  width: 100%;
+  max-width: 100%;
+  height: 8em;
+  text-align: left;
+  background: #efefef;
+  padding: 0.7em;
+  border-radius: 5px;
+  border: none;
+  font-family: "Inter", sans-serif;
 }
 
 .grid label {
@@ -136,7 +158,7 @@ input {
   min-height: 40px;
   padding: 0 14px;
   border: none;
-  border-radius: 14px;
+  border-radius: 5px;
   background: #efefef;
   color: #222;
   font-family: "Inter", sans-serif;
@@ -154,14 +176,16 @@ input:focus {
 
 .preview-header {
   display: flex;
-  justify-content: flex-end;
+  align-items: flex-start;
+  justify-content: space-around;
+  gap: 10px;
 }
 
 .preview-btn {
   min-width: 150px;
   min-height: 40px;
   border: none;
-  border-radius: 14px;
+  border-radius: 5px;
   background: var(--accent);
   color: #fff;
   font-family: "Inter", sans-serif;
@@ -199,7 +223,7 @@ input:focus {
 .preview-sheet {
   background: #fff;
   margin: 28px 22px 22px;
-  border-radius: 6px;
+  border-radius: 5px;
   padding: 26px 20px 18px;
   min-height: 430px;
 }
@@ -213,9 +237,14 @@ input:focus {
 }
 
 .preview-company {
-  font-size: 1rem;
+  display: block;
+  font-size: 1.4rem;
   font-weight: 400;
   color: #111;
+}
+
+.preview-company p {
+  max-width: 25rem;
 }
 
 .preview-invoice-meta {
@@ -241,9 +270,10 @@ input:focus {
 }
 
 .bill-box {
-  background: #62588f;
-  color: #fff;
-  border-radius: 4px;
+  background: #111111;
+  border: solid black 1px;
+  color: white;
+  border-radius: 5px;
   padding: 10px 14px;
   margin-bottom: 20px;
 }
@@ -260,16 +290,15 @@ input:focus {
 }
 
 .preview-table {
-  border-radius: 4px;
+  border-radius: 5px;
   overflow: hidden;
   background: #fff;
 }
 
 .preview-table-head {
-  background: #62588f;
-  color: #fff;
-  display: grid;
-  grid-template-columns: 2.3fr 0.8fr 1fr 1fr;
+  background: #111111;
+  border: solid black 1px;
+  color: white;
   gap: 14px;
   padding: 13px 14px;
   font-size: 0.9rem;
@@ -329,12 +358,19 @@ input:focus {
   font-size: 0.94rem;
 }
 
+.item-row {
+  display: grid;
+  grid-template-columns: 1.6fr 0.7fr 0.9fr 0.9fr 20px;
+  justify-content: start;
+}
+
 .item-row input {
   width: 100%;
-  min-height: 38px;
+  min-height: 2em;
+  min-width: 5em;
   padding: 0 10px;
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   background: #efefef;
   color: #222;
   font-family: "Inter", sans-serif;
@@ -349,6 +385,7 @@ input:focus {
 .item-total-cell {
   white-space: nowrap;
   text-align: right;
+  align-self: center;
 }
 
 .item-total {
@@ -356,29 +393,34 @@ input:focus {
   color: #111;
 }
 
+/* Was desperate */
+.item-row td .delete-btn {
+  transform: translate(-25px, 0);
+}
+
 .delete-btn {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   background: var(--accent);
   color: #fff;
   font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
   transition: transform 0.18s ease, opacity 0.18s ease;
+  align-self: end;
 }
 
 #add-line-item {
   margin-top: 14px;
-  margin-left: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 40px;
   padding: 0 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: 5px;
   background: var(--accent);
   color: #fff;
   font-family: "Inter", sans-serif;
@@ -419,7 +461,7 @@ input:focus {
   min-width: 148px;
   min-height: 52px;
   border: none;
-  border-radius: 14px;
+  border-radius: 5px;
   background: var(--accent);
   color: #fff;
   font-family: "Inter", sans-serif;
@@ -495,7 +537,10 @@ input:focus {
   }
 
   .preview-table-head {
-    grid-template-columns: 1.6fr 0.7fr 0.9fr 0.9fr;
+    display: grid;
+    grid-template-columns: 1.6fr 0.7fr 0.9fr 0.9fr 20px;
+    justify-content: start;
+    max-width: 100%;
     font-size: 0.82rem;
     gap: 8px;
     padding: 11px 10px;
@@ -511,11 +556,6 @@ input:focus {
     padding: 0 8px;
   }
 
-  #add-line-item {
-    width: 100%;
-    margin-top: 12px;
-  }
-
   .preview-totals {
     width: 100%;
   }
@@ -527,7 +567,7 @@ input:focus {
   }
 
   .grid {
-    grid-template-columns: 1fr;
+    grid-auto-columns: 1fr;
   }
 
   .card h3,
@@ -546,414 +586,88 @@ input:focus {
   }
 }
 
-/* ===== AI INTERACTION ZONE ===== */
-
-.hidden {
-  display: none !important;
-}
-
-.voice-zone {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 18px 22px 22px;
-}
-
-/* --- Record button --- */
-
-.record-btn {
-  position: relative;
-  width: 100%;
-  min-height: 80px;
-  border: none;
-  border-radius: 18px;
-  background: var(--accent);
-  color: #fff;
-  font-family: "Inter", sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  overflow: hidden;
-  transition: background 0.25s, transform 0.15s;
-  margin: 0;
-}
-
-.record-btn:hover {
-  transform: translateY(-1px);
-  opacity: 0.93;
-}
-
-.record-btn-icon {
-  font-size: 1.3rem;
-  line-height: 1;
-  position: relative;
-  z-index: 1;
-}
-
-.record-btn-label {
-  position: relative;
-  z-index: 1;
-  letter-spacing: 0.01em;
-}
-
-/* Pulse rings — hidden by default, shown when .recording */
-.record-rings {
+/* 1. Hide the ugly default file button */
+#company-logo {
   display: none;
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
 }
 
-.record-rings span {
-  position: absolute;
-  inset: -10px;
-  border-radius: 22px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  animation: ring-out 1.8s ease-out infinite;
-}
-
-.record-rings span:nth-child(2) { animation-delay: 0.6s; }
-.record-rings span:nth-child(3) { animation-delay: 1.2s; }
-
-@keyframes ring-out {
-  0%   { transform: scale(0.92); opacity: 0.7; }
-  100% { transform: scale(1.08); opacity: 0; }
-}
-
-/* Recording state */
-.record-btn.recording {
-  background: #b04f42;
-  animation: breathe 2s ease-in-out infinite;
-}
-
-.record-btn.recording .record-rings {
-  display: block;
-}
-
-@keyframes breathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(176, 79, 66, 0.35); }
-  50%       { box-shadow: 0 0 0 10px rgba(176, 79, 66, 0); }
-}
-
-/* --- Agent thinking status --- */
-
-.agent-status {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 0 6px;
-  color: #62588f;
-  font-size: 0.88rem;
-  font-weight: 500;
-  animation: fade-in 0.3s ease;
-}
-
-.agent-dots {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.agent-dots span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #62588f;
-  animation: dot-bounce 1.2s ease-in-out infinite;
-}
-
-.agent-dots span:nth-child(2) { animation-delay: 0.2s; }
-.agent-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes dot-bounce {
-  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-  40%           { transform: translateY(-5px); opacity: 1; }
-}
-
-#status-text {
-  flex: 1;
-  line-height: 1.4;
-}
-
-/* --- Question box (chat style) --- */
-
-.question-box {
-  margin-top: 14px;
+/* 2. Style the box (The Label) */
+.custom-file-upload {
+  width: 100px;
+  height: 100px;
+  background: #efefef00;
+  border-radius: 5px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  animation: slide-up 0.3s ease;
-}
-
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.agent-bubble {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.agent-avatar {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #62588f;
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 700;
-  display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0.03em;
-  margin-top: 2px;
-}
-
-#question-text {
-  flex: 1;
-  background: #ece9f8;
-  border-radius: 0 14px 14px 14px;
-  padding: 10px 14px;
-  font-size: 0.92rem;
-  color: #3d406d;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.reply-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  padding-left: 40px;
-}
-
-#reply-input {
-  flex: 1;
-  min-height: 38px;
-  padding: 0 12px;
-  border: 1.5px solid #d0cce8;
-  border-radius: 20px;
-  background: #fff;
-  color: #3d406d;
-  font-family: "Inter", sans-serif;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.2s;
-  width: auto;
-}
-
-#reply-input:focus {
-  border-color: #62588f;
-  box-shadow: 0 0 0 3px rgba(98, 88, 143, 0.1);
-}
-
-.reply-icon-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 50%;
-  background: #ece9f8;
-  font-size: 1rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  flex-shrink: 0;
+  overflow: hidden;
+  /* Keeps the preview image inside the rounded corners */
+  transition: all 0.2s ease;
 }
 
-.reply-icon-btn:hover {
-  background: #d8d3f0;
+.custom-file-upload:hover {
+  background: #f4f3f922;
 }
 
-.reply-send-btn {
-  height: 36px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 20px;
-  background: #62588f;
-  color: #fff;
-  font-family: "Inter", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  flex-shrink: 0;
+/* 3. Style the preview image */
+#logo-preview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: none;
+  /* Hidden until an image is uploaded */
 }
 
-.reply-send-btn:hover {
-  background: #524880;
-  transform: translateY(-1px);
+#preview-logo-display {
+  display: none;
+  width: 150px;
 }
 
-.reply-send-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* --- Suggestions (idle hint) --- */
-
-.suggestions {
-  margin-top: 16px;
-  background: rgba(98, 88, 143, 0.06);
-  border-radius: 14px;
-  padding: 12px 16px 14px;
-}
-
-.suggestions p {
-  margin: 0 0 8px;
-  color: var(--text-soft);
+/* 4. Ensure the text is centered when no image is present 
+#label-text {
   font-size: 0.8rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: #888;
+  text-align: center;
+  padding: 5px;
+}
+*/
+
+.preview-note {
+  margin: 10px 2px 5px;
+  color: black;
 }
 
-.suggestions ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.suggestions li {
-  color: var(--text-soft);
-  font-size: 0.85rem;
-  font-style: italic;
-  line-height: 1.7;
-}
-
-.suggestions li::before {
-  content: "→ ";
-  font-style: normal;
-  opacity: 0.5;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* --- Auto-listen state on reply row --- */
-
-.reply-row.auto-listening #reply-input {
-  border-color: #62588f;
-  background: #f5f3ff;
-}
-
-#reply-mic-btn.auto-listening {
-  background: #62588f;
-  animation: mic-pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes mic-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(98, 88, 143, 0.4); }
-  50%       { box-shadow: 0 0 0 6px rgba(98, 88, 143, 0); }
-}
-
-/* --- Auto-send countdown bar --- */
-
-.auto-send-bar {
+#logo-upload {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-left: 40px;
-  margin-top: 6px;
-  animation: fade-in 0.2s ease;
+  gap: 5px;
 }
 
-.auto-send-bar span {
-  font-size: 0.82rem;
-  color: var(--text-soft);
-}
-
-.cancel-send-btn {
+#delete-logo-btn {
+  object-fit: contain;
+  height: 30px;
+  width: 30px;
+  
+  background-color: rgb(239, 239, 239);
   border: none;
-  background: none;
-  color: var(--accent);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.15s;
-}
-
-.cancel-send-btn:hover {
-  background: var(--accent-lighter);
-}
-
-/* --- Client Suggestions Box --- */
-
-.client-suggestions-box {
-  margin-top: 14px;
-  background: #ece9f8;
-  border-radius: 14px;
-  padding: 16px;
-  animation: slide-up 0.3s ease;
-}
-
-#client-suggestions-msg {
-  color: #3d406d;
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin: 0 0 12px;
-}
-
-.suggestions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.suggestion-card {
-  background: #fff;
-  border: 1px solid #d0cce8;
-  border-radius: 10px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #3d406d;
-}
-
-.suggestion-card:hover {
-  border-color: #62588f;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(98,88,143,0.1);
-}
-
-.suggestion-card strong {
-  display: block;
-  font-size: 0.95rem;
-  margin-bottom: 2px;
-}
-
-.suggestion-card small {
-  font-size: 0.82rem;
-  color: #666;
-}
-
-.new-client-btn {
-  margin-top: 12px;
-  width: 100%;
-  padding: 12px;
-  border: 1.5px dashed #62588f;
-  border-radius: 10px;
-  background: transparent;
-  color: #62588f;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
+  border-radius: 5px;
+  align-self: flex-end;
   transition: all 0.2s;
 }
 
-.new-client-btn:hover {
-  background: rgba(98,88,143,0.06);
+#delete-logo-btn:hover {
+  background-color: rgb(244, 243, 249);
+  box-shadow: 0 0 10px #0000001f;
 }
+
+#delete-logo-btn:active {
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 0 10px #0000001f;
+}
+
+.preview-info {
+  color: black;
+  margin-bottom: 20px;
+}
+
