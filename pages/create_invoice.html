@@ -34,53 +34,53 @@
               <span></span><span></span><span></span>
             </span>
           </button>
-          
+
           <div class="voice-divider">or type your request below</div>
 
-<div class="manual-entry-card">
-  <!-- Agent thinking -->
-  <div id="agent-status" class="agent-status hidden">
-    <div class="agent-dots">
-      <span></span><span></span><span></span>
-    </div>
-    <span id="status-text"></span>
-  </div>
+          <div class="manual-entry-card">
+            <!-- Agent thinking -->
+            <div id="agent-status" class="agent-status hidden">
+              <div class="agent-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span id="status-text"></span>
+            </div>
 
-  <!-- Agent question (chat bubble) -->
-  <div id="question-box" class="question-box hidden">
-    <div class="agent-bubble">
-  <div class="agent-badge">
-    <span class="agent-badge-dot"></span>
-    <span class="agent-badge-text">AI ASSISTANT</span>
-  </div>
-  <p id="question-text"></p>
-</div>
-    <div class="reply-row">
-      <input id="reply-input" type="text" placeholder="Type your reply..." autocomplete="off">
-      <button id="reply-mic-btn" class="reply-icon-btn" title="Voice reply" aria-hidden="true">🎤</button>
-      <button id="reply-send-btn" class="reply-send-btn">Send</button>
-    </div>
-  </div>
+            <!-- Agent question (chat bubble) -->
+            <div id="question-box" class="question-box hidden">
+              <div class="agent-bubble">
+                <div class="agent-badge">
+                  <span class="agent-badge-dot"></span>
+                  <span class="agent-badge-text">AI ASSISTANT</span>
+                </div>
+                <p id="question-text"></p>
+              </div>
+              <div class="reply-row">
+                <input id="reply-input" type="text" placeholder="Type your reply..." autocomplete="off">
+                <button id="reply-mic-btn" class="reply-icon-btn" title="Voice reply" aria-hidden="true">🎤</button>
+                <button id="reply-send-btn" class="reply-send-btn">Send</button>
+              </div>
+            </div>
 
-  <div class="manual-actions">
-    <button id="new-client-btn" class="new-client-btn">+ Create a new client</button>
-  </div>
-</div>
+            <div class="manual-actions">
+              <button id="new-client-btn" class="new-client-btn">+ Create a new client</button>
+            </div>
+          </div>
 
-<!-- Client Suggestions Box -->
-<div id="client-suggestions-box" class="client-suggestions-box hidden">
-  <p id="client-suggestions-msg"></p>
-  <div id="client-suggestions-list" class="suggestions-list"></div>
-</div>
+          <!-- Client Suggestions Box -->
+          <div id="client-suggestions-box" class="client-suggestions-box hidden">
+            <p id="client-suggestions-msg"></p>
+            <div id="client-suggestions-list" class="suggestions-list"></div>
+          </div>
 
-<!-- Idle hint -->
-<div id="suggestions" class="suggestions">
-  <p>Try saying something like</p>
-  <ul>
-    <li>"Invoice Jean Dupont for 3 hours of consulting at 150€"</li>
-    <li>"Bill Marie Martin, logo design, 800€"</li>
-  </ul>
-</div>
+          <!-- Idle hint -->
+          <div id="suggestions" class="suggestions">
+            <p>Try saying something like</p>
+            <ul>
+              <li>"Invoice Jean Dupont for 3 hours of consulting at 150€"</li>
+              <li>"Bill Marie Martin, logo design, 800€"</li>
+            </ul>
+          </div>
 
         </div>
       </div>
@@ -90,26 +90,26 @@
         <h3>INVOICE DETAILS</h3>
         <h4>Invoice Information:</h4>
         <div class="grid">
-  <label>
-    Invoice no.
-    <input id="inv-number" required>
-  </label>
+          <label>
+            Invoice no.
+            <input id="inv-number" required>
+          </label>
 
-  <label>
-    Date
-    <input id="inv-date" type="date">
-  </label>
+          <label>
+            Date
+            <input id="inv-date" type="date">
+          </label>
 
-  <label>
-    Due
-    <input id="inv-due" type="date">
-  </label>
+          <label>
+            Due
+            <input id="inv-due" type="date">
+          </label>
 
-  <label>
-    Tax (%)
-    <input id="inv-tax" type="number" required>
-  </label>
-</div>
+          <label>
+            Tax (%)
+            <input id="inv-tax" type="number" required>
+          </label>
+        </div>
 
         <h4>Your Information</h4>
         <div class="grid">
@@ -163,41 +163,43 @@
 
         <div class="preview-sheet">
           <div class="preview-top">
-  <div class="preview-header">
-    <div>
-      <div class="preview-logo-container">
-        <img id="preview-logo-display" src="" alt="Company Logo">
-      </div>
-      <div class="preview-company">
-        <p>My Company</p>
-      </div>
-    </div>
-  </div>
+            <div class="preview-header">
+              <div>
+                <div class="preview-logo-container">
+                  <img id="preview-logo-display" src="" alt="Company Logo">
+                </div>
+                <div class="preview-company">
+                  <p>My Company</p>
+                </div>
+              </div>
+            </div>
 
-  <div class="preview-issuer">
-    <p id="preview-company-address">From: -</p>
-    <p id="preview-company-phone">Phone: -</p>
-    <p id="preview-company-email">Email: -</p>
-  </div>
+            <div class="preview-issuer">
+              <p id="preview-company-address">From: -</p>
+              <p id="preview-company-phone">Phone: -</p>
+              <p id="preview-company-email">Email: -</p>
+            </div>
 
-  <div class="preview-invoice-meta">
-    <h4>INVOICE</h4>
-    <p id="preview-invoice-number"># ---</p>
-    <span id="preview-date"></span>
-    <span id="preview-due-date"></span>
-  </div>
-</div>
+            <div class="preview-invoice-meta">
+              <h4>INVOICE</h4>
+              <p id="preview-invoice-number"># ---</p>
+              <span id="preview-date"></span>
+              <span id="preview-due-date"></span>
+            </div>
+          </div>
 
-<div class="bill-box">
-  <span>Bill to:</span>
-  <p id="preview-client-name">Client name: -</p>
-  <p id="preview-client-address">Client address: -</p>
-  <p id="preview-client-email">Client email: -</p>
-  <p id="preview-client-phone">Client phone: -</p>
-</div>
+          <div class="bill-box">
+            <span>Bill to:</span>
+            <p id="preview-client-name">Client name: -</p>
+          </div>
 
-          
+          <div class="client-info">
+            <p id="preview-client-address">Client address: -</p>
+            <p id="preview-client-email">Client email: -</p>
+            <p id="preview-client-phone">Client phone: -</p>
+          </div>
 
+          <br>
           <div class="preview-table">
             <div class="preview-table-head">
               <span>Description</span>
@@ -215,33 +217,33 @@
             <div class="preview-footer">
 
               <div class="preview-totals">
-              <div class="preview-total-row">
-                <span>Subtotal:</span>
-                <span id="total-subtotal">$0.00</span>
+                <div class="preview-total-row">
+                  <span>Subtotal:</span>
+                  <span id="total-subtotal">$0.00</span>
+                </div>
+                <div class="preview-total-row">
+                  <span id="total-tva-label">Tax (0%):</span>
+                  <span id="total-tva">$0.00</span>
+                </div>
+                <div class="preview-total-divider"></div>
+                <div class="preview-total-row preview-total-final">
+                  <span>TOTAL:</span>
+                  <span id="total-final">$0.00</span>
+                </div>
+                <br>
+                <div class="preview-note">
+                  Comments:
+                  <div class="preview-note-content">
+                    Nothing to add
+                  </div>
+                </div>
               </div>
-              <div class="preview-total-row">
-                <span id="total-tva-label">Tax (0%):</span>
-                <span id="total-tva">$0.00</span>
-              </div>
-              <div class="preview-total-divider"></div>
-              <div class="preview-total-row preview-total-final">
-                <span>TOTAL:</span>
-                <span id="total-final">$0.00</span>
-              </div>
-              <br>
-              <div class="preview-note">
-  Comments:
-  <div class="preview-note-content">
-    Nothing to add
-  </div>
-</div>
             </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
-  </div>
   </div>
 
   <button class="return-btn">Return</button>
@@ -285,6 +287,6 @@
   </tr>
 </template>
 
-<script src="../create_invoice.js"></script>
+<!--<script src="../create_invoice.js"></script>-->
 
 </html>

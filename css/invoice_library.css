@@ -183,7 +183,9 @@
   background: #62588f;
   color: #fff;
   border-radius: 4px;
-  min-height: 640px;
+
+  width: fit-content;
+  
   padding: 18px 18px 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
 }
@@ -213,7 +215,11 @@
 
 .preview-sheet {
   background: #fff;
-  min-height: 470px;
+
+  min-width: 750px;
+  max-width: 750px;
+  aspect-ratio: 1 / 1.414;
+
   border-radius: 2px;
   padding: 24px;
   margin-bottom: 14px;
@@ -475,7 +481,8 @@
   }
 
   .preview-sheet {
-    min-height: 280px;
+    min-width: 750px;
+    max-width: 750px;
     padding: 18px;
   }
 }
