@@ -216,11 +216,7 @@ function updateLivePreview() {
     document.getElementById('preview-client-email').textContent = `Client email: ${data.clientEmail || '-'}`;
 
     // Logo
-    const previewLogoDisplay = document.querySelector('.preview-note');
-    if (previewComments) {
-        previewComments.textContent = data.comment || 'Nothing to add';
-    }
-
+    const previewLogoDisplay = document.getElementById('preview-logo-display');
     const savedLogo = localStorage.getItem('invoiceLogo');
     if (savedLogo) {
         previewLogoDisplay.src = savedLogo;
@@ -229,7 +225,10 @@ function updateLivePreview() {
         previewLogoDisplay.style.display = 'none';
     }
 
-    const previewComment = document.getElementById('')
+    const previewComment = document.querySelector('.preview-note-content');
+    if (previewComment) {
+        previewComment.textContent = data.comment || 'Nothing to add';
+    }
 
     // Table rows in Live Preview
     const previewTable = document.querySelector('.item-list');
@@ -302,7 +301,7 @@ if (seePreviewBtn) {
 if (returnBtn) {
     returnBtn.addEventListener('click', () => {
         // Change this to your actual home or library page
-        window.location.href = 'landing_page.html';
+        window.history.back();
     });
 }
 
