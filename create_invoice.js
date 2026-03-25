@@ -302,7 +302,7 @@ if (seePreviewBtn) {
 if (returnBtn) {
     returnBtn.addEventListener('click', () => {
         // Change this to your actual home or library page
-        window.history.back();
+        window.location.href = 'landing_page.html';
     });
 }
 

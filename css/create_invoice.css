@@ -636,8 +636,9 @@ input:focus {
 }
 */
 
-.preview-note-title {
+.preview-note {
   margin: 10px 2px 5px;
+  color: black;
 }
 
 #logo-upload {
