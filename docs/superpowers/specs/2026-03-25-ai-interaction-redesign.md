@@ -78,6 +78,24 @@ Structure existante conservée, 2 ajouts :
 
 ### `agent-stream.js`
 
+**Remplacement de `_setStatusBox` / `_showStatus` / `_showError` / `_onDone`**
+
+Les fonctions actuelles utilisent `style.color` et `style.display` inline, et référencent un `.spinner` qui n'existera plus. Ces 4 fonctions sont réécrites pour utiliser exclusivement `classList` :
+
+- Supprimer la variable `_spinner` et toutes ses références
+- `_setStatusBox` : retirer `style.color` / `style.display` ; utiliser `classList.remove('hidden')` + toggle des classes `thinking` / `done` / `error` sur `_statusBox`
+- `_showStatus(msg)` : ajoute class `thinking`, retire `done` / `error`, active `.ai-status-dot.pulse` et `.waveform-bars`
+- `_showError(msg)` : ajoute class `error`, retire `thinking` / `done`, masque waveform — identique pour `recorder.js:246` qui doit aussi utiliser class plutôt que `style.color`
+- `_onDone()` : ajoute class `done`, retire `thinking` / `error`
+
+Les CSS des états sont définis dans `create_invoice.css` (section "Done state" + ajout "Error state").
+
+**Nouvelles variables de module** à déclarer explicitement :
+```js
+let _listenForReplyFn = null;
+let _ttsInProgress = false;
+```
+
 **1. `registerListenCallback(fn)`** — exposé publiquement. Stocke la référence à `recorder.listenForReply`. Appelé depuis `recorder.js` après init pour éviter la dépendance circulaire.
 
 ```js
@@ -109,10 +127,13 @@ async function _playTTS(text) {
 **3. `_showQuestion(message)` — modifié**
 
 Après affichage de la question :
-1. Appelle `await _playTTS(message)`
-2. Attend 1s (`setTimeout 1000ms`)
-3. Appelle `_listenForReplyFn?.()` (auto-écoute micro)
-4. Met le placeholder de `#reply-input` à "Écoute en cours…" puis le remet après
+1. Guard anti-double-TTS : si `_ttsInProgress === true`, skip TTS + auto-listen (cas SSE reconnect replay)
+2. Appelle `await _playTTS(message)` (positionne `_ttsInProgress = true` avant, `false` après)
+3. Attend 1s (`setTimeout 1000ms`)
+4. Appelle `_listenForReplyFn?.()` (auto-écoute micro)
+5. Met le placeholder de `#reply-input` à "Écoute en cours…" puis le remet après
+
+`_ttsInProgress` est remis à `false` dans `_hideQuestion()` (appelé sur `reply` envoyé et sur `done`/`error`).
 
 **4. `_handleEvent()` — ajout dans `invoice_update`**
 
@@ -131,6 +152,7 @@ function _markFieldFilled(field) {
   if (!MANDATORY_FIELDS.includes(field)) return;
   const chip = document.querySelector(`#missing-fields .field-chip[data-field="${field}"]`);
   if (!chip) return;
+  if (chip.classList.contains('filled')) return;  // guard: agent may update same field multiple times
   const missingFields = document.querySelector('#missing-fields');
   if (missingFields) missingFields.classList.remove('hidden');
   chip.classList.remove('missing');
@@ -153,7 +175,7 @@ Exposer `recorder` depuis le module : ajouter `listenForReply` dans le return (d
 **`pages/create_invoice.html`** — uniquement dans `.manual-entry-card` :
 
 1. `#agent-status` : remplacer le contenu interne (dot + status-text + waveform-bars)
-2. Ajouter `#missing-fields` avec les 5 chips juste après `#agent-status`
+2. Ajouter `#missing-fields` avec les 5 chips juste après `#agent-status` — **à l'intérieur de `.manual-entry-card`**, pas directement dans `.voice-zone`, pour éviter les règles CSS génériques `.voice-zone > div`
 3. Dans `#question-box > .agent-bubble > .agent-badge` : ajouter `.tts-bars`
 
 ## Changements CSS
@@ -197,6 +219,13 @@ Exposer `recorder` depuis le module : ajouter `listenForReply` dans le return (d
 .ai-status.done { background:#f0fdf4; border-color:#86efac; }
 .ai-status.done .ai-status-dot { background:#16a34a; box-shadow:0 0 8px rgba(22,163,74,0.45); }
 .ai-status.done #status-text { color:#15803d; }
+
+/* Error state */
+.ai-status.error { background:#fff1f2; border-color:#fecdd3; }
+.ai-status.error .ai-status-dot { background:#dc2626; box-shadow:0 0 8px rgba(220,38,38,0.45); }
+.ai-status.error #status-text { color:#dc2626; }
+.ai-status.thinking .waveform-bars { display:flex; }
+.ai-status:not(.thinking) .waveform-bars { display:none; }
 ```
 
 ## Gestion d'erreurs
