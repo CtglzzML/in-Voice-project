@@ -6,6 +6,8 @@ const searchInput = document.querySelector('.search-input');
 const searchForm = document.getElementById('library-search-form');
 const createInvoiceBtn = document.querySelector('.create-invoice-btn');
 const downloadInvoiceBtn = document.querySelector('.download-invoice-btn');
+const previewTitle = document.querySelector('.preview-title');
+
 
 const emptyRowTemplate = document.getElementById('empty-library-row-template');
 
@@ -372,7 +374,6 @@ function filterInvoices(invoices, searchState) {
 }
 
 function showPreview(item) {
-    const previewTitle = document.querySelector('.preview-title');
     const previewSheet = document.querySelector('.preview-sheet');
     const descriptionText = document.querySelector('.description-text');
     const tagsList = document.getElementById('tags-list');
@@ -490,7 +491,7 @@ function handleSearch() {
     const searchState = getSearchState();
     const filtered = filterInvoices(invoices, searchState);
 
-    renderLibrary(filtered);
+    renderLibraryTable(filtered);
 
     // Keep preview consistent with the list filter.
     if (!selectedLibraryItem) return;
@@ -569,11 +570,33 @@ if (tagsListEl) {
     });
 }
 
+function downloadInvoicePDF() {
+    if (!selectedInvoice) {
+        alert('Please select an invoice first.');
+        return;
+    }
+
+    const element = buildPrintableDocument(buildInvoicePreviewHtml(selectedInvoice)); // The container holding your invoice
+
+    // Optional settings to make it look professional
+    const opt = {
+        margin: 0.5,
+        filename: `Invoice_${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 }, // Higher scale = better quality
+        jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' }
+    };
+
+    // New Promise-based usage:
+    window.html2pdf().set(opt).from(element).save();
+}
+
 if (createInvoiceBtn) {
     createInvoiceBtn.addEventListener('click', () => {
         window.location.href = 'create_invoice.html';
     });
 }
+/*
 function downloadSelectedInvoicePdf() {
     if (!selectedInvoice) {
         alert('Please select an invoice first.');
@@ -592,6 +615,7 @@ function downloadSelectedInvoicePdf() {
     printWindow.document.write(buildPrintableDocument(invoiceHtml));
     printWindow.document.close();
 }
+*/
 
 function normalizeText(value) {
     return String(value ?? '').toLowerCase().trim();
@@ -660,7 +684,7 @@ function initSearch() {
 function initButtons() {
     if (downloadBtn) {
         downloadBtn.addEventListener('click', () => {
-            downloadSelectedInvoicePdf();
+            downloadInvoicePDF();
         });
     }
 
@@ -686,5 +710,13 @@ function initLibrary() {
     initSearch();
     initButtons();
 }
+
+// Re-initialize whenever the page becomes visible (back button, tab switch, etc.)
+window.addEventListener('pageshow', (event) => {
+    // Re-fetch data and re-render the table
+    savedInvoices = getSavedInvoices();
+    filteredInvoices = [...savedInvoices];
+    renderLibraryTable(filteredInvoices);
+});
 
 document.addEventListener('DOMContentLoaded', initLibrary);
