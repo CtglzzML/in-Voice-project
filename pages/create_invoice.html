@@ -43,24 +43,24 @@
         <h3>INVOICE DETAILS</h3>
         <h4>Invoice Information:</h4>
         <div class="grid">
-          <input id="inv-number" placeholder="Invoice number">
+          <input id="inv-number" placeholder="Invoice number" required>
           <label for="inv-date">Date:<input id="inv-date" type="date"></label>
           <label for="inv-due">Due:<input id="inv-due" type="date"></label>
-          <input id="inv-tax" type="number" placeholder="Tax (%)">
+          <input id="inv-tax" type="number" placeholder="Tax (%)" required>
         </div>
 
         <h4>Your Information</h4>
         <div class="grid">
-          <input id="company-name" placeholder="Company name">
-          <input id="company-address" placeholder="Address">
+          <input id="company-name" placeholder="Company name" required>
+          <input id="company-address" placeholder="Address" required>
           <input id="company-phone" placeholder="Phone">
           <input id="company-email" type="email" placeholder="Email">
         </div>
 
         <h4>Client Information</h4>
         <div class="grid">
-          <input id="client-name" placeholder="Client name">
-          <input id="client-address" placeholder="Address">
+          <input id="client-name" placeholder="Client name" required>
+          <input id="client-address" placeholder="Address" required>
           <input id="client-phone" placeholder="Phone">
           <input id="client-email" type="email" placeholder="Email">
         </div>
@@ -102,11 +102,13 @@
         <div class="preview-sheet">
           <div class="preview-top">
             <div class="preview-header">
-              <div class="preview-logo-container">
-                <img id="preview-logo-display" src="" alt="Company Logo">
-              </div>
-              <div class="preview-company">
-                <p>My Company</p>
+              <div>
+                <div class="preview-logo-container">
+                  <img id="preview-logo-display" src="" alt="Company Logo">
+                </div>
+                <div class="preview-company">
+                  <p>My Company</p>
+                </div>
               </div>
             </div>
 

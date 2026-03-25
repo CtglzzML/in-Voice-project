@@ -151,7 +151,7 @@ function saveDraftToSession() {
 
 function loadDraftFromSession() {
     const raw = sessionStorage.getItem('invoiceDraft');
-    
+
     // Load Logo from LocalStorage
     const savedLogo = localStorage.getItem('invoiceLogo');
     if (savedLogo && preview) {
@@ -201,12 +201,12 @@ function loadDraftFromSession() {
 // 2. UPDATED: Stop updateLivePreview from overwriting the item list table
 function updateLivePreview() {
     const data = getInvoiceData();
-    
+
     // Update text fields
     document.querySelector('.preview-company').textContent = data.companyName || 'My Company';
     document.querySelector('.preview-invoice-meta p').textContent = `# ${data.invoiceNumber || '---'}`;
     document.querySelector('.bill-box p').textContent = data.clientName || 'xClient Inc.';
-    
+
     document.getElementById('preview-company-address').textContent = `From: ${data.companyAddress || '-'}`;
     document.getElementById('preview-company-phone').textContent = `Phone: ${data.companyPhone || '-'}`;
     document.getElementById('preview-company-email').textContent = `Email: ${data.companyEmail || '-'}`;
@@ -214,9 +214,13 @@ function updateLivePreview() {
     document.getElementById('preview-client-address').textContent = `Client address: ${data.clientAddress || '-'}`;
     document.getElementById('preview-client-phone').textContent = `Client phone: ${data.clientPhone || '-'}`;
     document.getElementById('preview-client-email').textContent = `Client email: ${data.clientEmail || '-'}`;
-    
+
     // Logo
-    const previewLogoDisplay = document.getElementById('preview-logo-display');
+    const previewLogoDisplay = document.querySelector('.preview-note');
+    if (previewComments) {
+        previewComments.textContent = data.comment || 'Nothing to add';
+    }
+
     const savedLogo = localStorage.getItem('invoiceLogo');
     if (savedLogo) {
         previewLogoDisplay.src = savedLogo;
@@ -224,6 +228,8 @@ function updateLivePreview() {
     } else {
         previewLogoDisplay.style.display = 'none';
     }
+
+    const previewComment = document.getElementById('')
 
     // Table rows in Live Preview
     const previewTable = document.querySelector('.item-list');
@@ -252,17 +258,17 @@ fileInput.addEventListener('change', function () {
         const reader = new FileReader();
         reader.onload = (e) => {
             const imageData = e.target.result;
-            
+
             // Update the Left Panel (Upload area)
             preview.src = imageData;
             preview.style.display = 'block';
             logoPlaceholder.style.display = 'none';
-            
+
             // Save it
             localStorage.setItem('invoiceLogo', imageData);
-            
+
             // TRIGGER the preview update immediately
-            updateLivePreview(); 
+            updateLivePreview();
         };
         reader.readAsDataURL(this.files[0]);
     }
@@ -276,7 +282,7 @@ if (deleteLogoBtn) {
         preview.src = "";
         preview.style.display = 'none';
         logoPlaceholder.style.display = 'block';
-        fileInput.value = ""; 
+        fileInput.value = "";
 
         // Clear Storage
         localStorage.removeItem('invoiceLogo');
@@ -289,14 +295,14 @@ if (deleteLogoBtn) {
 if (seePreviewBtn) {
     seePreviewBtn.addEventListener('click', () => {
         saveDraftToSession(); // Save data first
-        window.location.href = 'invoice_preview.html'; 
+        window.location.href = 'invoice_preview.html';
     });
 }
 
 if (returnBtn) {
     returnBtn.addEventListener('click', () => {
         // Change this to your actual home or library page
-        window.history.back(); 
+        window.history.back();
     });
 }
 
