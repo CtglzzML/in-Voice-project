@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/pages/landing_page.html",
+      "permanent": false
+    }
+  ]
+}
