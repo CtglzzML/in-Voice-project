@@ -529,3 +529,13 @@
   opacity: 0.92;
   transform: translateY(-1px);
 }
+
+.preview-menu-btn {
+    display: none;
+}
+.user-button {
+    display: none !important;
+}
+.tags-row {
+    display: none !important;
+}

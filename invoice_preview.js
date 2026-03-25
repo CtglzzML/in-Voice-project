@@ -86,6 +86,8 @@ function saveInvoiceToLibrary() {
 
 function renderInvoicePreview() {
     const data = getStoredInvoice();
+    // 1. Fetch the logo from storage
+    const savedLogo = localStorage.getItem('invoiceLogo');
 
     if (!data) {
         pdfFrame.innerHTML = `<p>No invoice data found.</p>`;
@@ -112,10 +114,22 @@ function renderInvoicePreview() {
     pdfFrame.innerHTML = `
         <div style="width: 100%; max-width: 700px; margin: 0 auto; color: #111; font-family: Inter, sans-serif;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px;">
-                <div style="font-size: 1rem; font-weight: 500;">
-                    ${data.companyName || 'My company'}
+                
+                <div>
+                    ${savedLogo ? `<img src="${savedLogo}" alt="Logo" style="max-width: 140px; max-height: 70px; object-fit: contain; display: block; margin-bottom: 12px;">` : ''}
+                    <div style="font-size: 1rem; font-weight: 500;">
+                        ${data.companyName || 'My company'}
+                    </div>
+                    <div style="margin-bottom: 18px; line-height: 1.6;">
+                    
+                    </div>
                 </div>
-
+                <div>
+                    <div><strong>Address:</strong> ${data.companyAddress || '-'}</div>
+                    <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
+                    <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
+                </div>
+                
                 <div style="text-align: right;">
                     <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">INVOICE</h3>
                     <p style="margin: 4px 0;"># ${data.invoiceNumber || '---'}</p>
@@ -124,15 +138,9 @@ function renderInvoicePreview() {
                 </div>
             </div>
 
-            <div style="background: #62588f; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
+            <div style="background: #000; color: #fff; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px;">
                 <div>Bill to:</div>
                 <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
-            </div>
-
-            <div style="margin-bottom: 18px; line-height: 1.6;">
-                <div><strong>From:</strong> ${data.companyAddress || '-'}</div>
-                <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
-                <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
             </div>
 
             <div style="margin-bottom: 18px; line-height: 1.6;">
@@ -143,7 +151,7 @@ function renderInvoicePreview() {
 
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <thead>
-                    <tr style="background: #62588f; color: #fff;">
+                    <tr style="background: #000; color: #fff;">
                         <th style="text-align: left; padding: 12px;">Description</th>
                         <th style="text-align: left; padding: 12px;">Qty</th>
                         <th style="text-align: left; padding: 12px;">Price</th>
@@ -177,6 +185,22 @@ function renderInvoicePreview() {
             </div>
         </div>
     `;
+}
+
+function downloadInvoicePDF() {
+    const element = document.querySelector('.pdf-frame'); // The container holding your invoice
+
+    // Optional settings to make it look professional
+    const opt = {
+        margin: 0.5,
+        filename: `Invoice_${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 }, // Higher scale = better quality
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    // New Promise-based usage:
+    html2pdf().set(opt).from(element).save();
 }
 
 function hidePopupBeforePrint() {
@@ -226,9 +250,11 @@ if (createBtn) {
 
             if (e.target.innerText === 'Go to invoice library') {
                 window.location.href = 'invoice_library.html';
+            } else if (e.target.innerText === 'Create another invoice') {
+                window.location.href = 'create_invoice.html'
             } else if (e.target.innerText === 'Download PDF') {
                 hidePopupBeforePrint();
-                window.print();
+                downloadInvoicePDF();
 
                 setTimeout(() => {
                     restorePopupAfterPrint();
@@ -239,3 +265,27 @@ if (createBtn) {
 }
 
 renderInvoicePreview();
+
+const fileInput = document.getElementById('company-logo');
+const preview = document.getElementById('logo-preview');
+const labelText = document.getElementById('label-text');
+
+fileInput.addEventListener('change', function () {
+    const file = this.files[0]; // Get the first selected file
+
+    if (file) {
+        const reader = new FileReader();
+
+        // When the file is finished being read...
+        reader.addEventListener('load', function () {
+            // 1. Set the <img> src to the file data
+            preview.setAttribute('src', this.result);
+            // 2. Show the image
+            preview.style.display = 'block';
+            // 3. Hide the placeholder text
+            labelText.style.display = 'none';
+        });
+
+        reader.readAsDataURL(file);
+    }
+});
