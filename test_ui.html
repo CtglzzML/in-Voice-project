@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>inVoice</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #09090f;
+      --s1:     #111120;
+      --s2:     #1a1a2e;
+      --border: #2a2a45;
+      --accent: #6366f1;
+      --green:  #10b981;
+      --red:    #ef4444;
+      --yellow: #f59e0b;
+      --text:   #e2e8f0;
+      --muted:  #64748b;
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      grid-template-rows: 52px 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      grid-column: 1/-1;
+      background: var(--s1);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+    }
+    .logo { font-size: 1.1rem; font-weight: 700; color: #fff; letter-spacing: -.5px; }
+    .logo span { color: var(--accent); }
+    .hright { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+    .dot.on  { background: var(--green); }
+    .dot.act { background: var(--accent); animation: blink 1.2s infinite; }
+    .dot.err { background: var(--red); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+    /* ── Left: call panel ── */
+    .left {
+      background: var(--s1);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 16px;
+    }
+
+    /* User ID */
+    .uid-row { width: 100%; display: flex; align-items: center; gap: 8px; }
+    .uid-row label { font-size: .7rem; color: var(--muted); white-space: nowrap; }
+    .uid-row input {
+      flex: 1; background: var(--s2); border: 1px solid var(--border);
+      border-radius: 5px; padding: 5px 8px; color: var(--text);
+      font-size: .73rem; font-family: monospace; outline: none;
+    }
+    .uid-row input:focus { border-color: var(--accent); }
+
+    /* Avatar */
+    .avatar-area {
+      position: relative;
+      width: 140px; height: 140px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 8px 0 4px;
+    }
+    .ring {
+      position: absolute; border-radius: 50%;
+      border: 1.5px solid var(--accent); opacity: 0;
+    }
+    .ring.r1 { width: 118px; height: 118px; }
+    .ring.r2 { width: 138px; height: 138px; }
+    .ring.r3 { width: 158px; height: 158px; }
+
+    /* Rings pulse when agent speaking or user detected */
+    body.agent-speaking .ring { border-color: var(--accent); animation: ripple 2s ease-out infinite; }
+    body.agent-speaking .ring.r2 { animation-delay: .5s; }
+    body.agent-speaking .ring.r3 { animation-delay: 1s; }
+    body.user-speaking .ring  { border-color: var(--green); animation: ripple 1.2s ease-out infinite; }
+    body.user-speaking .ring.r2 { animation-delay: .3s; }
+    body.user-speaking .ring.r3 { animation-delay: .6s; }
+    @keyframes ripple { 0%{opacity:.65;transform:scale(.9)} 100%{opacity:0;transform:scale(1.1)} }
+
+    .avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem; position: relative; z-index: 1;
+      transition: background .4s;
+    }
+    body.user-speaking .avatar  { background: linear-gradient(135deg, #059669, var(--green)); }
+    body.waiting       .avatar  { background: linear-gradient(135deg, #374151, #4b5563); }
+
+    /* State label */
+    .state-name  { font-size: .95rem; font-weight: 600; }
+    .state-label { font-size: .82rem; color: var(--muted); min-height: 18px; text-align: center; }
+
+    /* Waveform — real-time audio levels */
+    .waveform {
+      display: flex; align-items: center; gap: 3px; height: 48px;
+      padding: 0 4px;
+    }
+    .bar {
+      width: 5px; border-radius: 3px; background: var(--accent);
+      height: 4px; transition: background .3s;
+      /* agent speaking: CSS animation */
+    }
+    body.agent-speaking .bar { animation: csswave .8s ease-in-out infinite; }
+    body.agent-speaking .bar:nth-child(2) { animation-delay: .1s; animation-duration: .9s; }
+    body.agent-speaking .bar:nth-child(3) { animation-delay: .2s; animation-duration: .7s; }
+    body.agent-speaking .bar:nth-child(4) { animation-delay: .05s; animation-duration: 1s; }
+    body.agent-speaking .bar:nth-child(5) { animation-delay: .15s; animation-duration: .75s; }
+    body.agent-speaking .bar:nth-child(6) { animation-delay: .25s; animation-duration: .85s; }
+    body.agent-speaking .bar:nth-child(7) { animation-delay: .1s;  animation-duration: .65s; }
+    body.agent-speaking .bar:nth-child(8) { animation-delay: .2s;  animation-duration: .95s; }
+    body.agent-speaking .bar:nth-child(9) { animation-delay: .3s;  animation-duration: .8s; }
+    @keyframes csswave { 0%,100%{height:4px} 50%{height:36px} }
+
+    body.user-speaking .bar,
+    body.waiting       .bar { background: var(--green); }
+    body.waiting       .bar { opacity: .5; }
+
+    /* Transcript feed */
+    .feed {
+      flex: 1; width: 100%; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 8px;
+      min-height: 0; /* critical: allows flex child to shrink and scroll */
+    }
+    .feed::-webkit-scrollbar { width: 3px; }
+    .feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .msg { display: flex; flex-direction: column; max-width: 90%; animation: up .2s ease; }
+    .msg.agent { align-self: flex-start; }
+    .msg.user  { align-self: flex-end; }
+    .msg.sys   { align-self: center; max-width: 100%; }
+    @keyframes up { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+
+    .bubble {
+      padding: 8px 12px; border-radius: 12px;
+      font-size: .82rem; line-height: 1.5;
+    }
+    .agent .bubble { background: var(--s2); border: 1px solid var(--border); border-bottom-left-radius: 3px; }
+    .user  .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 3px; }
+    .sys   .bubble { background: transparent; border: none; color: var(--muted); font-size: .72rem; text-align: center; padding: 1px 0; }
+
+    /* Call button */
+    .call-btn {
+      width: 72px; height: 72px; border-radius: 50%; border: none;
+      cursor: pointer; font-size: 1.7rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s, box-shadow .2s, background .3s;
+    }
+    .call-btn.start { background: linear-gradient(135deg, #059669, var(--green)); box-shadow: 0 4px 20px rgba(16,185,129,.4); }
+    .call-btn.end   { background: linear-gradient(135deg, #b91c1c, var(--red));   box-shadow: 0 4px 20px rgba(239,68,68,.4); }
+    .call-btn:hover { transform: scale(1.07); }
+    .call-btn:active { transform: scale(.95); }
+    .call-label { font-size: .73rem; color: var(--muted); }
+
+    /* VAD threshold slider */
+    .vad-row { width: 100%; display: flex; align-items: center; gap: 8px; }
+    .vad-row label { font-size: .68rem; color: var(--muted); white-space: nowrap; }
+    .vad-row input[type=range] { flex: 1; accent-color: var(--accent); }
+    #vad-val { font-size: .68rem; color: var(--accent); width: 32px; text-align: right; }
+
+    /* Text fallback input */
+    .type-row {
+      width: 100%; display: none; gap: 6px; align-items: center;
+    }
+    .type-row.visible { display: flex; }
+    .type-row input {
+      flex: 1; background: var(--s2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 7px 10px; color: var(--text);
+      font-size: .82rem; outline: none;
+    }
+    .type-row input:focus { border-color: var(--accent); }
+    .type-row button {
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 7px; padding: 7px 12px; font-size: .9rem;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .type-row button:hover { opacity: .85; }
+
+    #dbg { font-size: .66rem; color: var(--accent); min-height: 14px; text-align: center; width: 100%; }
+
+    /* ── Right: invoice ── */
+    .right {
+      background: #e8e8f0; overflow-y: auto; padding: 28px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .inv-toolbar { width: 100%; max-width: 680px; display: flex; justify-content: flex-end; margin-bottom: 14px; }
+    .btn-print {
+      background: #fff; border: 1px solid #ccc; color: #333; border-radius: 6px;
+      padding: 7px 16px; font-size: .8rem; cursor: pointer; display: flex;
+      align-items: center; gap: 6px; transition: background .15s;
+    }
+    .btn-print:hover { background: #f5f5f5; }
+    .invoice {
+      background: #fff; width: 100%; max-width: 680px; padding: 44px 48px;
+      box-shadow: 0 2px 24px rgba(0,0,0,.12); border-radius: 3px;
+      font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; font-size: .875rem;
+    }
+    .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; }
+    .inv-company { font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
+    .inv-detail  { font-size: .78rem; color: #666; line-height: 1.7; }
+    .inv-title-block { text-align: right; }
+    .inv-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; }
+    .inv-num   { font-size: .85rem; color: #888; margin: 4px 0 6px; }
+    .inv-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .inv-badge.draft     { background: #fef3c7; color: #92400e; }
+    .inv-badge.confirmed { background: #d1fae5; color: #065f46; }
+    .inv-divider { height: 1px; background: #e5e7eb; margin: 20px 0; }
+    .inv-parties { display: flex; gap: 32px; margin-bottom: 28px; }
+    .inv-party { flex: 1; }
+    .inv-plabel { font-size: .65rem; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 6px; }
+    .inv-pname  { font-weight: 600; font-size: .9rem; }
+    .inv-psub   { font-size: .78rem; color: #666; margin-top: 2px; line-height: 1.5; }
+    .inv-dates  { text-align: right; }
+    .inv-drow   { font-size: .82rem; color: #555; margin-bottom: 4px; }
+    .inv-drow span { font-weight: 600; color: #111; }
+    .inv-table  { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .inv-table thead th { font-size: .68rem; text-transform: uppercase; letter-spacing: .8px; color: #aaa; padding: 8px 10px; border-bottom: 2px solid #e5e7eb; text-align: left; font-weight: 500; }
+    .inv-table thead th:not(:first-child) { text-align: right; }
+    .inv-table tbody td { padding: 10px; border-bottom: 1px solid #f3f4f6; font-size: .845rem; color: #333; }
+    .inv-table tbody td:not(:first-child) { text-align: right; }
+    .inv-table tbody tr:last-child td { border-bottom: none; }
+    .inv-empty td { color: #ccc; font-style: italic; text-align: center !important; padding: 28px !important; }
+    .inv-totals-wrap { display: flex; justify-content: flex-end; margin-top: 8px; }
+    .inv-totals { width: 240px; }
+    .inv-trow { display: flex; justify-content: space-between; padding: 5px 0; font-size: .845rem; color: #666; border-bottom: 1px solid #f3f4f6; }
+    .inv-trow.grand { font-size: .95rem; font-weight: 700; color: #111; border-bottom: none; border-top: 2px solid #111; padding-top: 10px; margin-top: 4px; }
+    .inv-footer { margin-top: 36px; padding-top: 14px; border-top: 1px solid #e5e7eb; font-size: .75rem; color: #999; line-height: 1.6; }
+    .ph { color: #ddd; font-style: italic; }
+
+    @media print {
+      body { display: block; }
+      .left, header, .inv-toolbar { display: none !important; }
+      .right { padding: 0; background: white; }
+      .invoice { box-shadow: none; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">in<span>Voice</span></div>
+  <div class="hright">
+    <span class="dot" id="dot"></span>
+    <span id="stext">Ready</span>
+  </div>
+</header>
+
+<!-- Left: call panel -->
+<div class="left">
+
+  <div class="uid-row">
+    <label>User ID</label>
+    <input id="user-id" type="text" value="8412b4dd-7ee4-4915-86ed-4d5bec0f702f" />
+  </div>
+
+  <div class="avatar-area">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+    <div class="avatar">🤖</div>
+  </div>
+
+  <div class="state-name">Invoice Assistant</div>
+  <div class="state-label" id="state-label">Tap to start</div>
+
+  <div class="waveform" id="waveform">
+    <div class="bar" id="b0"></div>
+    <div class="bar" id="b1"></div>
+    <div class="bar" id="b2"></div>
+    <div class="bar" id="b3"></div>
+    <div class="bar" id="b4"></div>
+    <div class="bar" id="b5"></div>
+    <div class="bar" id="b6"></div>
+    <div class="bar" id="b7"></div>
+    <div class="bar" id="b8"></div>
+  </div>
+
+  <div class="feed" id="feed"></div>
+
+  <!-- Text fallback: visible during listening, useful for names/emails -->
+  <div class="type-row" id="type-row">
+    <input id="type-input" type="text" placeholder="Or type your answer…"
+           onkeydown="if(event.key==='Enter') sendTyped()" />
+    <button onclick="sendTyped()">↵</button>
+  </div>
+
+  <div class="vad-row">
+    <label>Sensitivity</label>
+    <input type="range" id="vad-slider" min="5" max="50" value="18" oninput="onVadSlider(this.value)">
+    <span id="vad-val">18</span>
+  </div>
+
+  <button class="call-btn start" id="call-btn" onclick="toggleCall()">📞</button>
+  <span class="call-label" id="call-label">Start call</span>
+
+  <div id="dbg"></div>
+</div>
+
+<!-- Right: invoice -->
+<div class="right">
+  <div class="inv-toolbar">
+    <button class="btn-print" onclick="window.print()">🖨 Export PDF</button>
+  </div>
+  <div class="invoice">
+    <div class="inv-header">
+      <div>
+        <div class="inv-company" id="iv-co">—</div>
+        <div class="inv-detail">
+          <div id="iv-addr"></div>
+          <div id="iv-siret"></div>
+          <div id="iv-tva-num"></div>
+        </div>
+      </div>
+      <div class="inv-title-block">
+        <div class="inv-title">INVOICE</div>
+        <div class="inv-num" id="iv-num">Draft</div>
+        <span class="inv-badge draft" id="iv-badge">Draft</span>
+      </div>
+    </div>
+    <div class="inv-divider"></div>
+    <div class="inv-parties">
+      <div class="inv-party">
+        <div class="inv-plabel">Bill to</div>
+        <div class="inv-pname" id="iv-cli-name"><span class="ph">—</span></div>
+        <div class="inv-psub">
+          <div id="iv-cli-addr"></div>
+          <div id="iv-cli-phone"></div>
+          <div id="iv-cli-email"></div>
+        </div>
+      </div>
+      <div class="inv-party inv-dates">
+        <div class="inv-plabel">Dates</div>
+        <div class="inv-drow">Issue: <span id="iv-issue">—</span></div>
+        <div class="inv-drow">Due: <span id="iv-due">—</span></div>
+      </div>
+    </div>
+    <table class="inv-table">
+      <thead><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Total</th></tr></thead>
+      <tbody id="iv-lines">
+        <tr class="inv-empty"><td colspan="4">Waiting for line items</td></tr>
+      </tbody>
+    </table>
+    <div class="inv-totals-wrap">
+      <div class="inv-totals">
+        <div class="inv-trow"><span>Subtotal</span><span id="iv-sub">—</span></div>
+        <div class="inv-trow">
+          <span>VAT <span id="iv-tva-rate">—</span>%</span>
+          <span id="iv-tva-amt">—</span>
+        </div>
+        <div class="inv-trow grand"><span>Total incl. tax</span><span id="iv-total">—</span></div>
+      </div>
+    </div>
+    <div class="inv-footer" id="iv-footer"></div>
+  </div>
+</div>
+
+<script>
+const BASE = 'http://localhost:8000';
+
+// ── Global state ──
+let callActive    = false;
+let sessionId     = null;
+let evtSource     = null;
+let currentAudio  = null;   // Audio object playing TTS
+
+// ── VAD (Voice Activity Detection) ──
+let vadStream     = null;
+let vadContext    = null;
+let vadAnalyser   = null;
+let vadRecorder   = null;
+let vadChunks     = [];
+let vadFrameId    = null;
+let vadSpeaking   = false;   // currently above threshold
+let vadSpeechStart = null;
+let vadSilenceTimer = null;
+let vadMimeType   = '';
+
+// Tunable thresholds
+let VAD_THRESHOLD   = 0.018;  // RMS energy level (0–1), linked to slider
+const SILENCE_MS    = 1500;   // silence duration before auto-stop (ms)
+const MIN_SPEECH_MS = 400;    // minimum speech duration to consider valid (ms)
+
+function onVadSlider(v) {
+  VAD_THRESHOLD = v / 1000;
+  document.getElementById('vad-val').textContent = v;
+}
+
+// ── Helpers ──
+const el   = id => document.getElementById(id);
+const fmt  = n  => n == null ? '—' : new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(n);
+const fmtD = d  => { if (!d) return '—'; try { return new Date(d+'T12:00').toLocaleDateString('en-US'); } catch { return d; } };
+const dbg  = m  => { el('dbg').textContent = m; console.log('[vad]', m); };
+
+// ── UI state ──
+// bodyClass: 'waiting' | 'user-speaking' | 'agent-speaking' | ''
+function setUI(bodyClass, label, dotClass, stateText) {
+  document.body.className = bodyClass || '';
+  el('state-label').textContent = label || '';
+  el('dot').className  = 'dot ' + (dotClass || '');
+  el('stext').textContent = stateText || 'Ready';
+}
+
+function showTypeInput(show) {
+  el('type-row').classList.toggle('visible', show);
+  if (show) setTimeout(() => el('type-input').focus(), 50);
+}
+
+async function sendTyped() {
+  const txt = el('type-input').value.trim();
+  if (!txt || !sessionId) return;
+  el('type-input').value = '';
+  showTypeInput(false);
+
+  // Stop VAD since user typed instead of speaking
+  clearTimeout(vadSilenceTimer); vadSilenceTimer = null;
+  if (vadRecorder && vadRecorder.state === 'recording') {
+    vadRecorder.onstop = () => { releaseMic(); };
+    vadRecorder.stop();
+  } else {
+    releaseMic();
+  }
+  stopWaveformViz();
+
+  addMsg('user', txt);
+  setUI('', 'Processing...', 'act', 'Processing');
+  sendReply(txt);
+}
+
+function addMsg(role, text) {
+  const feed = el('feed');
+  const w = document.createElement('div');  w.className = 'msg ' + role;
+  const b = document.createElement('div');  b.className = 'bubble';
+  b.textContent = text;
+  w.appendChild(b);
+  feed.appendChild(w);
+  requestAnimationFrame(() => { feed.scrollTop = feed.scrollHeight; });
+}
+
+// ── Real-time waveform from analyser ──
+const BARS = Array.from({length: 9}, (_, i) => el('b' + i));
+
+function startWaveformViz(analyser) {
+  const buf = new Float32Array(analyser.frequencyBinCount);
+  const step = Math.floor(buf.length / BARS.length);
+
+  function frame() {
+    vadFrameId = requestAnimationFrame(frame);
+    analyser.getFloatTimeDomainData(buf);
+
+    BARS.forEach((bar, i) => {
+      // Grab a slice of the frequency domain per bar
+      let sum = 0;
+      const start = i * step;
+      for (let j = start; j < start + step && j < buf.length; j++) {
+        sum += buf[j] * buf[j];
+      }
+      const rms = Math.sqrt(sum / step);
+      const h = Math.max(4, Math.min(44, rms * 800));
+      bar.style.height = h + 'px';
+    });
+  }
+
+  frame();
+}
+
+function stopWaveformViz() {
+  if (vadFrameId) { cancelAnimationFrame(vadFrameId); vadFrameId = null; }
+  BARS.forEach(b => b.style.height = '4px');
+}
+
+// ── TTS ──
+async function speak(text) {
+  if (!callActive) return;
+  setUI('agent-speaking', 'Speaking...', 'act', 'Assistant speaking');
+  try {
+    const resp = await fetch(`${BASE}/api/v1/audio/tts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if (!resp.ok) return;
+    const blob  = await resp.blob();
+    const url   = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    currentAudio = audio;
+    await new Promise(resolve => {
+      audio.onended = resolve;
+      audio.onerror = resolve;
+      audio.play().catch(resolve);
+    });
+    currentAudio = null;
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    dbg('TTS error: ' + err.message);
+  }
+}
+
+// ── VAD loop ──
+async function openMicWithVAD() {
+  if (!callActive) return;
+
+  // Acquire mic
+  try {
+    vadStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (err) {
+    dbg('Mic denied: ' + err.message);
+    setUI('', 'Mic access denied', 'err', 'Error');
+    callActive = false;
+    updateCallBtn();
+    return;
+  }
+
+  // Setup AudioContext for level monitoring
+  vadContext  = new AudioContext();
+  vadAnalyser = vadContext.createAnalyser();
+  vadAnalyser.fftSize = 512;
+  const src = vadContext.createMediaStreamSource(vadStream);
+  src.connect(vadAnalyser);
+
+  // Start real-time waveform
+  startWaveformViz(vadAnalyser);
+
+  // Setup recorder
+  vadMimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+    ? 'audio/webm;codecs=opus'
+    : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+  vadChunks   = [];
+  vadRecorder = vadMimeType
+    ? new MediaRecorder(vadStream, { mimeType: vadMimeType })
+    : new MediaRecorder(vadStream);
+  vadRecorder.ondataavailable = e => { if (e.data.size > 0) vadChunks.push(e.data); };
+  vadRecorder.start(50); // collect in 50ms chunks
+
+  // VAD monitor
+  const monBuf = new Float32Array(vadAnalyser.frequencyBinCount);
+  vadSpeaking  = false;
+  vadSpeechStart = null;
+  clearTimeout(vadSilenceTimer); vadSilenceTimer = null;
+
+  setUI('waiting', 'Listening...', 'act', 'Listening');
+  showTypeInput(true);
+  dbg('VAD open, threshold=' + VAD_THRESHOLD.toFixed(3));
+
+  function checkLevel() {
+    if (!callActive || !vadContext) return;
+
+    vadAnalyser.getFloatTimeDomainData(monBuf);
+    let sum = 0;
+    for (let i = 0; i < monBuf.length; i++) sum += monBuf[i] * monBuf[i];
+    const rms = Math.sqrt(sum / monBuf.length);
+
+    if (rms > VAD_THRESHOLD) {
+      // ── Speech detected ──
+      clearTimeout(vadSilenceTimer);
+      vadSilenceTimer = null;
+
+      if (!vadSpeaking) {
+        vadSpeaking    = true;
+        vadSpeechStart = Date.now();
+        setUI('user-speaking', 'You\'re speaking...', 'act', 'User speaking');
+        dbg('Speech start');
+      }
+
+    } else {
+      // ── Silence ──
+      if (vadSpeaking && !vadSilenceTimer) {
+        vadSilenceTimer = setTimeout(() => {
+          vadSilenceTimer = null;
+          const dur = Date.now() - vadSpeechStart;
+          dbg('Silence after ' + dur + 'ms speech');
+
+          if (dur >= MIN_SPEECH_MS) {
+            stopVADAndProcess();
+          } else {
+            // Too short (noise spike), resume
+            vadSpeaking = false;
+            setUI('waiting', 'Listening...', 'act', 'Listening');
+          }
+        }, SILENCE_MS);
+      }
+    }
+
+    requestAnimationFrame(checkLevel);
+  }
+
+  checkLevel();
+}
+
+function stopVADAndProcess() {
+  if (!callActive) return;
+  stopWaveformViz();
+  setUI('', 'Processing...', 'act', 'Processing');
+
+  // Stop recorder and get blob
+  vadRecorder.onstop = async () => {
+    releaseMic();
+
+    if (vadChunks.length === 0) {
+      dbg('No audio chunks');
+      if (callActive) openMicWithVAD(); // retry
+      return;
+    }
+
+    const blob = new Blob(vadChunks, { type: vadRecorder.mimeType || 'audio/webm' });
+    vadChunks  = [];
+    dbg('Whisper (' + (blob.size / 1024).toFixed(1) + ' KB)...');
+
+    const ext  = (vadMimeType || '').includes('webm') ? 'webm' : 'ogg';
+    const form = new FormData();
+    form.append('audio', blob, 'recording.' + ext);
+
+    try {
+      const resp = await fetch(`${BASE}/api/v1/audio/transcribe`, { method: 'POST', body: form });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const { transcript } = await resp.json();
+      dbg('→ "' + transcript.slice(0, 50) + '"');
+
+      if (transcript && transcript.trim()) {
+        showTypeInput(false);
+        addMsg('user', transcript.trim());
+        sendReply(transcript.trim());
+      } else {
+        // Empty transcript (noise only), re-open mic
+        dbg('Empty transcript, re-listening');
+        if (callActive) openMicWithVAD();
+      }
+    } catch (err) {
+      dbg('Whisper error: ' + err.message);
+      if (callActive) openMicWithVAD();
+    }
+  };
+
+  if (vadRecorder.state === 'recording') vadRecorder.stop();
+}
+
+function releaseMic() {
+  if (vadStream)  { vadStream.getTracks().forEach(t => t.stop()); vadStream = null; }
+  if (vadContext) { vadContext.close().catch(() => {}); vadContext = null; }
+  vadAnalyser = null;
+  vadSpeaking = false;
+  clearTimeout(vadSilenceTimer); vadSilenceTimer = null;
+}
+
+// ── API ──
+function toggleCall() {
+  if (callActive) endCall();
+  else            startCall();
+}
+
+async function startCall() {
+  const userId = el('user-id').value.trim();
+  if (!userId) return;
+
+  callActive = true;
+  updateCallBtn();
+  el('feed').innerHTML = '';
+  setUI('', 'Connecting...', 'act', 'Connecting');
+
+  const resp = await fetch(`${BASE}/api/v1/invoice/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, transcript: 'start' })
+  }).catch(() => null);
+
+  if (!resp || !resp.ok) {
+    setUI('', 'Server unreachable', 'err', 'Error');
+    callActive = false;
+    updateCallBtn();
+    return;
+  }
+
+  const data = await resp.json();
+  sessionId = data.session_id;
+  openStream();
+}
+
+function endCall() {
+  callActive = false;
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  stopWaveformViz();
+  releaseMic();
+  if (vadRecorder && vadRecorder.state === 'recording') vadRecorder.stop();
+  if (evtSource)  { evtSource.close(); evtSource = null; }
+  sessionId = null;
+  showTypeInput(false);
+  setUI('', 'Tap to start', '', 'Ready');
+  updateCallBtn();
+  resetInvoice();
+}
+
+function updateCallBtn() {
+  const btn = el('call-btn');
+  if (callActive) {
+    btn.className = 'call-btn end';
+    btn.textContent = '📵';
+    el('call-label').textContent = 'End call';
+  } else {
+    btn.className = 'call-btn start';
+    btn.textContent = '📞';
+    el('call-label').textContent = 'Start call';
+  }
+}
+
+async function sendReply(reply) {
+  if (!reply || !sessionId) return;
+  await fetch(`${BASE}/api/v1/invoice/reply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId, reply })
+  }).catch(() => {});
+}
+
+function openStream() {
+  if (evtSource) evtSource.close();
+  evtSource = new EventSource(`${BASE}/api/v1/invoice/stream?session_id=${sessionId}`);
+
+  evtSource.onmessage = async (e) => {
+    if (!callActive) return;
+    const ev = JSON.parse(e.data);
+
+    if (ev.type === 'ping') return;
+
+    if (ev.type === 'thinking') {
+      setUI('', ev.message, 'act', 'Processing');
+    }
+    else if (ev.type === 'profile') {
+      inv.emitter = ev.data || {};
+      renderInvoice();
+    }
+    else if (ev.type === 'invoice_update') {
+      applyUpdate(ev.field, ev.value);
+    }
+    else if (ev.type === 'question') {
+      // Agent asks → TTS → mic opens with VAD
+      addMsg('agent', ev.message);
+      await speak(ev.message);
+      if (callActive) openMicWithVAD();
+    }
+    else if (ev.type === 'done') {
+      evtSource.close();
+      fetchFinal(ev.invoice_id);
+      addMsg('agent', '✅ Invoice confirmed!');
+      setUI('agent-speaking', 'Invoice confirmed!', 'on', 'Done');
+      await speak('Invoice confirmed successfully!');
+      callActive = false;
+      setUI('', 'Call ended', 'on', 'Done ✓');
+      updateCallBtn();
+    }
+    else if (ev.type === 'error') {
+      evtSource.close();
+      callActive = false;
+      releaseMic();
+      addMsg('sys', '✗ ' + ev.message);
+      setUI('', ev.message, 'err', 'Error');
+      updateCallBtn();
+    }
+  };
+
+  evtSource.onerror = () => {};
+}
+
+// ── Invoice state ──
+const inv = {
+  emitter: {}, client_name: null, client_address: null,
+  client_phone: null, client_email: null,
+  due_date: null, payment_terms: null,
+  lines: [], tva_rate: null,
+  subtotal: null, tva_amount: null, total: null,
+  invoice_number: null,
+  issue_date: new Date().toISOString().split('T')[0],
+  status: 'draft'
+};
+
+async function fetchFinal(id) {
+  try {
+    const r = await fetch(`${BASE}/api/v1/invoice/${id}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    inv.status = 'confirmed';
+    if (d.invoice_number) inv.invoice_number = d.invoice_number;
+    renderInvoice();
+  } catch {}
+}
+
+function applyUpdate(field, value) {
+  const map = {
+    status: () => inv.status = value,
+    lines:  () => inv.lines  = Array.isArray(value) ? value : [],
+    client_name:    () => inv.client_name    = value,
+    client_address: () => inv.client_address = value,
+    client_phone:   () => inv.client_phone   = value,
+    client_email:   () => inv.client_email   = value,
+    due_date:       () => inv.due_date       = value,
+    payment_terms:  () => inv.payment_terms  = value,
+    tva_rate:       () => inv.tva_rate       = value,
+    subtotal:       () => inv.subtotal       = value,
+    tva_amount:     () => inv.tva_amount     = value,
+    total:          () => inv.total          = value,
+    invoice_number: () => inv.invoice_number = value,
+  };
+  if (field === 'client_id') return;
+  if (map[field]) map[field]();
+  renderInvoice();
+}
+
+function renderInvoice() {
+  el('iv-co').textContent      = inv.emitter.name    || '—';
+  el('iv-addr').textContent    = inv.emitter.address || '';
+  el('iv-siret').textContent   = inv.emitter.siret   ? 'SIRET: ' + inv.emitter.siret : '';
+  el('iv-tva-num').textContent = inv.emitter.tva_number ? 'VAT N°: ' + inv.emitter.tva_number : '';
+  el('iv-num').textContent     = inv.invoice_number  || 'Draft';
+  el('iv-issue').textContent   = fmtD(inv.issue_date);
+  el('iv-due').textContent     = fmtD(inv.due_date);
+  el('iv-cli-name').innerHTML  = inv.client_name ? `<strong>${inv.client_name}</strong>` : '<span class="ph">—</span>';
+  el('iv-cli-addr').textContent  = inv.client_address || '';
+  el('iv-cli-phone').textContent = inv.client_phone ? '📞 ' + inv.client_phone : '';
+  el('iv-cli-email').textContent = inv.client_email ? '✉ '  + inv.client_email : '';
+
+  const tbody = el('iv-lines');
+  if (inv.lines && inv.lines.length > 0) {
+    tbody.innerHTML = inv.lines.map(l => `
+      <tr>
+        <td>${l.description || ''}</td>
+        <td>${l.qty}</td>
+        <td>${fmt(l.unit_price)}</td>
+        <td>${fmt(l.total != null ? l.total : l.qty * l.unit_price)}</td>
+      </tr>`).join('');
+  } else {
+    tbody.innerHTML = '<tr class="inv-empty"><td colspan="4">Waiting for line items</td></tr>';
+  }
+
+  el('iv-sub').textContent      = fmt(inv.subtotal);
+  el('iv-tva-rate').textContent = inv.tva_rate ?? '—';
+  el('iv-tva-amt').textContent  = fmt(inv.tva_amount);
+  el('iv-total').textContent    = fmt(inv.total);
+
+  const badge = el('iv-badge');
+  badge.textContent = inv.status === 'confirmed' ? 'Confirmed' : 'Draft';
+  badge.className   = 'inv-badge ' + (inv.status === 'confirmed' ? 'confirmed' : 'draft');
+
+  el('iv-footer').textContent = inv.payment_terms ? 'Payment terms: ' + inv.payment_terms : '';
+}
+
+function resetInvoice() {
+  Object.assign(inv, {
+    emitter: {}, client_name: null, client_address: null,
+    client_phone: null, client_email: null,
+    due_date: null, payment_terms: null,
+    lines: [], tva_rate: null,
+    subtotal: null, tva_amount: null, total: null,
+    invoice_number: null,
+    issue_date: new Date().toISOString().split('T')[0],
+    status: 'draft'
+  });
+  renderInvoice();
+}
+
+// Init
+renderInvoice();
+</script>
+</body>
+</html>

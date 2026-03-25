@@ -1,5 +1,3 @@
-<!--use this one below instead:-->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,16 +23,59 @@
       <!-- Voice Control -->
       <div class="card">
         <h3>VOICE CONTROL</h3>
-        <button class="record-btn">🎤 Start recording</button>
 
-        <div id="suggestions">
-          <p>Available voice commands</p>
-          <ul>
-            <li>"Invoice number 123"</li>
-            <li>"Company [name]"</li>
-            <li>"Client [name]"</li>
-            <li>"Product + quantity + price"</li>
-          </ul>
+        <div class="voice-zone">
+
+          <!-- Record button -->
+          <button id="record-btn" class="record-btn">
+            <span class="record-btn-icon">🎤</span>
+            <span class="record-btn-label">Start recording</span>
+            <span class="record-rings">
+              <span></span><span></span><span></span>
+            </span>
+          </button>
+          
+          <div>
+            or
+          </div>
+
+          <!-- Agent thinking -->
+          <div id="agent-status" class="agent-status hidden">
+            <div class="agent-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span id="status-text"></span>
+          </div>
+
+          <!-- Agent question (chat bubble) -->
+          <div id="question-box" class="question-box hidden">
+            <div class="agent-bubble">
+              <div class="agent-avatar">AI</div>
+              <p id="question-text"></p>
+            </div>
+            <div class="reply-row">
+              <input id="reply-input" type="text" placeholder="Type your reply…" autocomplete="off">
+              <button id="reply-mic-btn" class="reply-icon-btn" title="Voice reply">🎤</button>
+              <button id="reply-send-btn" class="reply-send-btn">Send</button>
+            </div>
+          </div>
+
+          <!-- Client Suggestions Box -->
+          <div id="client-suggestions-box" class="client-suggestions-box hidden">
+            <p id="client-suggestions-msg"></p>
+            <div id="client-suggestions-list" class="suggestions-list"></div>
+            <button id="new-client-btn" class="new-client-btn">+ Créer un nouveau client</button>
+          </div>
+
+          <!-- Idle hint -->
+          <div id="suggestions" class="suggestions">
+            <p>Try saying something like</p>
+            <ul>
+              <li>"Invoice Jean Dupont for 3 hours of consulting at 150€"</li>
+              <li>"Bill Marie Martin, logo design, 800€"</li>
+            </ul>
+          </div>
+
         </div>
       </div>
 
@@ -111,17 +152,27 @@
                 </div>
               </div>
             </div>
+            <div class="preview-issuer">
+              <div class="preview-company"></div>
+              <div id="preview-company-address"></div>
+              <div id="preview-company-phone"></div>
+              <div id="preview-company-email"></div>
+            </div>
 
             <div class="preview-invoice-meta">
               <h4>INVOICE</h4>
-              <p># ---</p>
-              <span>Date February 4, 2026</span>
+              <p id="preview-invoice-number"># ---</p>
+              <span id="preview-date"></span>
+              <span id="preview-due-date"></span>
             </div>
           </div>
 
           <div class="bill-box">
             <span>Bill to:</span>
-            <p>xClient Inc.</p>
+            <p id="preview-client-name"></p>
+            <p id="preview-client-address"></p>
+            <p id="preview-client-email"></p>
+            <p id="preview-client-phone"></p>
           </div>
 
           <div class="preview-info">
@@ -147,27 +198,26 @@
             </div>
 
             <table class="item-list">
-              <tr>
-              </tr>
+              <tbody id="item-list-body">
+              </tbody>
             </table>
             <button type="button" id="add-line-item">+ Add item</button>
 
-            <div class="preview-footer" <div class="preview-totals">
+            <div class="preview-footer">
 
               <div class="preview-totals">
-                <div class="preview-total-row">
-                  <span>Subtotal:</span>
-                  <span>$0.00</span>
-                </div>
-                <div class="preview-total-row">
-                  <span>Tax (0%):</span>
-                  <span>$0.00</span>
-                </div>
-                <div class="preview-total-divider"></div>
-                <div class="preview-total-row preview-total-final">
-                  <span>TOTAL:</span>
-                  <span>$0.00</span>
-                </div>
+              <div class="preview-total-row">
+                <span>Subtotal:</span>
+                <span id="total-subtotal">$0.00</span>
+              </div>
+              <div class="preview-total-row">
+                <span id="total-tva-label">Tax (0%):</span>
+                <span id="total-tva">$0.00</span>
+              </div>
+              <div class="preview-total-divider"></div>
+              <div class="preview-total-row preview-total-final">
+                <span>TOTAL:</span>
+                <span id="total-final">$0.00</span>
               </div>
               <br>
               <div class="preview-note">
@@ -180,11 +230,21 @@
           </div>
         </div>
 
-        <button class="return-btn">Return</button>
-
       </div>
-
     </div>
+  </div>
+  </div>
+
+  <button class="return-btn">Return</button>
+
+  </div>
+
+  </div>
+
+  <script>
+    window.INVOICE_USER_ID = "8412b4dd-7ee4-4915-86ed-4d5bec0f702f";
+  </script>
+  <script type="module" src="../src/frontend/main.js"></script>
 
 </body>
 

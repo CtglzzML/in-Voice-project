@@ -645,7 +645,7 @@ input:focus {
 }
 
 #delete-logo-btn {
-  object-fit: cover;
+  object-fit: contain;
   height: 30px;
   width: 30px;
   
