@@ -30,6 +30,24 @@ class InvoiceField(str, Enum):
 MANDATORY_FIELDS = ["client_id", "due_date", "payment_terms", "lines", "tva_rate"]
 
 QUESTION_TIMEOUT = 300  # 5 minutes
+SEARCH_TIMEOUT = 10.0  # 10 seconds max for DB search
+
+
+async def _await_reply(session_id: str) -> str:
+    """Wait for a user reply without pushing a question event to SSE.
+    Used when the UI was already updated by a preceding event (client_form_needed, client_suggestions).
+    """
+    session = session_store.get(session_id)
+    session["awaiting_reply"] = True
+    try:
+        reply = await asyncio.wait_for(session["reply_queue"].get(), timeout=QUESTION_TIMEOUT)
+    except asyncio.TimeoutError:
+        session["status"] = "error"
+        await session_store.push_event(session_id, {"type": "error", "message": "No response received within 5 minutes."})
+        raise
+    finally:
+        session["awaiting_reply"] = False
+    return reply
 
 
 async def _push_client_fields(session_id: str, name: str, address: str, email: str, phone: str) -> None:
@@ -64,26 +82,71 @@ async def tool_get_user_profile(user_id: str, session_id: str) -> str:
 
 async def tool_search_client(name: str, user_id: str, session_id: str) -> str:
     """
-    Returns client data including id.
-    After calling this tool, the agent MUST call update_invoice_field("client_id", <id>, invoice_id)
-    to link the client to the invoice.
+    Searches for a client by name. Handles all 3 cases internally:
+    - 1 match  → returns client data with client_id
+    - N matches → shows selection UI, waits for user choice, returns selected client
+    - 0 matches → shows creation form, waits for user data, returns new client info
+    After this tool returns, call update_invoice_field('client_id', ...) or create_client accordingly.
     """
     await session_store.push_event(session_id, {"type": "thinking", "message": f"Searching for '{name}'..."})
     loop = asyncio.get_running_loop()
-    results = await loop.run_in_executor(None, partial(search_clients, name, user_id))
-    if not results:
-        return f"Client '{name}' not found. Ask the user for the client's address to create a new record. Then call update_invoice_field with client_id."
+
+    try:
+        results = await asyncio.wait_for(
+            loop.run_in_executor(None, partial(search_clients, name, user_id)),
+            timeout=SEARCH_TIMEOUT,
+        )
+    except asyncio.TimeoutError:
+        return f"Search timed out. Please try again."
+
+    # --- Case 1: exactly one match ---
     if len(results) == 1:
         c = results[0]
         await _push_client_fields(session_id, c.name, c.address or "", c.email or "", c.phone or "")
-        return f"Client found: {c.model_dump_json()}. Now call update_invoice_field('client_id', '{c.id}', invoice_id)."
-    
+        return f"Client found: {c.model_dump_json()}. Call update_invoice_field('client_id', '{c.id}', invoice_id)."
+
+    # --- Case 2: multiple matches — show selection UI, wait for choice ---
+    if len(results) > 1:
+        await session_store.push_event(session_id, {
+            "type": "client_suggestions",
+            "message": f"Plusieurs clients trouvés pour '{name}'.",
+            "suggestions": [r.model_dump(mode='json') for r in results],
+        })
+        try:
+            reply = await _await_reply(session_id)
+        except asyncio.TimeoutError:
+            return "Timeout waiting for client selection."
+        try:
+            data = json.loads(reply)
+            client_id = data.get("client_id")
+            selected = next((r for r in results if r.id == client_id), None)
+            if selected:
+                await _push_client_fields(session_id, selected.name, selected.address or "", selected.email or "", selected.phone or "")
+                return f"Client selected: {selected.model_dump_json()}. Call update_invoice_field('client_id', '{selected.id}', invoice_id)."
+        except (json.JSONDecodeError, ValueError, AttributeError):
+            pass
+        return f"Client selection received: {reply}. Extract client_id and call update_invoice_field."
+
+    # --- Case 3: no match — show creation form, wait for submitted data ---
     await session_store.push_event(session_id, {
-        "type": "client_suggestions",
-        "message": f"Plusieurs clients trouvés pour '{name}'.",
-        "suggestions": [r.model_dump(mode='json') for r in results]
+        "type": "client_form_needed",
+        "extracted_name": name,
     })
-    return f"Multiple clients found: {[r.name for r in results]}. I have emitted 'client_suggestions' to the UI. YOU MUST STOP and use tool_ask_user_question to ask the user to select one visually."
+    try:
+        reply = await _await_reply(session_id)
+    except asyncio.TimeoutError:
+        return "Timeout waiting for new client data."
+    try:
+        data = json.loads(reply)
+        return (
+            f"No existing client found. User submitted new client data: {data}. "
+            f"Call create_client with name='{data.get('name', '')}', "
+            f"address='{data.get('address', '')}', "
+            f"email='{data.get('email', '')}', "
+            f"phone='{data.get('phone', '')}'."
+        )
+    except (json.JSONDecodeError, ValueError):
+        return f"Client '{name}' not found. User replied: {reply}. Ask for address to create new client."
 
 
 async def tool_create_client(name: str, address: str, user_id: str, session_id: str, email: str = "", company: str = "", phone: str = "") -> str:

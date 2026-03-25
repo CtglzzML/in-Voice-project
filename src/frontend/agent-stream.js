@@ -104,6 +104,9 @@ export const agentStream = (() => {
       case 'client_suggestions':
         _showClientSuggestions(event.message, event.suggestions);
         break;
+      case 'client_form_needed':
+        _showNewClientForm(event.extracted_name || '');
+        break;
       case 'done':
         _onDone(event.invoice_id, event.invoice_number);
         break;
@@ -155,28 +158,31 @@ export const agentStream = (() => {
     const micBtn  = document.querySelector('#reply-mic-btn');
     if (box)     box.classList.remove('hidden');
     if (text)    text.textContent = message;
-    if (input)   { input.value = ''; }
+    if (input)   { input.value = ''; input.focus(); }
     if (sendBtn) sendBtn.disabled = false;
     if (micBtn)  micBtn.classList.add('auto-listening');
+    _setStatusBox('Waiting for your reply…', { showSpinner: false });
   }
 
   function _hideQuestion() {
     const box = document.querySelector('#question-box');
     if (box) box.classList.add('hidden');
     _hideClientSuggestions();
+    _hideNewClientForm();
   }
 
   function _showClientSuggestions(message, suggestions) {
-    const box = document.querySelector('#client-suggestions-box');
-    const msg = document.querySelector('#client-suggestions-msg');
+    const box  = document.querySelector('#client-suggestions-box');
+    const msg  = document.querySelector('#client-suggestions-msg');
     const list = document.querySelector('#client-suggestions-list');
     const newBtn = document.querySelector('#new-client-btn');
-    
+
     if (!box || !list) return;
-    
+
     box.classList.remove('hidden');
     if (msg) msg.textContent = message;
-    
+    _setStatusBox('Sélectionnez un client ou créez-en un nouveau', { showSpinner: false });
+
     list.innerHTML = '';
     suggestions.forEach(c => {
       const card = document.createElement('div');
@@ -184,7 +190,7 @@ export const agentStream = (() => {
       card.innerHTML = `<strong>${c.name}</strong><br><small>${c.address || ''}</small>`;
       card.addEventListener('click', () => {
         _hideClientSuggestions();
-        sendReply(`Le client est ${c.name} (ID: ${c.id})`);
+        sendReply(JSON.stringify({ client_id: c.id, client_name: c.name }));
       });
       list.appendChild(card);
     });
@@ -192,17 +198,62 @@ export const agentStream = (() => {
     if (newBtn) {
       newBtn.onclick = () => {
         _hideClientSuggestions();
-        sendReply(`Aucun de ces clients. Je veux créer un nouveau client.`);
+        _showNewClientForm('');
       };
     }
-    
-    // Also show the question box so the user can speak if they want
-    _showQuestion(message);
   }
 
   function _hideClientSuggestions() {
     const box = document.querySelector('#client-suggestions-box');
     if (box) box.classList.add('hidden');
+  }
+
+  function _showNewClientForm(extractedName) {
+    const form = document.querySelector('#new-client-form');
+    if (!form) return;
+
+    const nameInput    = form.querySelector('#ncf-name');
+    const addressInput = form.querySelector('#ncf-address');
+    const emailInput   = form.querySelector('#ncf-email');
+    const phoneInput   = form.querySelector('#ncf-phone');
+    const submitBtn    = form.querySelector('#ncf-submit');
+    const errorMsg     = form.querySelector('#ncf-error');
+
+    if (nameInput)    nameInput.value    = extractedName || '';
+    if (addressInput) addressInput.value = '';
+    if (emailInput)   emailInput.value   = '';
+    if (phoneInput)   phoneInput.value   = '';
+    if (errorMsg)     errorMsg.textContent = '';
+
+    form.classList.remove('hidden');
+    _setStatusBox('Nouveau client — remplissez le formulaire', { showSpinner: false });
+
+    // Focus first empty field
+    if (nameInput && !nameInput.value) nameInput.focus();
+    else if (addressInput) addressInput.focus();
+
+    if (submitBtn) {
+      submitBtn.onclick = () => {
+        const name    = nameInput?.value.trim()    || '';
+        const address = addressInput?.value.trim() || '';
+        const email   = emailInput?.value.trim()   || '';
+        const phone   = phoneInput?.value.trim()   || '';
+
+        if (!name || !address) {
+          if (errorMsg) errorMsg.textContent = 'Nom et adresse sont obligatoires.';
+          return;
+        }
+
+        form.classList.add('hidden');
+        sendReply(JSON.stringify({ name, address, email, phone }));
+        _showStatus('Création du client...');
+      };
+    }
+  }
+
+  function _hideNewClientForm() {
+    const form = document.querySelector('#new-client-form');
+    if (form) form.classList.add('hidden');
   }
 
   function _resetRecordBtn() {
