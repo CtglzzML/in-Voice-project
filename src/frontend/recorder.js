@@ -1,14 +1,9 @@
-// js/recorder.js
-// Responsibility: audio capture — Web Speech API + Whisper fallback
-// Supports two modes:
-//   - startMain()  : captures the initial invoice request (manual trigger)
-//   - listenForReply() : auto-activates after an agent question (no click needed)
+// src/frontend/recorder.js
+import { agentStream, BASE_URL } from './agent-stream.js';
 
-const recorder = (() => {
+export const recorder = (() => {
   let recognition = null;
   let mediaRecorder = null;
-
-  // ─── Public init (wires manual record button + typed reply) ───────────────
 
   function init() {
     const recordBtn   = document.querySelector('#record-btn');
@@ -16,7 +11,7 @@ const recorder = (() => {
     const replySendBtn = document.querySelector('#reply-send-btn');
     const replyMicBtn = document.querySelector('#reply-mic-btn');
 
-    if (!recordBtn) { console.error('recorder.js: #record-btn not found'); return; }
+    if (!recordBtn) { return; }
 
     recordBtn.addEventListener('click', () => {
       if (recognition || mediaRecorder) return;
@@ -24,7 +19,6 @@ const recorder = (() => {
       _startCapture('en-US', _onMainTranscript);
     });
 
-    // Typed reply — still supported as fallback
     if (replySendBtn) replySendBtn.addEventListener('click', () => {
       agentStream.sendReply(replyInput.value);
     });
@@ -32,7 +26,6 @@ const recorder = (() => {
       if (e.key === 'Enter') agentStream.sendReply(replyInput.value);
     });
 
-    // Mic button in reply box — user clicks to speak reply
     if (replyMicBtn) replyMicBtn.addEventListener('click', () => {
       if (recognition || mediaRecorder) return;
       replyMicBtn.classList.remove('auto-listening');
@@ -40,12 +33,8 @@ const recorder = (() => {
     });
   }
 
-  // ─── Auto-listen for conversational reply ─────────────────────────────────
-  // Called by agentStream when a question event arrives.
-
   function listenForReply() {
     const replyInput = document.querySelector('#reply-input');
-    const replyBox   = document.querySelector('.reply-row');
 
     _setAutoListenState(true);
 
@@ -53,16 +42,12 @@ const recorder = (() => {
       _setAutoListenState(false);
 
       if (!transcript) {
-        // Nothing captured — let user type instead
         if (replyInput) replyInput.focus();
         return;
       }
 
-      // Show transcript briefly so user can see what was captured
       if (replyInput) replyInput.value = transcript;
 
-      // Auto-send after 1.5 s — user can edit or cancel in that window
-      const sendBtn = document.querySelector('#reply-send-btn');
       let countdown = null;
 
       const cancelEl = _showAutoSendCountdown(() => {
@@ -75,8 +60,6 @@ const recorder = (() => {
       }, 1500);
     });
   }
-
-  // ─── Private helpers ──────────────────────────────────────────────────────
 
   function _startCapture(lang, callback) {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -94,53 +77,115 @@ const recorder = (() => {
     r.interimResults = false;
     r.maxAlternatives = 1;
 
-    // `done` is local to this closure — prevents double-callback regardless
-    // of the order onresult / onerror / onend fire (onend always fires last in Chrome)
     let done = false;
     const once = (fn) => (...args) => { if (done) return; done = true; recognition = null; fn(...args); };
 
     r.onresult = once((e) => {
       const transcript = e.results[0][0].transcript;
-      const confidence = e.results[0][0].confidence;
-      console.log('[recorder] transcript:', JSON.stringify(transcript), '| confidence:', confidence.toFixed(3));
       callback(transcript);
     });
 
     r.onerror = once((err) => {
-      console.warn('[recorder] Web Speech error:', err.error);
-      if (err.error === 'no-speech') {
+      console.warn('SpeechRecognition error:', err.error);
+      if (err.error === 'not-allowed') {
+        _showError('Accès au microphone refusé.');
         callback('');
       } else {
         _startWhisper(callback);
       }
     });
 
-    // onend fires after onresult/onerror — only reaches callback if neither fired
-    r.onend = once(() => callback(''));
-
+    r.onend = once(() => {
+      console.warn('SpeechRecognition ended with no result. Falling back to Whisper.');
+      _startWhisper(callback);
+    });
     r.start();
   }
+
+  let vadContext = null;
+  let vadAnalyser = null;
+  let vadSilenceTimer = null;
 
   function _startWhisper(callback) {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
       const chunks = [];
       mediaRecorder = new MediaRecorder(stream);
-
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      
+      vadContext = new (window.AudioContext || window.webkitAudioContext)();
+      vadAnalyser = vadContext.createAnalyser();
+      vadAnalyser.fftSize = 512;
+      const src = vadContext.createMediaStreamSource(stream);
+      src.connect(vadAnalyser);
+      
+      let isSpeaking = false;
+      let speechStarted = null;
+      const monBuf = new Float32Array(vadAnalyser.frequencyBinCount);
+      const VAD_THRESHOLD = 0.005; // Lowered tuning threshold
+      const MIN_SPEECH_MS = 400;
+      const SILENCE_MS = 1500;
+      
+      let initialSilenceTimer = setTimeout(() => {
+        if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+      }, 7000); // Wait max 7 seconds before giving up if no sound
+      
+      function checkLevel() {
+        if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+        
+        vadAnalyser.getFloatTimeDomainData(monBuf);
+        let sum = 0;
+        for (let i = 0; i < monBuf.length; i++) sum += monBuf[i] * monBuf[i];
+        const rms = Math.sqrt(sum / monBuf.length);
+        
+        if (rms > VAD_THRESHOLD) {
+          clearTimeout(vadSilenceTimer);
+          clearTimeout(initialSilenceTimer);
+          vadSilenceTimer = null;
+          if (!isSpeaking) {
+            isSpeaking = true;
+            speechStarted = Date.now();
+          }
+        } else if (isSpeaking && !vadSilenceTimer) {
+          vadSilenceTimer = setTimeout(() => {
+            vadSilenceTimer = null;
+            const dur = Date.now() - speechStarted;
+            if (dur >= MIN_SPEECH_MS) {
+              if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+            } else {
+              isSpeaking = false; 
+            }
+          }, SILENCE_MS);
+        }
+        requestAnimationFrame(checkLevel);
+      }
+      
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
+        if (vadContext) { vadContext.close(); vadContext = null; }
         mediaRecorder = null;
+        
+        if (chunks.length === 0) { callback(''); return; }
         const blob = new Blob(chunks, { type: 'audio/webm' });
+        
+        const loader = _showAutoSendCountdown(() => {});
+        loader.innerHTML = '<span>Transcription en cours...</span>';
+        
         const transcript = await _transcribeWhisper(blob);
+        loader.remove();
         callback(transcript);
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(50);
+      checkLevel();
+      
+      // Safety ultimate fallback
       setTimeout(() => {
         if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
-      }, 10000);
+      }, 15000);
+      
     }).catch(() => {
-      _showError('Microphone access denied.');
+      _showError('Accès au microphone refusé.');
+      callback('');
     });
   }
 
@@ -156,13 +201,6 @@ const recorder = (() => {
       return '';
     }
   }
-
-  function _stopCurrentCapture() {
-    if (recognition)    { recognition.stop(); recognition = null; }
-    if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
-  }
-
-  // ─── UI state helpers ─────────────────────────────────────────────────────
 
   function _setRecordingState(active) {
     const btn = document.querySelector('#record-btn');
@@ -180,7 +218,6 @@ const recorder = (() => {
     if (replyRow) replyRow.classList.toggle('auto-listening', active);
   }
 
-  // Shows a "Sending in 1s… Cancel" pill — returns the element so caller can remove it
   function _showAutoSendCountdown(onCancel) {
     const replyRow = document.querySelector('.reply-row');
     const el = document.createElement('div');
@@ -197,7 +234,7 @@ const recorder = (() => {
   function _onMainTranscript(transcript) {
     _setRecordingState(false);
     if (!transcript) {
-      _showError('No speech detected — try again.');
+      _showError('Aucune voix détectée — réessayez (ou tapez votre demande en dessous).');
       return;
     }
     agentStream.start(transcript);
@@ -209,8 +246,6 @@ const recorder = (() => {
     if (box)  { box.classList.remove('hidden'); box.style.color = 'red'; }
     if (text) text.textContent = msg;
   }
-
-  // ─── Boot ─────────────────────────────────────────────────────────────────
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

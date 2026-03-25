@@ -3,6 +3,7 @@ import asyncio
 import json
 from decimal import Decimal
 from enum import Enum
+from functools import partial
 from typing import Any
 
 from src.db.models import Client, InvoiceLine, compute_totals
@@ -45,7 +46,8 @@ async def _push_client_fields(session_id: str, name: str, address: str, email: s
 
 async def tool_get_user_profile(user_id: str, session_id: str) -> str:
     await session_store.push_event(session_id, {"type": "thinking", "message": "Loading user profile..."})
-    profile = get_user(user_id)
+    loop = asyncio.get_running_loop()
+    profile = await loop.run_in_executor(None, partial(get_user, user_id))
     if profile:
         await session_store.push_event(session_id, {
             "type": "profile",
@@ -54,9 +56,10 @@ async def tool_get_user_profile(user_id: str, session_id: str) -> str:
     if not profile:
         return f"User {user_id} not found in database."
     missing = profile.missing_mandatory_fields()
+    result = f"Profile loaded: {profile.model_dump_json()}"
     if missing:
-        return f"Profile loaded. Missing mandatory fields: {missing}. Ask the user for this information."
-    return f"Profile loaded: {profile.model_dump_json()}"
+        result += f" | Missing fields: {missing}"
+    return result
 
 
 async def tool_search_client(name: str, user_id: str, session_id: str) -> str:
@@ -66,14 +69,21 @@ async def tool_search_client(name: str, user_id: str, session_id: str) -> str:
     to link the client to the invoice.
     """
     await session_store.push_event(session_id, {"type": "thinking", "message": f"Searching for '{name}'..."})
-    results = search_clients(name, user_id)
+    loop = asyncio.get_running_loop()
+    results = await loop.run_in_executor(None, partial(search_clients, name, user_id))
     if not results:
         return f"Client '{name}' not found. Ask the user for the client's address to create a new record. Then call update_invoice_field with client_id."
     if len(results) == 1:
         c = results[0]
         await _push_client_fields(session_id, c.name, c.address or "", c.email or "", c.phone or "")
         return f"Client found: {c.model_dump_json()}. Now call update_invoice_field('client_id', '{c.id}', invoice_id)."
-    return f"Multiple clients found: {[r.model_dump_json() for r in results]}. Ask which one to use, then call update_invoice_field('client_id', chosen_id, invoice_id)."
+    
+    await session_store.push_event(session_id, {
+        "type": "client_suggestions",
+        "message": f"Plusieurs clients trouvés pour '{name}'.",
+        "suggestions": [r.model_dump(mode='json') for r in results]
+    })
+    return f"Multiple clients found: {[r.name for r in results]}. I have emitted 'client_suggestions' to the UI. YOU MUST STOP and use tool_ask_user_question to ask the user to select one visually."
 
 
 async def tool_create_client(name: str, address: str, user_id: str, session_id: str, email: str = "", company: str = "", phone: str = "") -> str:
@@ -82,14 +92,16 @@ async def tool_create_client(name: str, address: str, user_id: str, session_id: 
     """
     await session_store.push_event(session_id, {"type": "thinking", "message": f"Creating client '{name}'..."})
     client = Client(id="", user_id=user_id, name=name, address=address, email=email or None, company=company or None, phone=phone or None)
-    created = create_client_record(client)
+    loop = asyncio.get_running_loop()
+    created = await loop.run_in_executor(None, partial(create_client_record, client))
     await _push_client_fields(session_id, name, address, email, phone)
     return f"Client created. client_id={created.id}. Now call update_invoice_field('client_id', '{created.id}', invoice_id)."
 
 
 async def tool_create_invoice_draft(user_id: str, session_id: str) -> str:
     await session_store.push_event(session_id, {"type": "thinking", "message": "Creating invoice draft..."})
-    invoice_id = db_create_draft(user_id, session_id)
+    loop = asyncio.get_running_loop()
+    invoice_id = await loop.run_in_executor(None, partial(db_create_draft, user_id, session_id))
     session_store.get(session_id)["invoice_id"] = invoice_id
     await session_store.push_event(session_id, {"type": "invoice_update", "field": "status", "value": "draft"})
     return f"Draft created. invoice_id={invoice_id}"
@@ -97,15 +109,23 @@ async def tool_create_invoice_draft(user_id: str, session_id: str) -> str:
 
 async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id: str, session_id: str) -> str:
     await session_store.push_event(session_id, {"type": "thinking", "message": f"Updating {field}..."})
+    loop = asyncio.get_running_loop()
 
     field_key = field.value
 
-    # Parse JSON strings sent by the LLM (e.g. lines as '[{"description":...}]')
-    if isinstance(value, str):
+    # Validate tva_rate early
+    if field_key == "tva_rate":
+        try:
+            value = float(str(value).replace("%", "").strip())
+        except (ValueError, TypeError):
+            return f"Invalid tva_rate: '{value}'. Must be a number (e.g. 20)."
+
+    # Parse JSON strings sent by the LLM (e.g. if LLM mistakenly sends lines as '[{"description":...}]' string)
+    if field_key == "lines" and isinstance(value, str):
         try:
             value = json.loads(value)
         except (json.JSONDecodeError, ValueError):
-            pass  # keep as string for text fields
+            pass  # fallback, handled below
 
     updates: dict[str, Any] = {field_key: value}
 

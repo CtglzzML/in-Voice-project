@@ -1,7 +1,7 @@
 # src/api/routes/invoice.py
 import asyncio
 import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from sse_starlette.sse import EventSourceResponse
 from src.api.schemas import StartRequest, StartResponse, ReplyRequest
 from src.sessions.manager import session_store
@@ -21,9 +21,9 @@ router = APIRouter(prefix="/invoice", tags=["Invoice"])
         "Returns a `session_id` to use with `/stream` and `/reply`."
     ),
 )
-async def start(body: StartRequest):
+async def start(body: StartRequest, background_tasks: BackgroundTasks):
     session_id = session_store.create(body.user_id)
-    asyncio.create_task(run_agent(session_id, body.user_id, body.transcript))
+    background_tasks.add_task(run_agent, session_id, body.user_id, body.transcript)
     return StartResponse(session_id=session_id)
 
 

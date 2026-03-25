@@ -3,6 +3,7 @@ import asyncio
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from langchain_core.tools import StructuredTool
+from typing import Any
 from pydantic import BaseModel, Field
 from src.agent.tools import (
     tool_get_user_profile,
@@ -40,7 +41,7 @@ def _make_tools(session_id: str, user_id: str):
 
     class UpdateFieldInput(BaseModel):
         field: str = Field(description="Field to update. Possible values: client_id, due_date, payment_terms, lines, tva_rate")
-        value: str = Field(description="New value for the field")
+        value: Any = Field(description="New value for the field. For 'lines', pass a list of objects.")
         invoice_id: str = Field(description="Invoice ID (returned by create_invoice_draft)")
 
     class AskQuestionInput(BaseModel):
@@ -99,80 +100,70 @@ async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
     """Background task: runs the LangChain agent for a session."""
     from src.config import OPENAI_API_KEY
 
-    llm = ChatOpenAI(
-        model="gpt-4.1-mini",
-        api_key=OPENAI_API_KEY,
-        temperature=0,
-    )
-
-    # Pre-extract structured info from transcript
-    extracted = await extract_from_transcript(transcript, OPENAI_API_KEY)
-
-    # Build extracted context for system prompt
-    extracted_fields = {k: v for k, v in extracted.model_dump().items() if v is not None}
-    extracted_context = (
-        f"\n\nPRE-EXTRACTED FROM TRANSCRIPT:\n{extracted_fields}\n\n"
-        "Use these values directly — do NOT ask the user for info that is already extracted above."
-        if extracted_fields else ""
-    )
-
-    tools = _make_tools(session_id, user_id)
-    system_prompt = (
-        f"You are a voice invoicing assistant. Session: {session_id}. User: {user_id}.\n\n"
-        "The user has already spoken their invoice request. Your job is to process it efficiently:\n"
-        "use what was already said, and only ask for what is strictly missing.\n"
-        "Keep questions short and conversational."
-        f"{extracted_context}\n\n"
-        "STEPS — execute in order:\n\n"
-        "STEP 1 — get_user_profile\n\n"
-        "STEP 2 — Identify the client:\n"
-        "  • Use client_first_name + client_last_name from extracted data if available\n"
-        "  • If client name is missing → ask_user_question('Who are you invoicing?')\n"
-        "  • search_client with full name\n"
-        "  • 1 result → update_invoice_field client_id\n"
-        "  • 0 results → new client:\n"
-        "    - Use address/email/phone from extracted data if available\n"
-        "    - Ask only for missing required fields (address is required)\n"
-        "    - then create_client\n"
-        "  • Multiple results → ask_user_question listing the options\n\n"
-        "STEP 3 — create_invoice_draft\n\n"
-        "STEP 4 — Set invoice fields (use extracted data when available, ask only if missing):\n"
-        "  • lines: [{description, qty, unit_price}] — use extracted description/qty/unit_price/amount\n"
-        "    - description must be a clean professional label with NO quantity in it (e.g. 'Web development', not '3h web dev')\n"
-        "    - qty is the number of hours/days/units (separate from description)\n"
-        "    - If description missing → ask_user_question('What are you invoicing for?')\n"
-        "    - If amount/unit_price missing → ask_user_question('How much for that?')\n"
-        "  • tva_rate: use extracted tva_rate, or profile default_tva (as a percentage, e.g. 20), or ask\n"
-        "  • due_date: use extracted due_date, or today+30 days in YYYY-MM-DD format\n"
-        "  • payment_terms: use extracted payment_terms, or 'Net 30'\n\n"
-        "STEP 5 — Confirmation:\n"
-        "  ask_user_question with a brief summary:\n"
-        "  '[client], [description], [qty]x[unit_price], total [total] with [rate]% VAT, due [date]. Confirm?'\n\n"
-        "STEP 6 — If confirmed → finalize_invoice\n"
-        "         If changes requested → update fields then back to STEP 5\n\n"
-        "ABSOLUTE RULES:\n"
-        "- Never ask for info already in the extracted data\n"
-        "- client_id must be a UUID from search_client or create_client\n"
-        "- Never invent values\n"
-        "- tva_rate must be a number (e.g. 20, not '20%')\n"
-        "- lines value must be a JSON array: [{\"description\": \"...\", \"qty\": 1, \"unit_price\": 100.0}]\n"
-        f"- Mandatory fields before finalize: {MANDATORY_FIELDS}"
-    )
-
-    graph = create_agent(
-        model=llm,
-        tools=tools,
-        system_prompt=system_prompt,
-    )
-
     async def _delayed_cleanup():
         """Removes the session from memory 5 minutes after the agent finishes."""
         await asyncio.sleep(300)
         session_store.cleanup(session_id)
 
     try:
-        await graph.ainvoke({"messages": [{"role": "user", "content": transcript}]})
+        from src.config import OPENAI_API_KEY
+        llm = ChatOpenAI(
+            model="gpt-4o",
+            api_key=OPENAI_API_KEY,
+            temperature=0,
+        )
+
+        # Pre-extract structured info from transcript
+        extracted = await extract_from_transcript(transcript, OPENAI_API_KEY)
+
+        # Build extracted context for system prompt
+        extracted_fields = {k: v for k, v in extracted.model_dump().items() if v is not None}
+        extracted_context = (
+            f"\n\nPRE-EXTRACTED FROM TRANSCRIPT:\n{extracted_fields}\n\n"
+            "Use these values directly — do NOT ask the user for info that is already extracted above."
+            if extracted_fields else ""
+        )
+
+        tools = _make_tools(session_id, user_id)
+        system_prompt = (
+            f"You are a friendly, concise voice invoicing assistant speaking French. Session: {session_id}. User: {user_id}.\n"
+            "Your GOAL is to create an invoice step by step. Do NOT combine steps. Wait for the user between steps.\n\n"
+            "RULES:\n"
+            "1. Ask EXACTLY ONE question at a time in a natural conversational tone. No Markdown. No bullet points.\n"
+            "2. Keep your spoken responses as short as possible.\n"
+            "3. Updates to the invoice are done silently via tools. Do not read out all the fields you update, just confirm briefly.\n\n"
+            "PIPELINE 1 - Existing Client:\n"
+            "- Use search_client with the extracted name.\n"
+            "- If search_client says it emitted 'client_suggestions', you MUST STOP and use tool_ask_user_question to say 'J'ai trouvé plusieurs clients correspondants, lequel choisissez-vous sur l'écran ?'.\n"
+            "- If it finds exactly one, say 'Client sélectionné.'\n\n"
+            "PIPELINE 2 - New Client:\n"
+            "- If search_client returns 0 matches, you must create a new client.\n"
+            "- Ask for the missing details ONE BY ONE: Name, then Address, then Email.\n"
+            "- Before calling create_client, you MUST list the collected information and ask 'Confirmez-vous la création de ce nouveau client ?' using ask_user_question.\n"
+            "- If the user says yes, call create_client.\n\n"
+            "FLOW:\n"
+            "1. Identify the client (using Pipeline 1 or Pipeline 2). Always obtain the client_id.\n"
+            "2. Call get_user_profile ONCE, then call create_invoice_draft.\n"
+            "3. Ask for invoice lines (description, qty, price) one by one or parse them if provided.\n"
+            "4. Update all fields. Use extracted values when available, ask only if missing.\n"
+            "5. Final confirmation. Natural summary: 'Facture pour [client]: [description] [qty]×[price]€ = [total]€ HT, [rate]% TVA, due le [date]. Tout est bon ?'\n"
+            "6. If yes, call finalize_invoice.\n\n"
+            f"MANDATORY to finalize: {MANDATORY_FIELDS}"
+        )
+
+        graph = create_agent(
+            model=llm,
+            tools=tools,
+            system_prompt=system_prompt,
+        )
+
+        messages = [{"role": "user", "content": transcript}]
+        if extracted_context:
+            messages.insert(0, {"role": "system", "content": extracted_context})
+        await graph.ainvoke({"messages": messages})
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         try:
             session = session_store.get(session_id)
             if session["status"] != "done":

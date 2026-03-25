@@ -25,22 +25,24 @@ class ExtractedInvoice(BaseModel):
 
 async def extract_from_transcript(transcript: str, api_key: str) -> ExtractedInvoice:
     """Extracts all invoice fields from a voice transcript in one structured LLM call."""
-    llm = ChatOpenAI(model="gpt-4.1-mini", api_key=api_key, temperature=0)
+    llm = ChatOpenAI(model="gpt-4o-mini", api_key=api_key, temperature=0)
     structured = llm.with_structured_output(ExtractedInvoice)
 
     result = await structured.ainvoke(
-        f"""Extract all invoice information from this voice transcript.
-Do not guess what is not said. If a piece of information is not mentioned, leave the field null.
+        f"""You are extracting structured invoice data from a voice transcript.
 
-Rules:
-- description: a clean, professional service label — remove any quantity/duration reference from it.
-  Examples: "3 hours of web dev" → description="Web development", qty=3
-            "2 days consulting" → description="Consulting", qty=2
-            "logo design" → description="Logo design", qty=1
-- qty: the number of units, hours, days, etc. (default 1 if not specified)
-- unit_price: price per unit. If only a total is given, set unit_price=total/qty.
-- If a total amount is given without unit price or quantity, set qty=1, unit_price=total.
-- For the client: separate first name and last name if both present.
+CRITICAL RULES:
+- Only extract real invoice information (client, service, price, date).
+- IGNORE voice command artefacts: words like "mets", "ajoute", "crée", "facture pour", "start",
+  "record", "ok", "hey", "canine", "voice", "fort" and similar are NOT product descriptions.
+  They are recognition noise — discard them entirely.
+- description: must be a clearly identifiable service or product name (e.g. "Web development",
+  "Logo design", "Consulting"). If you cannot identify one with confidence, leave it null.
+  Remove any quantity or duration from it: "3h web dev" → description="Web development", qty=3
+- qty: number of units/hours/days (default 1)
+- unit_price: price per unit. If only a total is given: unit_price=total/qty.
+- Leave all fields null if the information is not clearly stated.
+- For client name: separate first name and last name if both are present.
 
 Transcript: {transcript}"""
     )
