@@ -30,27 +30,11 @@
       <h2 class="card-title">INVOICE DETAILS</h2>
 
       <div class="details-content">
-        <h3 class="section-label">Client</h3>
 
         <div class="details-grid">
           <div class="field-group">
-            <label for="client-name">Client co. name</label>
-            <input id="client-name" type="text" value="xClient Inc." />
-          </div>
-
-          <div class="field-group">
-            <label for="client-address">Address</label>
-            <input id="client-address" type="text" value="Ficticious Rd. 456" />
-          </div>
-
-          <div class="field-group">
-            <label for="client-email">Email</label>
-            <input id="client-email" type="email" value="hi@client.no" />
-          </div>
-
-          <div class="field-group">
-            <label for="client-phone">Phone</label>
-            <input id="client-phone" type="text" value="+346234345435" />
+            <label for="company-logo" class="custom-file-upload"></label>
+            <input id="company-logo" type="file" accept="image/*" value="xClient Inc." />
           </div>
         </div>
 
@@ -72,9 +56,8 @@
   <template id="invoice-created-template">
     <div class="popup-card">
       <p>Invoice Created!</p>
-      <button class="btn btn-secondary">Login to save invoice</button>
-      <button class="btn btn-secondary">Go to dashboard</button>
       <button class="btn btn-primary">Download PDF</button>
+      <button class="btn btn-secondary">Go to invoice library</button>
     </div>
   </template>
 
@@ -87,5 +70,7 @@
       </div>
     </div>
   </template>
+
+  <script src="../invoice_preview.js"></script>
 </body>
 </html>
