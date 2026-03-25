@@ -67,6 +67,19 @@
   </div>
 </div>
 
+<!-- New Client Creation Form -->
+<div id="new-client-form" class="new-client-form hidden">
+  <p class="ncf-title">Client introuvable — créez-en un nouveau</p>
+  <div class="ncf-fields">
+    <input id="ncf-name"    type="text"  placeholder="Nom complet *" autocomplete="off">
+    <input id="ncf-address" type="text"  placeholder="Adresse *"     autocomplete="off">
+    <input id="ncf-email"   type="email" placeholder="Email"         autocomplete="off">
+    <input id="ncf-phone"   type="tel"   placeholder="Téléphone"     autocomplete="off">
+  </div>
+  <p id="ncf-error" class="ncf-error"></p>
+  <button id="ncf-submit" class="ncf-submit-btn">Créer le client</button>
+</div>
+
 <!-- Client Suggestions Box -->
 <div id="client-suggestions-box" class="client-suggestions-box hidden">
   <p id="client-suggestions-msg"></p>

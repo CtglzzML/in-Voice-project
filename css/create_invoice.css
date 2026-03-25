@@ -1123,3 +1123,68 @@ input:focus {
   max-width: 460px;
 }
 
+
+
+/* --- New Client Creation Form --- */
+
+.new-client-form {
+  margin-top: 14px;
+  background: #ece9f8;
+  border-radius: 14px;
+  padding: 16px;
+  animation: slide-up 0.3s ease;
+}
+
+.ncf-title {
+  color: #3d406d;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.ncf-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ncf-fields input {
+  height: 38px;
+  background: #fff;
+  border: 1px solid #d0cce8;
+  border-radius: 10px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  color: #3d406d;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ncf-fields input:focus {
+  border-color: #62588f;
+}
+
+.ncf-error {
+  color: #c0392b;
+  font-size: 0.82rem;
+  margin: 0 0 8px;
+  min-height: 1em;
+}
+
+.ncf-submit-btn {
+  width: 100%;
+  padding: 10px;
+  background: #62588f;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ncf-submit-btn:hover {
+  background: #4e4578;
+}
