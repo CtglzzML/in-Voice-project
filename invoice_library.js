@@ -1,11 +1,13 @@
 const libraryBody = document.getElementById('library-items');
 const rowTemplate = document.getElementById('library-item-row-template');
 const emptyTemplate = document.getElementById('empty-library-row-template');
-const searchInput = document.querySelector('input[placeholder="search"]');
+const searchInput = document.querySelector('.search-input');
+const searchForm = document.getElementById('library-search-form');
 const createInvoiceBtn = document.querySelector('.create-invoice-btn');
 const downloadInvoiceBtn = document.querySelector('.download-invoice-btn');
 
 let selectedInvoice = null;
+let selectedLibraryItem = null;
 
 function formatCurrency(value) {
     return `$${Number(value || 0).toFixed(2)}`;
@@ -84,6 +86,7 @@ function resetPreview() {
     const tagsList = document.getElementById('tags-list');
 
     selectedInvoice = null;
+    selectedLibraryItem = null;
     previewTitle.textContent = 'Invoice preview';
 
     previewSheet.innerHTML = `
@@ -97,6 +100,87 @@ function resetPreview() {
     tagsList.innerHTML = `<button class="add-tag-btn" type="button" aria-label="Add tag">+</button>`;
 }
 
+function getInvoiceTags(inv) {
+    const directTags = Array.isArray(inv?.tags) ? inv.tags : [];
+    const fullInvoiceTags = Array.isArray(inv?.fullInvoice?.tags) ? inv.fullInvoice.tags : [];
+    const merged = [...directTags, ...fullInvoiceTags].map(t => String(t).trim()).filter(Boolean);
+
+    // Dedupe case-insensitively while preserving first-seen casing.
+    const seen = new Set();
+    const result = [];
+    merged.forEach(tag => {
+        const key = tag.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        result.push(tag);
+    });
+    return result;
+}
+
+function normalizeTag(tag) {
+    // Allow users to type "#tag", but store without the "#".
+    return String(tag).trim().replace(/^#+/, '');
+}
+
+function parseTagsInput(raw) {
+    // Supports comma-separated input or space-separated input.
+    return String(raw)
+        .split(',')
+        .flatMap(part => part.split(/\s+/g))
+        .map(t => normalizeTag(t))
+        .filter(Boolean);
+}
+
+function persistInvoiceTags(dbId, tags) {
+    const savedInvoices = getSavedInvoices();
+    const idx = savedInvoices.findIndex(i => i.dbId === dbId);
+    if (idx < 0) return null;
+
+    savedInvoices[idx].tags = tags;
+    if (savedInvoices[idx].fullInvoice && typeof savedInvoices[idx].fullInvoice === 'object') {
+        savedInvoices[idx].fullInvoice.tags = tags;
+    }
+
+    localStorage.setItem('savedInvoices', JSON.stringify(savedInvoices));
+    return savedInvoices[idx];
+}
+
+function getSearchState() {
+    const raw = searchInput?.value?.trim() || '';
+    const lowered = raw.toLowerCase();
+    const isTagOnly = lowered.startsWith('#');
+    const tagTerm = lowered.replace(/^#+/, '').trim();
+
+    return {
+        rawLower: lowered,
+        term: isTagOnly ? tagTerm : lowered,
+        isTagOnly
+    };
+}
+
+function filterInvoices(invoices, searchState) {
+    const term = searchState.term;
+    if (!term) return invoices;
+
+    return invoices.filter(inv => {
+        const invoice = inv.fullInvoice || {};
+        const tags = getInvoiceTags(inv);
+
+        const tagMatches = tags.some(t => (t || '').toLowerCase().includes(term));
+
+        if (searchState.isTagOnly) return tagMatches;
+
+        const textMatches = (
+            (invoice.invoiceNumber || '').toLowerCase().includes(term) ||
+            (invoice.companyName || '').toLowerCase().includes(term) ||
+            (invoice.clientName || '').toLowerCase().includes(term) ||
+            (invoice.clientEmail || '').toLowerCase().includes(term)
+        );
+
+        return textMatches || tagMatches;
+    });
+}
+
 function showPreview(item) {
     const previewTitle = document.querySelector('.preview-title');
     const previewSheet = document.querySelector('.preview-sheet');
@@ -105,20 +189,31 @@ function showPreview(item) {
     const invoice = item.fullInvoice;
 
     selectedInvoice = invoice || null;
+    selectedLibraryItem = item || null;
 
     previewTitle.textContent = `Preview: ${invoice?.invoiceNumber || item.fileName || 'Invoice'}`;
     descriptionText.textContent = item.description || invoice?.comment || 'No description available yet.';
 
     tagsList.innerHTML = `<button class="add-tag-btn" type="button" aria-label="Add tag">+</button>`;
 
-    if (Array.isArray(item.tags)) {
-        item.tags.forEach(tag => {
-            const tagElement = document.createElement('span');
-            tagElement.className = 'tag-chip';
-            tagElement.textContent = tag;
-            tagsList.appendChild(tagElement);
-        });
-    }
+    getInvoiceTags(item).forEach(tag => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+
+        const text = document.createElement('span');
+        text.textContent = tag;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-tag-btn';
+        removeBtn.dataset.tag = tag;
+        removeBtn.setAttribute('aria-label', `Remove tag ${tag}`);
+        removeBtn.textContent = '×';
+
+        chip.appendChild(text);
+        chip.appendChild(removeBtn);
+        tagsList.appendChild(chip);
+    });
 
     if (!invoice) {
         previewSheet.innerHTML = `
@@ -214,24 +309,86 @@ function showPreview(item) {
 
 function handleSearch() {
     const invoices = getSavedInvoices();
-    const term = searchInput.value.trim().toLowerCase();
-
-    const filtered = invoices.filter(inv => {
-        const invoice = inv.fullInvoice || {};
-
-        return (
-            (invoice.invoiceNumber || '').toLowerCase().includes(term) ||
-            (invoice.companyName || '').toLowerCase().includes(term) ||
-            (invoice.clientName || '').toLowerCase().includes(term) ||
-            (invoice.clientEmail || '').toLowerCase().includes(term)
-        );
-    });
+    const searchState = getSearchState();
+    const filtered = filterInvoices(invoices, searchState);
 
     renderLibrary(filtered);
+
+    // Keep preview consistent with the list filter.
+    if (!selectedLibraryItem) return;
+    const updated = invoices.find(i => i.dbId === selectedLibraryItem.dbId);
+    const stillVisible = filtered.some(i => i.dbId === selectedLibraryItem.dbId);
+
+    if (!updated || !stillVisible) {
+        resetPreview();
+        return;
+    }
+
+    showPreview(updated);
 }
 
 if (searchInput) {
     searchInput.addEventListener('input', handleSearch);
+}
+
+if (searchForm) {
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleSearch();
+    });
+}
+
+// Tagging (add/remove) for the currently selected invoice.
+const tagsListEl = document.getElementById('tags-list');
+if (tagsListEl) {
+    tagsListEl.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('.add-tag-btn');
+        if (addBtn) {
+            e.preventDefault();
+            if (!selectedLibraryItem) {
+                alert('Select an invoice in the library first.');
+                return;
+            }
+
+            const raw = prompt('Add tag(s) (comma-separated):', '');
+            if (raw === null) return;
+
+            const parsed = parseTagsInput(raw);
+            const newTags = parsed.map(t => normalizeTag(t)).filter(Boolean);
+            if (!newTags.length) return;
+
+            const currentTags = getInvoiceTags(selectedLibraryItem);
+            const merged = currentTags.concat(newTags);
+
+            // Deduplicate tags case-insensitively.
+            const seen = new Set();
+            const deduped = [];
+            merged.forEach(t => {
+                const key = t.toLowerCase();
+                if (!key || seen.has(key)) return;
+                seen.add(key);
+                deduped.push(t);
+            });
+
+            persistInvoiceTags(selectedLibraryItem.dbId, deduped);
+            handleSearch();
+            return;
+        }
+
+        const removeBtn = e.target.closest('.remove-tag-btn');
+        if (removeBtn) {
+            e.preventDefault();
+            if (!selectedLibraryItem) return;
+
+            const tagToRemove = removeBtn.dataset.tag;
+            if (!tagToRemove) return;
+
+            const currentTags = getInvoiceTags(selectedLibraryItem);
+            const nextTags = currentTags.filter(t => t.toLowerCase() !== tagToRemove.toLowerCase());
+            persistInvoiceTags(selectedLibraryItem.dbId, nextTags);
+            handleSearch();
+        }
+    });
 }
 
 if (createInvoiceBtn) {
