@@ -26,6 +26,7 @@
   border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
   overflow: hidden;
+  height: fit-content;
 }
 
 .card {
@@ -225,7 +226,10 @@ input:focus {
   margin: 28px 22px 22px;
   border-radius: 5px;
   padding: 26px 20px 18px;
-  min-height: 430px;
+
+  min-width: 750px;
+  min-height: 1060px;
+  height: fit-content;
 }
 
 .preview-top {
@@ -683,8 +687,8 @@ input:focus {
 /* Purple invoice blocks instead of black */
 .bill-box,
 .preview-table-head {
-  background: #62588f;
-  border: 1px solid #62588f;
+  background: black;
+
   color: #ffffff;
 }
 
@@ -1237,3 +1241,7 @@ input:focus {
 
 .ai-status.thinking .waveform-bars { display:flex; }
 .ai-status:not(.thinking) .waveform-bars { display:none; }
+
+.client-info {
+  color: black;
+}

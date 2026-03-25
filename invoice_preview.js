@@ -112,29 +112,40 @@ function renderInvoicePreview() {
         `;
 
     pdfFrame.innerHTML = `
-        <div style="width: 100%; max-width: 700px; margin: 0 auto; color: #111; font-family: Inter, sans-serif;">
+    <div style="
+        width: 100%; 
+        max-width: 700px; 
+        min-height: 850px; /* Adjust based on your aspect ratio */
+        margin: 0 auto; 
+        color: #111; 
+        font-family: Inter, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: white;
+        padding: 40px;
+        box-sizing: border-box;
+    ">
+        <div class="invoice-header">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px;">
-                
-                <div>
-                    ${savedLogo ? `<img src="${savedLogo}" alt="Logo" style="max-width: 140px; max-height: 70px; object-fit: contain; display: block; margin-bottom: 12px;">` : ''}
-                    <div style="font-size: 1rem; font-weight: 500;">
-                        ${data.companyName || 'My company'}
+                <div style="display: flex; align-items: flex-start; gap: 25px;">
+                    <div>
+                        ${savedLogo ? `<img src="${savedLogo}" alt="Logo" style="max-width: 140px; max-height: 70px; object-fit: contain; display: block; margin-bottom: 8px;">` : ''}
+                        <div style="font-size: 1rem; font-weight: 600; line-height: 1.2;">
+                            ${data.companyName || 'My company'}
+                        </div>
                     </div>
-                    <div style="margin-bottom: 18px; line-height: 1.6;">
-                    
+                    <div style="font-size: 0.85rem; line-height: 1.5; padding-top: 5px; color: #444;">
+                        <div><strong>Address:</strong> ${data.companyAddress || '-'}</div>
+                        <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
+                        <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
                     </div>
                 </div>
-                <div>
-                    <div><strong>Address:</strong> ${data.companyAddress || '-'}</div>
-                    <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
-                    <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
-                </div>
-                
                 <div style="text-align: right;">
                     <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">INVOICE</h3>
                     <p style="margin: 4px 0;"># ${data.invoiceNumber || '---'}</p>
-                    <p style="margin: 0;">Date ${formatDate(data.invoiceDate)}</p>
-                    <p style="margin: 4px 0 0;">Due ${formatDate(data.dueDate)}</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Date: ${formatDate(data.invoiceDate)}</p>
+                    <p style="margin: 4px 0 0; font-size: 0.9rem;">Due: ${formatDate(data.dueDate)}</p>
                 </div>
             </div>
 
@@ -143,13 +154,15 @@ function renderInvoicePreview() {
                 <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
             </div>
 
-            <div style="margin-bottom: 18px; line-height: 1.6;">
+            <div style="margin-bottom: 18px; line-height: 1.6; font-size: 0.9rem;">
                 <div><strong>Client address:</strong> ${data.clientAddress || '-'}</div>
                 <div><strong>Client phone:</strong> ${data.clientPhone || '-'}</div>
                 <div><strong>Client email:</strong> ${data.clientEmail || '-'}</div>
             </div>
+        </div>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <div style="flex: 1; margin-bottom: 30px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background: #000; color: #fff;">
                         <th style="text-align: left; padding: 12px;">Description</th>
@@ -162,29 +175,34 @@ function renderInvoicePreview() {
                     ${itemsHtml}
                 </tbody>
             </table>
+        </div>
 
-            <div style="width: 220px; margin-left: auto; line-height: 1.8;">
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Subtotal:</span>
-                    <span>${formatCurrency(data.subtotal || 0)}</span>
+        <div class="invoice-footer">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #eee; padding-top: 20px;">
+                <div style="max-width: 60%;">
+                    <strong style="font-size: 0.9rem;">Comments:</strong>
+                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || 'Thank you for your business!'}</p>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Tax (${data.taxPercent || 0}%):</span>
-                    <span>${formatCurrency(data.taxAmount || 0)}</span>
-                </div>
-                <div style="height: 1px; background: rgba(0,0,0,0.5); margin: 8px 0;"></div>
-                <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                    <span>TOTAL:</span>
-                    <span>${formatCurrency(data.totalAmount || 0)}</span>
-                </div>
-            </div>
 
-            <div style="margin-top: 28px;">
-                <strong>Comments:</strong>
-                <p style="margin-top: 8px; white-space: pre-wrap;">${data.comment || 'Nothing to add'}</p>
+                <div style="width: 220px; line-height: 1.8;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Subtotal:</span>
+                        <span>${formatCurrency(data.subtotal || 0)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Tax (${data.taxPercent || 0}%):</span>
+                        <span>${formatCurrency(data.taxAmount || 0)}</span>
+                    </div>
+                    <div style="height: 1px; background: #000; margin: 8px 0;"></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem;">
+                        <span>TOTAL:</span>
+                        <span>${formatCurrency(data.totalAmount || 0)}</span>
+                    </div>
+                </div>
             </div>
         </div>
-    `;
+    </div>
+`;
 }
 
 function downloadInvoicePDF() {

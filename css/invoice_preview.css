@@ -15,6 +15,10 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
 
+.details-card {
+  min-width: 480px;
+}
+
 .card-title {
   margin: 0;
   background: #62588f;
@@ -26,13 +30,23 @@
 }
 
 .preview-card {
-  min-height: 770px;
+  min-width: 770px;
+  max-width: 770px;
 }
 
 .pdf-frame {
   margin: 18px 22px 22px;
   background: #fff;
-  min-height: 640px;
+
+  box-sizing: border-box;
+
+  margin: 12px auto;
+
+  min-width: 750px;
+  max-width: 750px;
+
+  aspect-ratio: 1 / 1.414;
+  
   border-radius: 2px;
   border: 1px solid rgba(0, 0, 0, 0.04);
   display: flex;
@@ -206,9 +220,6 @@
     min-height: auto;
   }
 
-  .pdf-frame {
-    min-height: 420px;
-  }
 }
 
 @media (max-width: 700px) {
@@ -234,11 +245,5 @@
 
   .card-title {
     padding: 22px 18px;
-  }
-
-  .pdf-frame {
-    margin: 16px;
-    min-height: 320px;
-    padding: 24px;
   }
 }
