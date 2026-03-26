@@ -1,0 +1,94 @@
+<h2>Zone interaction — nouveau design</h2>
+<p class="subtitle">Ce qui remplace la zone actuelle dans le panel gauche</p>
+
+<div class="mockup">
+  <div class="mockup-header">Panel gauche — Voice zone (après redesign)</div>
+  <div class="mockup-body" style="background:#0d0d14;padding:20px;border-radius:8px;display:flex;flex-direction:column;gap:14px;font-family:'Inter',sans-serif">
+
+    <!-- Record button (inchangé) -->
+    <button style="background:linear-gradient(135deg,#6366f1,#a855f7);border:none;border-radius:14px;padding:16px 24px;color:white;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;width:100%">
+      <span style="font-size:20px">🎤</span>
+      <span>Start recording</span>
+    </button>
+
+    <div style="text-align:center;color:#52525b;font-size:12px">ou tapez votre demande</div>
+
+    <!-- 1. STATUS BAR (nouveau) -->
+    <div style="background:#13131f;border:1px solid #1e1e2e;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+      <!-- dot pulsant -->
+      <div style="width:8px;height:8px;border-radius:50%;background:#6366f1;box-shadow:0 0 10px #6366f1;flex-shrink:0"></div>
+      <span style="color:#a1a1aa;font-size:13px;flex:1">Recherche du client Jean Dupont…</span>
+      <!-- mini waveform -->
+      <div style="display:flex;gap:3px;align-items:center">
+        <span style="display:inline-block;width:3px;height:10px;background:#6366f1;border-radius:2px;opacity:0.5"></span>
+        <span style="display:inline-block;width:3px;height:16px;background:#6366f1;border-radius:2px;opacity:0.8"></span>
+        <span style="display:inline-block;width:3px;height:8px;background:#6366f1;border-radius:2px;opacity:0.4"></span>
+        <span style="display:inline-block;width:3px;height:14px;background:#6366f1;border-radius:2px;opacity:0.7"></span>
+        <span style="display:inline-block;width:3px;height:6px;background:#6366f1;border-radius:2px;opacity:0.3"></span>
+      </div>
+    </div>
+
+    <!-- 2. MISSING FIELDS CHIPS (nouveau) -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <span style="background:#052e16;border:1px solid #166534;color:#22c55e;font-size:11px;padding:4px 10px;border-radius:20px">✓ Client</span>
+      <span style="background:#052e16;border:1px solid #166534;color:#22c55e;font-size:11px;padding:4px 10px;border-radius:20px">✓ Lignes</span>
+      <span style="background:#052e16;border:1px solid #166534;color:#22c55e;font-size:11px;padding:4px 10px;border-radius:20px">✓ TVA</span>
+      <span style="background:#1c1001;border:1px solid #92400e;color:#f59e0b;font-size:11px;padding:4px 10px;border-radius:20px">… Échéance</span>
+      <span style="background:#1c1001;border:1px solid #92400e;color:#f59e0b;font-size:11px;padding:4px 10px;border-radius:20px">… Conditions</span>
+    </div>
+
+    <!-- 3. PROMPT ZONE — question de l'IA (nouveau) -->
+    <div style="background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.25);border-radius:12px;padding:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);flex-shrink:0"></div>
+        <span style="color:#c4b5fd;font-size:13px;line-height:1.4">Quelle est la date d'échéance souhaitée ?</span>
+        <!-- TTS playing indicator -->
+        <div style="margin-left:auto;display:flex;gap:2px;align-items:center" title="IA parle...">
+          <span style="display:inline-block;width:2px;height:8px;background:#a855f7;border-radius:1px;opacity:0.6"></span>
+          <span style="display:inline-block;width:2px;height:12px;background:#a855f7;border-radius:1px;opacity:0.9"></span>
+          <span style="display:inline-block;width:2px;height:6px;background:#a855f7;border-radius:1px;opacity:0.5"></span>
+        </div>
+      </div>
+      <!-- reply input + auto-listen indicator -->
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="flex:1;background:#0d0d14;border:1px solid #2e2e3e;border-radius:8px;padding:9px 12px;color:#71717a;font-size:12px">
+          Écoute en cours…
+        </div>
+        <div style="width:34px;height:34px;background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 0 3px rgba(99,102,241,0.25)">🎤</div>
+      </div>
+    </div>
+
+    <!-- État "done" (pour référence) -->
+    <div style="background:#052e16;border:1px solid #166534;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+      <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;flex-shrink:0"></div>
+      <span style="color:#4ade80;font-size:13px">✓ Facture confirmée — n° 2026-03-001</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>Ce qui change vs l'actuel</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="border-bottom:1px solid #2e2e3e">
+      <td style="padding:8px;color:#71717a">Actuel</td>
+      <td style="padding:8px;color:#71717a">Nouveau</td>
+    </tr>
+    <tr style="border-bottom:1px solid #1e1e2e">
+      <td style="padding:8px"><code style="color:#f87171">#agent-status</code> — div texte simple</td>
+      <td style="padding:8px"><code style="color:#86efac">#ai-status</code> — status bar avec dot + waveform</td>
+    </tr>
+    <tr style="border-bottom:1px solid #1e1e2e">
+      <td style="padding:8px">Pas d'indicateurs de champs</td>
+      <td style="padding:8px"><code style="color:#86efac">#missing-fields</code> — chips temps réel</td>
+    </tr>
+    <tr style="border-bottom:1px solid #1e1e2e">
+      <td style="padding:8px"><code style="color:#f87171">#question-box</code> — bulle + input séparé</td>
+      <td style="padding:8px"><code style="color:#86efac">#prompt-zone</code> — card unifiée + auto-listen</td>
+    </tr>
+    <tr>
+      <td style="padding:8px">Pas de TTS</td>
+      <td style="padding:8px">TTS auto → micro auto après fin audio</td>
+    </tr>
+  </table>
+</div>
