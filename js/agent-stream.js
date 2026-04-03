@@ -1,7 +1,7 @@
 // js/agent-stream.js
 // Responsibility: SSE connection + POST /start + POST /reply
 
-const BASE_URL = window.INVOICE_BASE_URL ?? 'http://localhost:8000/api/v1';
+const BASE_URL = window.INVOICE_BASE_URL ?? 'https://in-voice-project-givm.onrender.com/api/v1';
 
 const agentStream = (() => {
   let sessionId = null;

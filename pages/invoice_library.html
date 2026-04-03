@@ -25,8 +25,11 @@
         <h1>Library</h1>
       </div>
 
-      <button class="user-button" type="button" aria-label="User menu">
-        <span class="user-icon"></span>
+      <div id="menu-container"></div>
+      <button id="hamburger-btn">
+          <span></span>
+          <span></span>
+          <span></span>
       </button>
     </header>
 
@@ -120,6 +123,12 @@
       </td>
     </tr>
   </template>
+
+  <template id="navigation-menu">
+  <div id="navigation-menu-modal">
+    <a href="landing_page.html">Go to Landing Page</a>
+  </div>
+</template>
 
   <template id="library-item-row-template">
     <tr data-db-id="">
