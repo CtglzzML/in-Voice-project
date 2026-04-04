@@ -15,6 +15,19 @@
 
 <body>
 
+  <script src="../scripts/auth.js"></script>
+  <script>
+    (function () {
+      migrateLegacySession();
+      var u = getCurrentUser();
+      if (!u) {
+        window.location.replace('login_page.html?return=create_invoice.html');
+        return;
+      }
+      window.INVOICE_USER_ID = u.id || u.userId || '8412b4dd-7ee4-4915-86ed-4d5bec0f702f';
+    })();
+  </script>
+
   <div class="invoice-container">
 
     <!-- LEFT SIDE -->
@@ -267,9 +280,6 @@
 
   </div>
 
-  <script>
-    window.INVOICE_USER_ID = "8412b4dd-7ee4-4915-86ed-4d5bec0f702f";
-  </script>
   <script type="module" src="../src/frontend/main.js"></script>
 
 </body>

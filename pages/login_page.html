@@ -20,7 +20,7 @@
 
     <header class="page-header">
         <div class="logo-wrapper">
-            <img src="./assets/logo.png" alt="inVOICE Logo" class="logo" />
+            <a href="landing_page.html"><img src="../images/logo.png" alt="inVOICE Logo" class="logo" /></a>
         </div>
     </header>
 
@@ -40,6 +40,7 @@
                             name="email"
                             placeholder="Company@pro.com"
                             required
+                            autocomplete="username"
                         />
                     </div>
 
@@ -51,6 +52,7 @@
                             name="password"
                             placeholder="SafePassword123"
                             required
+                            autocomplete="current-password"
                         />
                     </div>
 
@@ -80,5 +82,7 @@
         </section>
     </main>
 
+    <script src="../scripts/auth.js"></script>
+    <script src="../login.js"></script>
 </body>
 </html>

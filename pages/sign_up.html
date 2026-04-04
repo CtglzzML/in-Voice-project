@@ -10,54 +10,60 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
+
     <link rel="stylesheet" href="../css/invoice_library.css" />
     <link rel="stylesheet" href="../css/color_scheme.css" />
 </head>
 
 <body>
+
     <header class="dashboard-header">
-      <div class="brand">
-        <img src="" alt="inVoice Logo">
-        <span class="brand-dashboard">Account Profile</span>
-      </div>
+        <div class="brand">
+            <img src="../images/logo.png" alt="inVoice Logo">
+            <span class="brand-dashboard">Create account</span>
+        </div>
     </header>
 
-    <form id="signup-form" class="grid card" enctype="multipart/form-data">
+    <form id="signup-form" class="grid card">
         <div>
             <h2>Sign in details</h2>
         </div>
-        
+
         <div>
             <label for="user-email">Email</label>
-            <input type="email" id="user-email" name="email" required>
+            <input type="email" id="user-email" required autocomplete="username">
         </div>
 
         <div>
             <label for="user-name">Enter Full Name</label>
-            <input type="text" id="user-name" name="full_name" required>
+            <input type="text" id="user-name" required>
         </div>
 
         <div>
             <label for="user-username">Enter Username</label>
-            <input type="text" id="user-username" name="username" required>
+            <input type="text" id="user-username">
         </div>
 
         <div>
             <label for="company-name">Enter Company Name</label>
-            <input type="text" id="company-name" name="company_name">
+            <input type="text" id="company-name">
         </div>
+
         <div>
             <label for="user-logo">Company Logo</label>
-            <input type="file" id="user-logo" name="logo" accept="image/*">
+            <input type="file" id="user-logo" accept="image/*">
         </div>
 
         <div>
             <label for="user-password">Create Password</label>
-            <input type="password" id="user-password" name="password" required>
+            <input type="password" id="user-password" required autocomplete="new-password" minlength="6">
         </div>
 
         <button type="submit">Create Account</button>
     </form>
+
+    <script src="../scripts/auth.js"></script>
+    <script src="../signup.js"></script>
 </body>
 
 </html>
