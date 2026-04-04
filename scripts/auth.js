@@ -20,11 +20,23 @@
     }
   }
 
+  function isValidSessionUser(u) {
+    if (!u || typeof u !== 'object') return false;
+    var email = u.email && String(u.email).trim();
+    if (email) return true;
+    // Allow persisted sessions that only have id (e.g. future OAuth)
+    if (u.id && String(u.id).trim()) return true;
+    return false;
+  }
+
   function getCurrentUser() {
     migrateLegacySession();
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      var u = JSON.parse(raw);
+      if (!isValidSessionUser(u)) return null;
+      return u;
     } catch (e) {
       return null;
     }
@@ -186,4 +198,5 @@
   global.redirectIfAuthenticated = redirectIfAuthenticated;
   global.requireAuthOrRedirect = requireAuthOrRedirect;
   global.sanitizeReturnPage = sanitizeReturnPage;
+  global.isValidSessionUser = isValidSessionUser;
 })(typeof window !== 'undefined' ? window : global);

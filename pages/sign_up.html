@@ -11,56 +11,70 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
 
-    <link rel="stylesheet" href="../css/invoice_library.css" />
     <link rel="stylesheet" href="../css/color_scheme.css" />
+    <link rel="stylesheet" href="../css/login_page.css" />
 </head>
 
 <body>
 
-    <header class="dashboard-header">
-        <div class="brand">
-            <img src="../images/logo.png" alt="inVoice Logo">
-            <span class="brand-dashboard">Create account</span>
+    <header class="page-header">
+        <div class="logo-wrapper">
+            <a href="landing_page.html"><img src="../images/logo.png" alt="inVoice Logo" class="logo" /></a>
         </div>
     </header>
 
-    <form id="signup-form" class="grid card">
-        <div>
-            <h2>Sign in details</h2>
-        </div>
+    <main class="login-page signup-page">
+        <section class="login-container">
+            <div class="login-card">
+                <header class="login-card-header">
+                    <h2>Create account</h2>
+                </header>
 
-        <div>
-            <label for="user-email">Email</label>
-            <input type="email" id="user-email" required autocomplete="username">
-        </div>
+                <form id="signup-form" class="login-form signup-form">
+                    <div class="form-group">
+                        <label for="user-email">Email</label>
+                        <input type="email" id="user-email" required autocomplete="username"
+                            placeholder="you@company.com" />
+                    </div>
 
-        <div>
-            <label for="user-name">Enter Full Name</label>
-            <input type="text" id="user-name" required>
-        </div>
+                    <div class="form-group">
+                        <label for="user-name">Full name</label>
+                        <input type="text" id="user-name" required placeholder="Jane Doe" />
+                    </div>
 
-        <div>
-            <label for="user-username">Enter Username</label>
-            <input type="text" id="user-username">
-        </div>
+                    <div class="form-group">
+                        <label for="user-username">Username <span class="label-optional">(optional)</span></label>
+                        <input type="text" id="user-username" placeholder="jane_doe" />
+                    </div>
 
-        <div>
-            <label for="company-name">Enter Company Name</label>
-            <input type="text" id="company-name">
-        </div>
+                    <div class="form-group">
+                        <label for="company-name">Company name <span class="label-optional">(optional)</span></label>
+                        <input type="text" id="company-name" placeholder="Acme Inc." />
+                    </div>
 
-        <div>
-            <label for="user-logo">Company Logo</label>
-            <input type="file" id="user-logo" accept="image/*">
-        </div>
+                    <div class="form-group">
+                        <label for="user-logo">Company logo <span class="label-optional">(optional)</span></label>
+                        <input type="file" id="user-logo" accept="image/*" />
+                    </div>
 
-        <div>
-            <label for="user-password">Create Password</label>
-            <input type="password" id="user-password" required autocomplete="new-password" minlength="6">
-        </div>
+                    <div class="form-group">
+                        <label for="user-password">Password</label>
+                        <input type="password" id="user-password" required autocomplete="new-password" minlength="6"
+                            placeholder="At least 6 characters" />
+                    </div>
 
-        <button type="submit">Create Account</button>
-    </form>
+                    <div class="login-button-wrapper">
+                        <button type="submit" class="login-button">Create account</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="signup-section">
+                <p>Already have an account?</p>
+                <a href="login_page.html" class="signup-button">Log in</a>
+            </div>
+        </section>
+    </main>
 
     <script src="../scripts/auth.js"></script>
     <script src="../signup.js"></script>

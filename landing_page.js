@@ -8,21 +8,23 @@ const authBtn = document.getElementById('auth-btn');
 function applyLandingAuthUi() {
   migrateLegacySession();
   const user = getCurrentUser();
+  const header = document.getElementById('landing-header');
+
+  if (header) {
+    header.classList.toggle('page-header--guest', !user);
+    header.classList.toggle('page-header--user', !!user);
+  }
 
   if (authBtn) {
     if (user) {
-      authBtn.style.display = 'none';
+      authBtn.onclick = null;
     } else {
-      authBtn.style.display = '';
       authBtn.onclick = function () {
         window.location.href = 'login_page.html?return=landing_page.html';
       };
     }
   }
 
-  if (hamburgerBtn) {
-    hamburgerBtn.style.display = user ? '' : 'none';
-  }
 }
 
 if (recordBtn) {
