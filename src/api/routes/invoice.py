@@ -45,19 +45,19 @@ async def stream(session_id: str):
     if already_connected:
         if session["awaiting_reply"] and session["last_question"]:
             await session["sse_queue"].put({
-                "type": "question",
+                "type": "WAITING_USER_INPUT",
                 "message": session["last_question"],
                 "awaiting": True,
             })
         elif session["status"] == "done" and session["invoice_id"]:
-            await session["sse_queue"].put({"type": "done", "invoice_id": session["invoice_id"]})
+            await session["sse_queue"].put({"type": "DONE", "invoice_id": session["invoice_id"]})
 
     async def event_generator():
         while True:
             try:
                 event = await asyncio.wait_for(session["sse_queue"].get(), timeout=30)
                 yield {"data": json.dumps(event)}
-                if event["type"] in ("done", "error"):
+                if event["type"].upper() in ("DONE", "ERROR"):
                     break
             except asyncio.TimeoutError:
                 yield {"data": json.dumps({"type": "ping"})}

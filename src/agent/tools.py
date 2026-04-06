@@ -18,6 +18,7 @@ from src.db.supabase import (
     assign_invoice_number,
 )
 from src.sessions.manager import session_store
+from src.agent.events import EventType
 
 
 class InvoiceField(str, Enum):
@@ -41,8 +42,6 @@ async def _await_reply(session_id: str) -> str:
     try:
         reply = await asyncio.wait_for(session["reply_queue"].get(), timeout=QUESTION_TIMEOUT)
     except asyncio.TimeoutError:
-        session["status"] = "error"
-        await session_store.push_event(session_id, {"type": "ERROR", "message": "No response received within 5 minutes."})
         raise
     finally:
         session["awaiting_reply"] = False
@@ -58,17 +57,17 @@ async def _push_client_fields(session_id: str, name: str, address: str, email: s
         ("client_phone", phone),
     ]:
         if value:
-            await session_store.push_event(session_id, {"type": "INVOICE_UPDATED", "field": field, "value": value})
+            await session_store.push_event(session_id, {"type": EventType.INVOICE_UPDATED, "field": field, "value": value})
 
 
 async def tool_get_user_profile(user_id: str, session_id: str) -> Optional[UserProfile]:
     """Returns the UserProfile or None if not found. Pushes PROFILE event to SSE."""
-    await session_store.push_event(session_id, {"type": "MESSAGE", "content": "Loading your profile..."})
+    await session_store.push_event(session_id, {"type": EventType.MESSAGE, "content": "Loading your profile..."})
     loop = asyncio.get_running_loop()
     profile = await loop.run_in_executor(None, partial(get_user, user_id))
     if profile:
         await session_store.push_event(session_id, {
-            "type": "PROFILE",
+            "type": EventType.PROFILE,
             "data": profile.model_dump(mode="json"),
         })
     return profile
@@ -82,7 +81,7 @@ async def tool_search_client(name: str, user_id: str, session_id: str) -> dict:
       {"found": False, "client": None, "form_data": dict}   — user submitted new client form
       {"found": False, "client": None, "form_data": None, "error": "search_timeout"}
     """
-    await session_store.push_event(session_id, {"type": "MESSAGE", "content": f"Searching for client {name}..."})
+    await session_store.push_event(session_id, {"type": EventType.MESSAGE, "content": f"Searching for client {name}..."})
     loop = asyncio.get_running_loop()
 
     try:
@@ -100,12 +99,12 @@ async def tool_search_client(name: str, user_id: str, session_id: str) -> dict:
 
     # No match — show inline creation form and wait for user submission
     await session_store.push_event(session_id, {
-        "type": "WAITING_USER_INPUT",
+        "type": EventType.WAITING_USER_INPUT,
         "message": "I'll create this client. Please fill in this short form.",
         "awaiting": True,
     })
     await session_store.push_event(session_id, {
-        "type": "NEED_CLIENT_INFO",
+        "type": EventType.NEED_CLIENT_INFO,
         "data": {"name": name},
     })
 
@@ -117,10 +116,10 @@ async def tool_search_client(name: str, user_id: str, session_id: str) -> dict:
         try:
             data = json.loads(form_reply)
             if isinstance(data, dict):
-                return {"found": False, "client": None, "form_data": data}
+                return {"found": False, "client": None, "form_data": data, "error": None}
         except (json.JSONDecodeError, ValueError):
             await session_store.push_event(session_id, {
-                "type": "WAITING_USER_INPUT",
+                "type": EventType.WAITING_USER_INPUT,
                 "message": "Please use the form on screen to enter the contact details.",
                 "awaiting": True,
             })
@@ -131,7 +130,7 @@ async def tool_create_client(
     email: str = "", company: str = "", phone: str = "",
 ) -> Client:
     """Creates a new client record. Returns the created Client with its id."""
-    await session_store.push_event(session_id, {"type": "MESSAGE", "content": f"Adding client {name}..."})
+    await session_store.push_event(session_id, {"type": EventType.MESSAGE, "content": f"Adding client {name}..."})
     client = Client(id="", user_id=user_id, name=name, address=address, email=email or None, company=company or None, phone=phone or None)
     loop = asyncio.get_running_loop()
     created = await loop.run_in_executor(None, partial(create_client_record, client))
@@ -141,7 +140,7 @@ async def tool_create_client(
 
 async def tool_create_invoice_draft(user_id: str, session_id: str) -> str:
     """Creates a draft invoice. Sets session['invoice_id']. Returns invoice_id."""
-    await session_store.push_event(session_id, {"type": "MESSAGE", "content": "Preparing your invoice draft..."})
+    await session_store.push_event(session_id, {"type": EventType.MESSAGE, "content": "Preparing your invoice draft..."})
     loop = asyncio.get_running_loop()
     invoice_id = await loop.run_in_executor(None, partial(db_create_draft, user_id, session_id))
 
@@ -153,13 +152,13 @@ async def tool_create_invoice_draft(user_id: str, session_id: str) -> str:
     session["invoice_draft"]["due_date"] = due_date
     session["missing_fields"] = [f for f in MANDATORY_FIELDS if not session["invoice_draft"].get(f)]
 
-    await session_store.push_event(session_id, {"type": "INVOICE_UPDATED", "field": "status", "value": "draft"})
-    await session_store.push_event(session_id, {"type": "INVOICE_UPDATED", "field": "due_date", "value": due_date})
+    await session_store.push_event(session_id, {"type": EventType.INVOICE_UPDATED, "field": "status", "value": "draft"})
+    await session_store.push_event(session_id, {"type": EventType.INVOICE_UPDATED, "field": "due_date", "value": due_date})
     return invoice_id
 
 
 async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id: str, session_id: str) -> str:
-    await session_store.push_event(session_id, {"type": "MESSAGE", "content": "Updating the invoice..."})
+    await session_store.push_event(session_id, {"type": EventType.MESSAGE, "content": "Updating the invoice..."})
     loop = asyncio.get_running_loop()
 
     field_key = field.value
@@ -205,7 +204,7 @@ async def tool_update_invoice_field(field: InvoiceField, value: Any, invoice_id:
     session["missing_fields"] = [f for f in MANDATORY_FIELDS if not session["invoice_draft"].get(f)]
 
     for k, v in updates.items():
-        await session_store.push_event(session_id, {"type": "INVOICE_UPDATED", "field": k, "value": v})
+        await session_store.push_event(session_id, {"type": EventType.INVOICE_UPDATED, "field": k, "value": v})
 
     still_missing = session["missing_fields"]
     if still_missing:
@@ -217,12 +216,12 @@ async def tool_ask_user_question(message: str, session_id: str) -> str:
     session = session_store.get(session_id)
     session["awaiting_reply"] = True
     session["last_question"] = message
-    await session_store.push_event(session_id, {"type": "WAITING_USER_INPUT", "message": message, "awaiting": True})
+    await session_store.push_event(session_id, {"type": EventType.WAITING_USER_INPUT, "message": message, "awaiting": True})
     try:
         reply = await asyncio.wait_for(session["reply_queue"].get(), timeout=QUESTION_TIMEOUT)
     except asyncio.TimeoutError:
         session["status"] = "error"
-        await session_store.push_event(session_id, {"type": "ERROR", "message": "Call timed out."})
+        await session_store.push_event(session_id, {"type": EventType.ERROR, "message": "Call timed out."})
         return "Timeout: no reply received within 5 minutes."
     finally:
         session["awaiting_reply"] = False
@@ -230,7 +229,7 @@ async def tool_ask_user_question(message: str, session_id: str) -> str:
 
 
 async def tool_finalize_invoice(session_id: str, invoice_id: str) -> str:
-    await session_store.push_event(session_id, {"type": "MESSAGE", "content": "Finalizing the invoice..."})
+    await session_store.push_event(session_id, {"type": EventType.MESSAGE, "content": "Finalizing the invoice..."})
     invoice = get_invoice(invoice_id)
     if invoice is None:
         return f"Invoice '{invoice_id}' not found."
@@ -244,9 +243,9 @@ async def tool_finalize_invoice(session_id: str, invoice_id: str) -> str:
         update_invoice_in_db(invoice_id, {"status": "confirmed", "invoice_number": number})
     except Exception as e:
         error_msg = f"Database error during finalization: {str(e)}"
-        await session_store.push_event(session_id, {"type": "ERROR", "message": error_msg})
+        await session_store.push_event(session_id, {"type": EventType.ERROR, "message": error_msg})
         return f"Error finalizing invoice: {str(e)}."
 
     session["status"] = "done"
-    await session_store.push_event(session_id, {"type": "DONE", "invoice_id": invoice_id, "invoice_number": number})
+    await session_store.push_event(session_id, {"type": EventType.DONE, "invoice_id": invoice_id, "invoice_number": number})
     return f"Invoice confirmed. Number: {number}"
