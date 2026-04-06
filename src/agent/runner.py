@@ -116,8 +116,9 @@ async def run_agent(session_id: str, user_id: str, transcript: str) -> None:
         # Pre-extract structured info from transcript
         extracted = await extract_from_transcript(transcript, OPENAI_API_KEY)
 
-        # Build extracted context for system prompt
-        extracted_fields = {k: v for k, v in extracted.model_dump().items() if v is not None}
+        # Build extracted context for system prompt (exclude V2 meta-fields)
+        _META = {"confidence_score", "missing_fields"}
+        extracted_fields = {k: v for k, v in extracted.model_dump().items() if v is not None and k not in _META}
         extracted_context = (
             f"\n\nPRE-EXTRACTED FROM TRANSCRIPT:\n{extracted_fields}\n\n"
             "Use these values directly — do NOT ask the user for info that is already extracted above."
