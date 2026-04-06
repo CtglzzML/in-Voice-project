@@ -125,7 +125,7 @@ async def _run_states(session_id: str, user_id: str, transcript: str, api_key: s
         })
         session = session_store.get(session_id)
         session["status"] = "error"
-        session["state"] = AgentState.ERROR.value
+        _transition(session_id, AgentState.ERROR)
         return
 
     if search_result["found"]:
@@ -199,7 +199,7 @@ async def _run_states(session_id: str, user_id: str, transcript: str, api_key: s
             "message": f"Invoice is not valid: {errors_str}",
         })
         session["status"] = "error"
-        session["state"] = AgentState.ERROR.value
+        _transition(session_id, AgentState.ERROR)
         return
 
     confirm = await tool_ask_user_question(
