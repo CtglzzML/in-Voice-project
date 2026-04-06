@@ -21,6 +21,22 @@ class ExtractedInvoice(BaseModel):
     tva_rate: Optional[float] = Field(None, description="VAT rate in % if mentioned (e.g. 20)")
     due_date: Optional[str] = Field(None, description="Due date ISO (YYYY-MM-DD) if mentioned")
     payment_terms: Optional[str] = Field(None, description="Payment terms if mentioned")
+    confidence_score: float = Field(
+        0.0,
+        description=(
+            "Your overall confidence that the extraction is complete and correct. "
+            "0.0 = almost nothing extracted, 1.0 = all fields clearly stated. "
+            "Compute as: (number of non-null fields / 6) capped at 1.0."
+        ),
+    )
+    missing_fields: list[str] = Field(
+        default_factory=list,
+        description=(
+            "List of invoice field names that are clearly missing from the transcript. "
+            "Only include fields from: client_first_name, description, unit_price, tva_rate, due_date. "
+            "Do not include a field if it was mentioned even implicitly."
+        ),
+    )
 
 
 async def extract_from_transcript(transcript: str, api_key: str) -> ExtractedInvoice:
@@ -45,6 +61,10 @@ CRITICAL RULES:
 - unit_price: price per unit. If only a total is given: unit_price=total/qty.
 - Leave all fields null if the information is not clearly stated.
 - For client name: separate first name and last name if both are present.
+- confidence_score: compute as (number of non-null fields among client_first_name, description,
+  unit_price, qty, tva_rate, due_date) / 6, capped at 1.0.
+- missing_fields: list fields from [client_first_name, description, unit_price, tva_rate, due_date]
+  that are clearly absent from the transcript.
 
 Transcript: {transcript}"""
     )
