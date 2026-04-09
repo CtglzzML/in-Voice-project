@@ -1,7 +1,7 @@
 // src/frontend/agent-stream.js
 import { formUpdater } from './form-updater.js';
 
-export const BASE_URL = window.INVOICE_BASE_URL ?? 'https://in-voice-project-givm.onrender.com/api/v1';
+export const BASE_URL = window.INVOICE_BASE_URL ?? 'http://localhost:8000/api/v1';
 
 export const agentStream = (() => {
   let sessionId = null;
@@ -24,7 +24,7 @@ export const agentStream = (() => {
   }
 
   async function _playTTS(text) {
-    const res = await fetch(`${window.INVOICE_BASE_URL || 'https://in-voice-project-givm.onrender.com/api/v1'}/audio/tts`, {
+    const res = await fetch(`${BASE_URL}/audio/tts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, voice: 'alloy' })
@@ -85,16 +85,21 @@ export const agentStream = (() => {
     if (eventSource) { eventSource.close(); eventSource = null; }
     sessionId = null;
 
-    const userId = window.INVOICE_USER_ID;
-    if (!userId) { _showError('INVOICE_USER_ID missing.'); return; }
+    // Get Supabase session token
+    const { data: { session } } = await window._supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) { _showError('Not authenticated. Please log in again.'); return; }
 
     _showStatus('Starting agent...');
 
     try {
       const res = await fetch(`${BASE_URL}/invoice/start`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, transcript })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ transcript })
       });
 
       if (!res.ok) {
@@ -110,10 +115,10 @@ export const agentStream = (() => {
 
       const data = await res.json();
       sessionId = data.session_id;
-      
+
       const abandonBtn = document.querySelector('#abandon-btn');
       if (abandonBtn) abandonBtn.style.display = 'inline-block';
-      
+
       _openStream(0);
     } catch (e) {
       _showError(`Network error: ${e.message}`);
