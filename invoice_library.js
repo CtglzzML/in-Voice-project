@@ -97,6 +97,7 @@ function createRow(invoice) {
 
         row.classList.add('selected-row');
         selectedInvoice = invoice;
+        selectedLibraryItem = invoice;
         renderPreview(invoice);
     });
 
@@ -149,7 +150,7 @@ function buildItemsRows(items) {
 }
 
 function buildInvoicePreviewHtml(invoice) {
-    const data = invoice?.fullInvoice || {};
+    const data = invoice?.fullInvoice || invoice || {};
     const savedLogo = localStorage.getItem('invoiceLogo');
     const itemsRows = buildItemsRows(data.items);
 
@@ -158,7 +159,7 @@ function buildInvoicePreviewHtml(invoice) {
         width: 100%; 
         max-width: 700px; 
         min-height: 850px; /* Adjust based on your aspect ratio */
-        margin: 0 auto; 
+        margin: 18px auto 0; 
         color: #111; 
         font-family: Inter, sans-serif;
         display: flex;
@@ -219,11 +220,11 @@ function buildInvoicePreviewHtml(invoice) {
             </table>
         </div>
 
-        <div class="invoice-footer">
+        <div class="invoice-footer" style="margin-top: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #eee; padding-top: 20px;">
                 <div style="max-width: 60%;">
                     <strong style="font-size: 0.9rem;">Comments:</strong>
-                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || 'Thank you for your business!'}</p>
+                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || ''}</p>
                 </div>
 
                 <div style="width: 220px; line-height: 1.8;">
@@ -379,7 +380,7 @@ function showPreview(item) {
     const tagsList = document.getElementById('tags-list');
     const invoice = item.fullInvoice;
 
-    selectedInvoice = invoice || null;
+    selectedInvoice = item || null;
     selectedLibraryItem = item || null;
 
     previewTitle.textContent = `Preview: ${invoice?.invoiceNumber || item.fileName || 'Invoice'}`;
@@ -499,7 +500,7 @@ function handleSearch() {
     const stillVisible = filtered.some(i => i.dbId === selectedLibraryItem.dbId);
 
     if (!updated || !stillVisible) {
-        resetPreview();
+        renderEmptyPreview();
         return;
     }
 
@@ -570,25 +571,73 @@ if (tagsListEl) {
     });
 }
 
-function downloadInvoicePDF() {
-    if (!selectedInvoice) {
+function getInvoiceForPdf() {
+    if (selectedLibraryItem && selectedLibraryItem.fullInvoice) {
+        return selectedLibraryItem;
+    }
+
+    if (selectedInvoice && selectedInvoice.fullInvoice) {
+        return selectedInvoice;
+    }
+
+    if (selectedInvoice) {
+        return { fullInvoice: selectedInvoice };
+    }
+
+    return null;
+}
+
+async function downloadInvoicePDF() {
+    const invoiceForPdf = getInvoiceForPdf();
+
+    if (!invoiceForPdf) {
         alert('Please select an invoice first.');
         return;
     }
 
-    const element = buildPrintableDocument(buildInvoicePreviewHtml(selectedInvoice)); // The container holding your invoice
+    if (!window.html2pdf) {
+        alert('PDF exporter failed to load. Please refresh and try again.');
+        return;
+    }
 
-    // Optional settings to make it look professional
+    const sourceHtml = buildInvoicePreviewHtml(invoiceForPdf);
+
+    const invoiceNumber = invoiceForPdf?.fullInvoice?.invoiceNumber || 'invoice';
+    const safeInvoiceNumber = String(invoiceNumber).replace(/[^a-zA-Z0-9-_]+/g, '_');
+
     const opt = {
-        margin: 0.5,
-        filename: `Invoice_${Date.now()}.pdf`,
+        margin: [0.35, 0.35, 0.35, 0.35],
+        filename: `Invoice_${safeInvoiceNumber}_${Date.now()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 }, // Higher scale = better quality
-        jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' }
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            scrollX: 0,
+            scrollY: 0
+        },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // New Promise-based usage:
-    window.html2pdf().set(opt).from(element).save();
+    try {
+        await window.html2pdf().set(opt).from(sourceHtml, 'string').save();
+    } catch (error) {
+        console.error('Failed to generate PDF from HTML string, trying preview fallback:', error);
+
+        const previewNode = previewSheet?.firstElementChild;
+        if (previewNode) {
+            try {
+                await window.html2pdf().set(opt).from(previewNode).save();
+                return;
+            } catch (fallbackError) {
+                console.error('Fallback PDF generation also failed:', fallbackError);
+            }
+        }
+
+        alert('Could not generate the PDF. Please refresh and try again.');
+    }
 }
 
 if (createInvoiceBtn) {
@@ -719,35 +768,77 @@ window.addEventListener('pageshow', (event) => {
     renderLibraryTable(filteredInvoices);
 });
 
-const hamburgerBtn = document.getElementById('hamburger-btn');
-const container = document.getElementById('menu-container');
-const navigationTemplate = document.getElementById('navigation-menu');
+const userBtn = document.querySelector('.user-button');
+const menuTemplate = document.getElementById('user-profile-menu');
 
-if (hamburgerBtn && container && navigationTemplate) {
-  hamburgerBtn.addEventListener('click', () => {
-    const existingMenu = document.getElementById('navigation-menu-modal');
+if (userBtn && menuTemplate) {
+    userBtn.addEventListener('click', async () => {
+        const existing = document.getElementById('user-profile-menu-modal');
+        if (existing) {
+            existing.remove();
+            return;
+        }
 
-    if (existingMenu) {
-      existingMenu.remove();
-    } else {
-      const menuContent = navigationTemplate.content.cloneNode(true);
-      container.appendChild(menuContent);
-      const logoutLink = document.getElementById('library-logout');
-      if (logoutLink && typeof logoutUser === 'function') {
-        logoutLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          logoutUser().then(() => { window.location.href = 'landing_page.html'; });
-        });
-      }
-    }
-  });
+        const clone = menuTemplate.content.cloneNode(true);
+        document.body.appendChild(clone);
+
+        const nameEl = document.getElementById('username');
+        if (nameEl && typeof getCurrentUser === 'function') {
+            try {
+                const user = await getCurrentUser();
+                const displayName =
+                    (user && user.user_metadata && user.user_metadata.full_name) ||
+                    (user && user.email) ||
+                    'User';
+                nameEl.textContent = displayName;
+            } catch (_) {
+                nameEl.textContent = 'User';
+            }
+        }
+
+        const dash = document.getElementById('go-to-dashboard');
+        const inv = document.getElementById('go-to-invoices');
+        const usr = document.getElementById('go-to-account');
+        const out = document.getElementById('signout');
+
+        if (dash) {
+            dash.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'dashboard.html';
+            });
+        }
+        if (inv) {
+            inv.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'invoice_library.html';
+            });
+        }
+        if (usr) {
+            usr.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'account_page.html';
+            });
+        }
+        if (out) {
+            out.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (typeof logoutUser === 'function') {
+                    logoutUser().then(() => {
+                        window.location.href = 'landing_page.html';
+                    });
+                    return;
+                }
+                window.location.href = 'landing_page.html';
+            });
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('user-profile-menu-modal');
+        if (menu && !userBtn.contains(e.target) && !menu.contains(e.target)) {
+            menu.remove();
+        }
+    });
 }
-
-document.addEventListener('click', (e) => {
-  const existingMenu = document.getElementById('navigation-menu-modal');
-  if (existingMenu && hamburgerBtn && !hamburgerBtn.contains(e.target) && !existingMenu.contains(e.target)) {
-    existingMenu.remove();
-  }
-});
 
 document.addEventListener('DOMContentLoaded', initLibrary);

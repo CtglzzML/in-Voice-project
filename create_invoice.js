@@ -99,20 +99,8 @@ function addNewRow(itemData = null) {
 
     const deleteBtn = row.querySelector('.delete-btn');
     if (deleteBtn) {
-        deleteBtn.addEventListener('click', () => {
-            row.remove();
-            renderEmptyStateIfNeeded();
-            calculateInvoice();
-            saveDraftToSession();
-        });
+        // Will rely on event delegation for delete button instead
     }
-
-    row.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', () => {
-            calculateInvoice();
-            saveDraftToSession();
-        });
-    });
 
     itemTable.appendChild(row);
     renderEmptyStateIfNeeded();
@@ -325,6 +313,28 @@ if (addItemBtn) {
     });
 }
 
+// Event delegation for item-list changes
+if (itemTable) {
+    itemTable.addEventListener('input', (e) => {
+        if (e.target.matches('input')) {
+            calculateInvoice();
+            saveDraftToSession();
+        }
+    });
+
+    itemTable.addEventListener('click', (e) => {
+        if (e.target.closest('.delete-btn')) {
+            const row = e.target.closest('.item-row');
+            if (row) {
+                row.remove();
+                renderEmptyStateIfNeeded();
+                calculateInvoice();
+                saveDraftToSession();
+            }
+        }
+    });
+}
+
 document.querySelectorAll(
     '#inv-number, #inv-date, #inv-due, #company-name, #company-address, #company-phone, #company-email, #client-name, #client-address, #client-phone, #client-email, #comment'
 ).forEach(input => {
@@ -393,6 +403,114 @@ if (returnBtn) {
     });
 }
 
+const cancelInvoiceBtn = document.getElementById('cancel-invoice-btn');
+if (cancelInvoiceBtn) {
+    cancelInvoiceBtn.addEventListener('click', () => {
+        if (confirm("Are you sure you want to cancel? Any unsaved progress will be permanently lost.")) {
+            // Clear all trace of the draft exactly as if they started over
+            sessionStorage.removeItem('invoiceDraft');
+            localStorage.removeItem('persistentInvoiceDraft');
+            localStorage.removeItem('invoiceLogo');
+            
+            // Send back to dashboard
+            window.location.href = 'dashboard.html';
+        }
+    });
+}
+
+async function autofillFromProfile() {
+    if (!window._supabase || typeof window.getCurrentUser !== 'function') return;
+    
+    try {
+        const user = await window.getCurrentUser();
+        if (!user) return;
+        
+        const { data: profile } = await window._supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+        if (!profile) return;
+        
+        const companyName = document.getElementById('company-name');
+        const companyAddress = document.getElementById('company-address');
+        const companyEmail = document.getElementById('company-email');
+        const taxInput = document.getElementById('inv-tax');
+        
+        let changed = false;
+
+        // Autofill only if currently empty
+        if (companyName && (!companyName.value || companyName.value.trim() === '')) {
+            companyName.value = profile.name || '';
+            changed = true;
+        }
+        if (companyAddress && (!companyAddress.value || companyAddress.value.trim() === '')) {
+            companyAddress.value = profile.address || '';
+            changed = true;
+        }
+        if (companyEmail && (!companyEmail.value || companyEmail.value.trim() === '')) {
+            companyEmail.value = profile.email || '';
+            changed = true;
+        }
+        if (taxInput && (!taxInput.value || taxInput.value === '0')) {
+            if (profile.default_tva != null) {
+                taxInput.value = profile.default_tva;
+                changed = true;
+            }
+        }
+        
+        // Also pre-fill logo if available and not set locally
+        if (profile.logo_url && !localStorage.getItem('invoiceLogo')) {
+            const preview = document.getElementById('logo-preview');
+            const logoPlaceholder = document.getElementById('placeholder-logo');
+
+            if (preview) {
+                preview.src = profile.logo_url;
+                preview.style.display = 'block';
+            }
+            if (logoPlaceholder) {
+                logoPlaceholder.style.display = 'none';
+            }
+            localStorage.setItem('invoiceLogo', profile.logo_url);
+            changed = true;
+        }
+
+        if (changed) {
+            updateLivePreview();
+            calculateInvoice();
+            saveDraftToSession();
+        }
+
+    } catch (e) {
+        console.error("Error autofilling profile:", e);
+    }
+}
+
+// ── Autofill client fields from the Customer Info page selection ──
+function autofillFromSelectedClient() {
+    try {
+        const raw = sessionStorage.getItem('selectedClient');
+        if (!raw) return;
+
+        const client = JSON.parse(raw);
+        // Remove so it doesn't persist on refresh
+        sessionStorage.removeItem('selectedClient');
+
+        const clientName = document.getElementById('client-name');
+        const clientAddress = document.getElementById('client-address');
+        const clientEmail = document.getElementById('client-email');
+        const clientPhone = document.getElementById('client-phone');
+
+        if (clientName) clientName.value = client.name || '';
+        if (clientAddress) clientAddress.value = client.address || '';
+        if (clientEmail) clientEmail.value = client.email || '';
+        if (clientPhone) clientPhone.value = client.phone || '';
+
+        updateLivePreview();
+        saveDraftToSession();
+    } catch (e) {
+        console.error('Error autofilling selected client:', e);
+    }
+}
+
 loadDraftFromSession();
 updateLivePreview();
 calculateInvoice();
+autofillFromProfile();
+autofillFromSelectedClient();

@@ -28,14 +28,14 @@
             <div class="login-card">
                 <header class="login-card-header">
                     <h2>Complete your profile</h2>
-                    <p style="font-size:0.875rem;color:var(--text-muted,#888);margin-top:4px;">
+                    <p class="onboarding-subtitle">
                         This information will appear on your invoices.
                     </p>
                 </header>
 
                 <form id="onboarding-form" class="login-form signup-form">
                     <div class="form-group">
-                        <label for="ob-name">Full name <span style="color:red">*</span></label>
+                        <label for="ob-name">Full name <span class="required-star">*</span></label>
                         <input type="text" id="ob-name" required placeholder="Jane Doe" />
                     </div>
 
@@ -68,9 +68,8 @@
                         <button type="submit" class="login-button">Save and continue</button>
                     </div>
 
-                    <div style="text-align:center;margin-top:12px;">
-                        <a href="dashboard.html" id="skip-onboarding"
-                           style="font-size:0.85rem;color:var(--text-muted,#888);text-decoration:underline;cursor:pointer;">
+                    <div class="skip-wrapper">
+                        <a href="dashboard.html" id="skip-onboarding">
                             Skip for now
                         </a>
                     </div>

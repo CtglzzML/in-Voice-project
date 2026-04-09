@@ -181,7 +181,7 @@ function renderInvoicePreview() {
             <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #eee; padding-top: 20px;">
                 <div style="max-width: 60%;">
                     <strong style="font-size: 0.9rem;">Comments:</strong>
-                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || 'Thank you for your business!'}</p>
+                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || ''}</p>
                 </div>
 
                 <div style="width: 220px; line-height: 1.8;">

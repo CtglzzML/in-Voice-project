@@ -86,7 +86,7 @@
               <!-- Inline Client Creation Form -->
               <div id="inline-client-form" class="inline-client-form hidden">
                 <div class="icf-fields">
-                  <div class="icf-title" style="font-size: 0.9rem; margin-bottom: 0.5rem; color: #62588f;">Enter contact
+                  <div class="icf-title">Enter contact
                     details:</div>
                   <input id="icf-email" type="email" placeholder="Email (optional)" autocomplete="off">
                   <input id="icf-phone" type="tel" placeholder="Phone (optional)" autocomplete="off">
@@ -215,12 +215,16 @@
               <h4>INVOICE</h4>
               <p id="preview-invoice-number"># ---</p>
               <span id="preview-date"></span>
+              <span id="preview-due-date"></span>
             </div>
           </div>
 
           <div class="bill-box">
             <span>Bill to:</span>
             <p id="preview-client-name">Client name: -</p>
+          </div>
+          
+          <div class="preview-client-details">
             <p id="preview-client-address">Client address: -</p>
             <p id="preview-client-email">Client email: -</p>
             <p id="preview-client-phone">Client phone: -</p>
@@ -274,7 +278,10 @@
     </div>
   </div>
 
-  <button class="return-btn">Return</button>
+  <div class="bottom-actions-row">
+    <button id="cancel-invoice-btn" class="cancel-invoice-btn">Cancel invoice &amp; Go to dashboard</button>
+    <button class="return-btn">Return</button>
+  </div>
 
   </div>
 

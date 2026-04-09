@@ -83,8 +83,8 @@
   }
 
   // Legacy no-ops kept for compatibility
-  function migrateLegacySession() {}
-  function setCurrentUser() {}
+  function migrateLegacySession() { }
+  function setCurrentUser() { }
   function isValidSessionUser() { return true; }
 
   global.getCurrentUser = getCurrentUser;
