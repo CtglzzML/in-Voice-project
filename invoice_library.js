@@ -736,8 +736,7 @@ if (hamburgerBtn && container && navigationTemplate) {
       if (logoutLink && typeof logoutUser === 'function') {
         logoutLink.addEventListener('click', (e) => {
           e.preventDefault();
-          logoutUser();
-          window.location.href = 'landing_page.html';
+          logoutUser().then(() => { window.location.href = 'landing_page.html'; });
         });
       }
     }

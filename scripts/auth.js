@@ -1,158 +1,58 @@
 /**
- * Client-side session + local account store (demo / offline).
- * Replace loginUser/registerUser with Supabase calls when backend auth is ready.
+ * Auth — Supabase Auth wrapper.
+ * All functions are async. Callers must await them.
  */
 (function (global) {
   'use strict';
 
-  var STORAGE_KEY = 'invoiceApp_currentUser';
-  var LEGACY_KEY = 'currentUser';
-  var REGISTERED_KEY = 'invoiceApp_registeredUsers';
+  var SUPABASE_URL = 'https://jixjcksmeswhbqfdrrac.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppeGpja3NtZXN3aGJxZmRycmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODA2MDcsImV4cCI6MjA4OTc1NjYwN30.gWyEySptecP_RLpzLjm7lE4shwPYdIckRd00Oeg5o_s';
 
-  function migrateLegacySession() {
-    try {
-      var legacy = localStorage.getItem(LEGACY_KEY);
-      if (legacy && !localStorage.getItem(STORAGE_KEY)) {
-        localStorage.setItem(STORAGE_KEY, legacy);
-      }
-    } catch (e) {
-      /* ignore */
-    }
+  var sb = global.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  global._supabase = sb;
+
+  async function getCurrentUser() {
+    var result = await sb.auth.getUser();
+    return result.data.user || null;
   }
 
-  function isValidSessionUser(u) {
-    if (!u || typeof u !== 'object') return false;
-    var email = u.email && String(u.email).trim();
-    if (email) return true;
-    // Allow persisted sessions that only have id (e.g. future OAuth)
-    if (u.id && String(u.id).trim()) return true;
-    return false;
+  async function isLoggedIn() {
+    var result = await sb.auth.getSession();
+    return !!result.data.session;
   }
 
-  function getCurrentUser() {
-    migrateLegacySession();
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      var u = JSON.parse(raw);
-      if (!isValidSessionUser(u)) return null;
-      return u;
-    } catch (e) {
-      return null;
-    }
+  async function loginUser(email, password) {
+    var result = await sb.auth.signInWithPassword({ email: email, password: password });
+    if (result.error) { alert(result.error.message); return false; }
+    return true;
   }
 
-  function setCurrentUser(user) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    try {
-      localStorage.removeItem(LEGACY_KEY);
-    } catch (e) {
-      /* ignore */
-    }
-  }
-
-  function getRegisteredUsers() {
-    try {
-      var raw = localStorage.getItem(REGISTERED_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function saveRegisteredUsers(users) {
-    localStorage.setItem(REGISTERED_KEY, JSON.stringify(users));
-  }
-
-  function registerUser(name, email, password, extra) {
-    if (!email || !password) {
-      alert('Email and password are required.');
-      return false;
-    }
-    if (password.length < 6) {
-      alert('Password must be at least 6 characters long.');
-      return false;
-    }
-    var users = getRegisteredUsers();
-    var em = email.trim().toLowerCase();
-    if (users.some(function (u) {
-      return u.email === em;
-    })) {
-      alert('An account with this email already exists.');
-      return false;
-    }
-    var id = global.crypto && global.crypto.randomUUID
-      ? global.crypto.randomUUID()
-      : 'id-' + String(Date.now());
-    users.push({
-      id: id,
-      name: (name && String(name).trim()) || em.split('@')[0],
-      email: em,
+  async function registerUser(name, email, password, extra) {
+    var result = await sb.auth.signUp({
+      email: email,
       password: password,
-      provider: 'email',
-      createdAt: Date.now(),
-      companyName: extra && extra.companyName ? extra.companyName : ''
+      options: {
+        data: {
+          full_name: name || '',
+          company_name: (extra && extra.companyName) ? extra.companyName : ''
+        }
+      }
     });
-    saveRegisteredUsers(users);
+    if (result.error) { alert(result.error.message); return false; }
     return true;
   }
 
-  function loginUser(email, password) {
-    if (!email || !password) {
-      alert('Please enter email and password.');
-      return false;
-    }
-    var em = email.trim().toLowerCase();
-    var users = getRegisteredUsers();
-    var found = users.find(function (u) {
-      return u.email === em;
-    });
-    if (!found) {
-      alert('No account found for this email. Please sign up first.');
-      return false;
-    }
-    if (found.password !== password) {
-      alert('Invalid email or password.');
-      return false;
-    }
-    setCurrentUser({
-      id: found.id,
-      name: found.name,
-      email: found.email,
-      provider: found.provider || 'email',
-      companyName: found.companyName || ''
-    });
-    return true;
+  async function logoutUser() {
+    await sb.auth.signOut();
   }
 
-  /**
-   * Placeholder until Supabase OAuth is wired:
-   * supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ... } })
-   */
-  function loginWithGoogleStub() {
-    var id = global.crypto && global.crypto.randomUUID
-      ? global.crypto.randomUUID()
-      : 'google-' + String(Date.now());
-    setCurrentUser({
-      id: id,
-      name: 'Google User',
-      email: 'demo.google@invoice.local',
-      provider: 'google'
+  async function loginWithGoogle(redirectTo) {
+    var dest = redirectTo || (global.location.origin + '/pages/dashboard.html');
+    var result = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: dest }
     });
-    return true;
-  }
-
-  function logoutUser() {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(LEGACY_KEY);
-    } catch (e) {
-      /* ignore */
-    }
-  }
-
-  function isLoggedIn() {
-    return !!getCurrentUser();
+    if (result.error) alert(result.error.message);
   }
 
   function sanitizeReturnPage(name) {
@@ -169,34 +69,36 @@
     global.location.href = ret;
   }
 
-  function redirectIfAuthenticated() {
-    migrateLegacySession();
-    if (getCurrentUser()) {
-      redirectAfterLogin();
-    }
+  async function redirectIfAuthenticated() {
+    if (await isLoggedIn()) redirectAfterLogin();
   }
 
-  function requireAuthOrRedirect(pageFileName) {
-    migrateLegacySession();
-    if (!getCurrentUser()) {
+  async function requireAuthOrRedirect(pageFileName) {
+    if (!(await isLoggedIn())) {
       var q = pageFileName ? '?return=' + encodeURIComponent(pageFileName) : '';
-      global.location.replace('login_page.html' + q);
+      global.location.replace('../pages/login_page.html' + q);
       return false;
     }
     return true;
   }
 
-  global.migrateLegacySession = migrateLegacySession;
+  // Legacy no-ops kept for compatibility
+  function migrateLegacySession() {}
+  function setCurrentUser() {}
+  function isValidSessionUser() { return true; }
+
   global.getCurrentUser = getCurrentUser;
-  global.setCurrentUser = setCurrentUser;
-  global.registerUser = registerUser;
-  global.loginUser = loginUser;
-  global.loginWithGoogleStub = loginWithGoogleStub;
-  global.logoutUser = logoutUser;
   global.isLoggedIn = isLoggedIn;
+  global.loginUser = loginUser;
+  global.registerUser = registerUser;
+  global.logoutUser = logoutUser;
+  global.loginWithGoogle = loginWithGoogle;
   global.redirectAfterLogin = redirectAfterLogin;
   global.redirectIfAuthenticated = redirectIfAuthenticated;
   global.requireAuthOrRedirect = requireAuthOrRedirect;
   global.sanitizeReturnPage = sanitizeReturnPage;
+  global.migrateLegacySession = migrateLegacySession;
+  global.setCurrentUser = setCurrentUser;
   global.isValidSessionUser = isValidSessionUser;
+
 })(typeof window !== 'undefined' ? window : global);
