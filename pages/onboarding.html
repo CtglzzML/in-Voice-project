@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>inVoice - Complete your profile</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="../css/color_scheme.css" />
+    <link rel="stylesheet" href="../css/login_page.css" />
+</head>
+
+<body>
+
+    <header class="page-header">
+        <div class="logo-wrapper">
+            <a href="landing_page.html"><img src="../images/logo.png" alt="inVoice Logo" class="logo" /></a>
+        </div>
+    </header>
+
+    <main class="login-page signup-page">
+        <section class="login-container">
+            <div class="login-card">
+                <header class="login-card-header">
+                    <h2>Complete your profile</h2>
+                    <p style="font-size:0.875rem;color:var(--text-muted,#888);margin-top:4px;">
+                        This information will appear on your invoices.
+                    </p>
+                </header>
+
+                <form id="onboarding-form" class="login-form signup-form">
+                    <div class="form-group">
+                        <label for="ob-name">Full name <span style="color:red">*</span></label>
+                        <input type="text" id="ob-name" required placeholder="Jane Doe" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ob-siret">SIRET <span class="label-optional">(optional)</span></label>
+                        <input type="text" id="ob-siret" placeholder="12345678901234" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ob-address">Address <span class="label-optional">(optional)</span></label>
+                        <input type="text" id="ob-address" placeholder="12 rue de la Paix, 75001 Paris" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ob-tva-number">TVA number <span class="label-optional">(optional)</span></label>
+                        <input type="text" id="ob-tva-number" placeholder="FR12345678901" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ob-default-tva">Default TVA rate (%) <span class="label-optional">(optional)</span></label>
+                        <input type="number" id="ob-default-tva" placeholder="20" min="0" max="100" step="0.1" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ob-logo">Company logo <span class="label-optional">(optional)</span></label>
+                        <input type="file" id="ob-logo" accept="image/*" />
+                    </div>
+
+                    <div class="login-button-wrapper">
+                        <button type="submit" class="login-button">Save and continue</button>
+                    </div>
+
+                    <div style="text-align:center;margin-top:12px;">
+                        <a href="dashboard.html" id="skip-onboarding"
+                           style="font-size:0.85rem;color:var(--text-muted,#888);text-decoration:underline;cursor:pointer;">
+                            Skip for now
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../scripts/auth.js"></script>
+    <script src="../onboarding.js"></script>
+</body>
+
+</html>

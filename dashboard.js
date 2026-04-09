@@ -30,7 +30,6 @@ if (userBtn) {
 document.addEventListener('click', function (e) {
   if (e.target && e.target.classList.contains('sign-out-link')) {
     e.preventDefault();
-    logoutUser();
-    window.location.href = 'landing_page.html';
+    logoutUser().then(function () { window.location.href = 'landing_page.html'; });
   }
 });

@@ -28,8 +28,7 @@ document.addEventListener('click', (e) => {
   }
   if (e.target && e.target.id === 'signout') {
     e.preventDefault();
-    logoutUser();
-    window.location.href = 'landing_page.html';
+    logoutUser().then(function () { window.location.href = 'landing_page.html'; });
   }
 });
 

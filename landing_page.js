@@ -5,9 +5,8 @@ const container = document.getElementById('menu-container');
 const navigationTemplate = document.getElementById('navigation-menu');
 const authBtn = document.getElementById('auth-btn');
 
-function applyLandingAuthUi() {
-  migrateLegacySession();
-  const user = getCurrentUser();
+async function applyLandingAuthUi() {
+  const user = await getCurrentUser();
   const header = document.getElementById('landing-header');
 
   if (header) {
@@ -24,13 +23,13 @@ function applyLandingAuthUi() {
       };
     }
   }
-
 }
+applyLandingAuthUi();
 
 if (recordBtn) {
-  recordBtn.addEventListener('click', function () {
-    migrateLegacySession();
-    if (!getCurrentUser()) {
+  recordBtn.addEventListener('click', async function () {
+    const user = await getCurrentUser();
+    if (!user) {
       window.location.href = 'login_page.html?return=create_invoice.html';
       return;
     }
@@ -59,8 +58,7 @@ if (hamburgerBtn && container && navigationTemplate) {
     if (logoutEl) {
       logoutEl.addEventListener('click', function (e) {
         e.preventDefault();
-        logoutUser();
-        window.location.href = 'landing_page.html';
+        logoutUser().then(() => { window.location.href = 'landing_page.html'; });
       });
     }
   });

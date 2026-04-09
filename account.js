@@ -1,17 +1,17 @@
-function fillAccountPage() {
-  var user = getCurrentUser();
+async function fillAccountPage() {
+  var user = await getCurrentUser();
   if (!user) return;
 
   var title = document.querySelector('main .account-username');
   var emailEl = document.querySelector('main .account-email');
   var companyEl = document.querySelector('main .account-company');
-  if (title) title.textContent = user.name || 'User';
+  if (title) title.textContent = (user.user_metadata && user.user_metadata.full_name) || user.email || 'User';
   if (emailEl) emailEl.textContent = user.email || '';
-  if (companyEl) companyEl.textContent = user.companyName || '—';
+  if (companyEl) companyEl.textContent = (user.user_metadata && user.user_metadata.company_name) || '—';
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  fillAccountPage();
+document.addEventListener('DOMContentLoaded', async function () {
+  await fillAccountPage();
 
   var backBtn = document.getElementById('back-to-dashboard');
   var editBtn = document.getElementById('edit-account-btn');
@@ -68,8 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (out) {
         out.addEventListener('click', function (e) {
           e.preventDefault();
-          logoutUser();
-          window.location.href = 'landing_page.html';
+          logoutUser().then(function () { window.location.href = 'landing_page.html'; });
         });
       }
     });

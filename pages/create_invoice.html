@@ -15,16 +15,16 @@
 
 <body>
 
-  <script src="../scripts/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../scripts/auth.js"></script>
   <script>
-    (function () {
-      migrateLegacySession();
-      var u = getCurrentUser();
+    (async function () {
+      var u = await getCurrentUser();
       if (!u) {
         window.location.replace('login_page.html?return=create_invoice.html');
         return;
       }
-      window.INVOICE_USER_ID = u.id || u.userId || '8412b4dd-7ee4-4915-86ed-4d5bec0f702f';
+      window.INVOICE_USER_ID = u.id;
     })();
   </script>
 

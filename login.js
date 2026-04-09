@@ -1,6 +1,5 @@
-document.addEventListener('DOMContentLoaded', function () {
-  migrateLegacySession();
-  redirectIfAuthenticated();
+document.addEventListener('DOMContentLoaded', async function () {
+  await redirectIfAuthenticated();
 
   var loginForm = document.querySelector('.login-form');
   var emailInput = document.getElementById('email');
@@ -9,10 +8,18 @@ document.addEventListener('DOMContentLoaded', function () {
   var googleBtn = document.querySelector('.google-button');
 
   if (loginForm && emailInput && passwordInput) {
-    loginForm.addEventListener('submit', function (e) {
+    loginForm.addEventListener('submit', async function (e) {
       e.preventDefault();
-      if (loginUser(emailInput.value, passwordInput.value)) {
-        redirectAfterLogin();
+      var btn = loginForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Logging in…';
+
+      var ok = await loginUser(emailInput.value, passwordInput.value);
+      if (ok) {
+        await redirectAfterLoginWithProfileCheck();
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Log in';
       }
     });
   }
@@ -25,9 +32,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (googleBtn) {
     googleBtn.addEventListener('click', function () {
-      if (loginWithGoogleStub()) {
-        redirectAfterLogin();
-      }
+      // Google login → go to dashboard (profile check happens there if needed)
+      loginWithGoogle(window.location.origin + '/pages/onboarding.html');
     });
   }
 });
+
+async function redirectAfterLoginWithProfileCheck() {
+  var user = await getCurrentUser();
+  if (!user) { redirectAfterLogin(); return; }
+
+  var result = await _supabase.from('users').select('id').eq('id', user.id).maybeSingle();
+  if (!result.data) {
+    window.location.href = 'onboarding.html';
+  } else {
+    redirectAfterLogin();
+  }
+}
