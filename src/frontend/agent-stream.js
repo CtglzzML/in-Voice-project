@@ -86,9 +86,10 @@ export const agentStream = (() => {
     sessionId = null;
 
     // Get Supabase session token
-    const { data: { session } } = await window._supabase.auth.getSession();
-    const token = session?.access_token;
-    if (!token) { _showError('Not authenticated. Please log in again.'); return; }
+    if (!window._supabase) { _showError('Auth client not initialized.'); _resetRecordBtn(); return; }
+    const { data, error } = await window._supabase.auth.getSession();
+    const token = data?.session?.access_token;
+    if (error || !token) { _showError('Not authenticated. Please log in again.'); _resetRecordBtn(); return; }
 
     _showStatus('Starting agent...');
 
@@ -103,6 +104,11 @@ export const agentStream = (() => {
       });
 
       if (!res.ok) {
+        if (res.status === 401) {
+          _showError('Session expired. Please log in again.');
+          _resetRecordBtn();
+          return;
+        }
         let errStr = res.status;
         try {
            const err = await res.json();
