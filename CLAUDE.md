@@ -94,4 +94,5 @@ Mandatory invoice fields before finalization: `client_id`, `due_date`, `payment_
 
 - `assign_invoice_number` in `src/db/supabase.py` has a race condition (count-then-write, not atomic). Fix: replace with a Postgres RPC function running atomically.
 - Sessions are in-process memory — incompatible with multi-worker deploys. Upgrade path: Redis pub/sub.
-- No authentication: `user_id` is trusted from the request body. Must be secured before production.
+- `/stream` and `/reply` are not authenticated — session_id scoping limits blast radius but a stolen session_id gives access. Fix: pass JWT via cookie or query param on stream connect.
+- `GET /invoice/{id}` does not verify ownership — any authenticated user can read any invoice by ID if they know it.

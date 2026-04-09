@@ -29,6 +29,10 @@ class SessionStore:
             "stream_connected": False,
             "invoice_draft": {},  # live copy of filled fields
             "missing_fields": ["client_id", "due_date", "payment_terms", "lines", "tva_rate"],
+            # V2 fields
+            "state": "INIT",
+            "extracted_data": {},
+            "confidence": 0.0,
         }
         return session_id
 
