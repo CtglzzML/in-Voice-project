@@ -149,20 +149,25 @@ export const agentStream = (() => {
   }
 
   function _handleEvent(event) {
-    switch (event.type) {
+    switch (event.type.toLowerCase()) {
       case 'message':
-      case 'thinking': // fallback for older events
-        _showStatus(event.message || event.content || 'Agent processing...');
+      case 'thinking':
+        _showStatus(event.content || event.message || 'Agent processing...');
         break;
       case 'profile':
         formUpdater.updateProfile(event.data);
         break;
+      case 'invoice_updated':
       case 'invoice_update':
         formUpdater.update(event.field, event.value);
         _markFieldFilled(event.field);
         break;
+      case 'waiting_user_input':
       case 'question':
         _showQuestion(event.message);
+        break;
+      case 'need_client_info':
+        _showInlineClientForm(event.data?.name || '');
         break;
       case 'client_suggestions':
         _showClientSuggestions(event.message, event.suggestions);
