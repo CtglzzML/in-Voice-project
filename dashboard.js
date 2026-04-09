@@ -4,32 +4,33 @@ const directoryBtn = document.getElementById('manage-directory-btn');
 const userBtn = document.querySelector('.user-button');
 
 if (newInvoiceBtn) {
-    newInvoiceBtn.addEventListener('click', () => {
-        window.location.href = 'create_invoice.html';
-    });
+  newInvoiceBtn.addEventListener('click', function () {
+    window.location.href = 'create_invoice.html';
+  });
 }
 
 if (historyBtn) {
-    historyBtn.addEventListener('click', () => {
-        window.location.href = 'invoice_library.html';
-    });
+  historyBtn.addEventListener('click', function () {
+    window.location.href = 'invoice_library.html';
+  });
 }
 
 if (directoryBtn) {
-    directoryBtn.addEventListener('click', () => {
-        window.location.href = 'customer_library.html';
-    });
+  directoryBtn.addEventListener('click', function () {
+    window.location.href = 'customer_info_page.html';
+  });
 }
 
 if (userBtn) {
-    userBtn.addEventListener('click', () => {
-        window.location.href = 'account_page.html';
-    });
+  userBtn.addEventListener('click', function () {
+    window.location.href = 'account_page.html';
+  });
 }
 
-document.addEventListener('click', (e) => {
-    if (e.target && e.target.classList.contains('sign-out-link')) {
-        e.preventDefault();
-        window.location.href = 'login_page.html';
-    }
+document.addEventListener('click', function (e) {
+  if (e.target && e.target.classList.contains('sign-out-link')) {
+    e.preventDefault();
+    logoutUser();
+    window.location.href = 'landing_page.html';
+  }
 });

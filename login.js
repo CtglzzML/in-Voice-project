@@ -1,23 +1,33 @@
-const loginForm = document.querySelector('.login-form');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const signupBtn = document.querySelector('.signup-button');
+document.addEventListener('DOMContentLoaded', function () {
+  migrateLegacySession();
+  redirectIfAuthenticated();
 
-if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+  var loginForm = document.querySelector('.login-form');
+  var emailInput = document.getElementById('email');
+  var passwordInput = document.getElementById('password');
+  var signupBtn = document.querySelector('.signup-button');
+  var googleBtn = document.querySelector('.google-button');
 
-        const email = emailInput.value;
-        const password = passwordInput.value;
-
-        if (email && password) {
-            window.location.href = 'dashboard.html';
-        }
+  if (loginForm && emailInput && passwordInput) {
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (loginUser(emailInput.value, passwordInput.value)) {
+        redirectAfterLogin();
+      }
     });
-}
+  }
 
-if (signupBtn) {
-    signupBtn.addEventListener('click', () => {
-        window.location.href = 'sign_up.html';
+  if (signupBtn) {
+    signupBtn.addEventListener('click', function () {
+      window.location.href = 'sign_up.html';
     });
-}
+  }
+
+  if (googleBtn) {
+    googleBtn.addEventListener('click', function () {
+      if (loginWithGoogleStub()) {
+        redirectAfterLogin();
+      }
+    });
+  }
+});

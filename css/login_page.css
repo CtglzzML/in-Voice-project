@@ -220,6 +220,62 @@ body {
     transform: scale(0.98);
 }
 
+/* —— Sign up (same card system as login) —— */
+.signup-page .login-card {
+    max-width: 460px;
+}
+
+.signup-form .form-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+.signup-form .form-group label {
+    min-width: auto;
+    text-align: left;
+    font-weight: 600;
+    color: #222222;
+}
+
+.signup-form .label-optional {
+    font-weight: 400;
+    font-size: 0.85em;
+    color: #666666;
+}
+
+.signup-form .form-group input[type="text"],
+.signup-form .form-group input[type="email"],
+.signup-form .form-group input[type="password"] {
+    width: 100%;
+    max-width: none;
+    height: 34px;
+}
+
+.signup-form .form-group input[type="file"] {
+    width: 100%;
+    max-width: none;
+    padding: 0.5rem 0.75rem;
+    height: auto;
+    border-radius: 10px;
+    background-color: #f8f8f8;
+    font-size: 0.85rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.signup-form .login-button-wrapper {
+    margin-top: 1.5rem;
+}
+
+a.signup-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
 @media (max-width: 520px) {
     .page-header {
         padding: 1.5rem 1rem 0;
@@ -258,4 +314,16 @@ body {
     .divider {
         gap: 0.4rem;
     }
+}
+.back-to-landing-btn {
+    display: block;
+    margin-top: 10px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.back-to-landing-btn:hover {
+    text-decoration: underline;
 }

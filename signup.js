@@ -1,23 +1,24 @@
-const signupForm = document.getElementById('signup-form');
-const passwordInput = document.getElementById('user-password');
-const emailInput = document.getElementById('user-email');
+document.addEventListener('DOMContentLoaded', function () {
+  migrateLegacySession();
+  if (getCurrentUser()) {
+    window.location.replace('dashboard.html');
+    return;
+  }
 
-if (signupForm) {
-    signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+  var signupForm = document.getElementById('signup-form');
+  if (!signupForm) return;
 
-        const passwordValue = passwordInput.value;
-        const emailValue = emailInput.value;
+  signupForm.addEventListener('submit', function (e) {
+    e.preventDefault();
 
-        if (passwordValue.length < 6) {
-            alert("Password must be at least 6 characters long.");
-            return;
-        }
+    var name = document.getElementById('user-name').value;
+    var email = document.getElementById('user-email').value;
+    var password = document.getElementById('user-password').value;
+    var company = document.getElementById('company-name');
+    var companyName = company ? company.value : '';
 
-        // Logic to simulate account creation
-        console.log("Creating account for:", emailValue);
-        
-        // Redirect to login page after "successful" signup
-        window.location.href = 'login_page.html';
-    });
-}
+    if (registerUser(name, email, password, { companyName: companyName })) {
+      window.location.href = 'login_page.html';
+    }
+  });
+});

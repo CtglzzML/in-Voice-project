@@ -573,6 +573,10 @@
   position: absolute;
   top: 50px;
   right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 180px;
   background: white;
   border: 1px solid #ddd;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -582,7 +586,16 @@
 }
 
 #navigation-menu-modal a {
+  display: block;
   text-decoration: none;
   color: #333;
   font-weight: bold;
+  padding: 6px 4px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+#navigation-menu-modal a:hover {
+  color: var(--text-main);
+  background-color: var(--accent-lighter);
 }

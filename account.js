@@ -1,21 +1,84 @@
-const backBtn = document.querySelector('button[typ="button"]');
-const editBtn = document.querySelector('button[type="button"]');
+function fillAccountPage() {
+  var user = getCurrentUser();
+  if (!user) return;
 
-if (backBtn) {
-    backBtn.addEventListener('click', () => {
-        window.location.href = 'dashboard.html';
-    });
+  var title = document.querySelector('main .account-username');
+  var emailEl = document.querySelector('main .account-email');
+  var companyEl = document.querySelector('main .account-company');
+  if (title) title.textContent = user.name || 'User';
+  if (emailEl) emailEl.textContent = user.email || '';
+  if (companyEl) companyEl.textContent = user.companyName || '—';
 }
 
-if (editBtn && editBtn.innerText === "Edit Account") {
-    editBtn.addEventListener('click', () => {
-        window.location.href = 'edit_profile.html';
-    });
-}
+document.addEventListener('DOMContentLoaded', function () {
+  fillAccountPage();
 
-document.addEventListener('click', (e) => {
-    if (e.target && e.target.id === 'signout') {
-        e.preventDefault();
-        window.location.href = 'login_page.html';
-    }
+  var backBtn = document.getElementById('back-to-dashboard');
+  var editBtn = document.getElementById('edit-account-btn');
+  var userBtn = document.querySelector('.user-button');
+  var menuTemplate = document.getElementById('user-profile-menu');
+
+  if (backBtn) {
+    backBtn.addEventListener('click', function () {
+      window.location.href = 'dashboard.html';
+    });
+  }
+
+  if (editBtn) {
+    editBtn.addEventListener('click', function () {
+      window.location.href = 'edit_account_page.html';
+    });
+  }
+
+  if (userBtn && menuTemplate) {
+    userBtn.addEventListener('click', function () {
+      var existing = document.getElementById('user-profile-menu-modal');
+      if (existing) {
+        existing.remove();
+        return;
+      }
+      var clone = menuTemplate.content.cloneNode(true);
+      document.body.appendChild(clone);
+      var modal = document.getElementById('user-profile-menu-modal');
+      if (!modal) return;
+
+      var dash = document.getElementById('go-to-dashboard');
+      var inv = document.getElementById('go-to-invoices');
+      var cust = document.getElementById('go-to-customers');
+      var out = document.getElementById('signout');
+
+      if (dash) {
+        dash.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.location.href = 'dashboard.html';
+        });
+      }
+      if (inv) {
+        inv.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.location.href = 'invoice_library.html';
+        });
+      }
+      if (cust) {
+        cust.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.location.href = 'customer_info_page.html';
+        });
+      }
+      if (out) {
+        out.addEventListener('click', function (e) {
+          e.preventDefault();
+          logoutUser();
+          window.location.href = 'landing_page.html';
+        });
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      var modal = document.getElementById('user-profile-menu-modal');
+      if (modal && userBtn && !userBtn.contains(e.target) && !modal.contains(e.target)) {
+        modal.remove();
+      }
+    });
+  }
 });

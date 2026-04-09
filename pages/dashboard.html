@@ -17,6 +17,11 @@
 
 <body>
 
+  <script src="../scripts/auth.js"></script>
+  <script>
+    requireAuthOrRedirect('dashboard.html');
+  </script>
+
   <main class="dashboard-page">
 
     <header class="dashboard-header">

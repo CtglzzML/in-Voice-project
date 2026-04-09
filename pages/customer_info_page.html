@@ -15,10 +15,15 @@
 </head>
 
 <body>
-    <header class="dashboard-header">
-        <img src="" alt="inVoice Logo">
+    <script src="../scripts/auth.js"></script>
+    <script>
+        requireAuthOrRedirect('customer_info_page.html');
+    </script>
 
-        <button class="user-button" type="button">
+    <header class="dashboard-header">
+        <img src="../images/logo.png" alt="inVoice Logo">
+
+        <button class="user-button" type="button" aria-label="Account menu">
             <span>Welcome, User!</span>
             <span class="user-icon">◔</span>
         </button>
@@ -51,62 +56,63 @@
         </table>
         <button type="button" id="add-line-item">+ Add Item</button>
     </div>
+
+    <template id="empty-row">
+        <tr>
+            <td colspan="10">
+                There are currently no clients in library.
+            </td>
+        </tr>
+    </template>
+
+    <template id="non-empty-row">
+        <tr class="item-row">
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td class="">
+                <input type="" class="" placeholder="">
+            </td>
+            <td>
+                <button type="button" class="delete-btn">&times;</button>
+            </td>
+        </tr>
+    </template>
+
+    <template id="user-profile-menu">
+        <div id="user-profile-menu-modal">
+            <span id="username">Username</span>
+            <a href="#" id="go-to-dashboard">Go to Dashboard</a>
+            <a href="#" id="go-to-invoices">Invoice library</a>
+            <a href="#" id="signout">Sign Out</a>
+        </div>
+    </template>
+
+    <script src="../customer_info_page.js"></script>
 </body>
-
-<template id="empty-row">
-    <tr>
-        <td colspan="10">
-            There are currently no clients in library.
-        </td>
-    </tr>
-</template>
-
-<template id="non-empty-row">
-    <tr class="item-row">
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td>
-            <button type="button" class="delete-btn">&times;</button>
-        </td>
-    </tr>
-</template>
-
-<!--user profile menu-->
-<template id="user-profile-menu">
-    <div id="user-profile-menu-modal">
-        <span id="username">Username</span>
-        <a href="#" id="go-to-dashboard">Go to Dashboard</a>
-        <a href="#" id="">Go to Invoice Library Page</a>
-        <a href="#" id="signout">Sign Out</a>
-    </div>
-</template>
 
 </html>

@@ -15,6 +15,10 @@
 </head>
 
 <body>
+    <script src="../scripts/auth.js"></script>
+    <script>
+        requireAuthOrRedirect('edit_account_page.html');
+    </script>
     <h1>Edit Account</h1>
     <form id="signup-form" class="grid card" enctype="multipart/form-data">
 

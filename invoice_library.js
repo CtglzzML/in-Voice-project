@@ -723,26 +723,30 @@ const hamburgerBtn = document.getElementById('hamburger-btn');
 const container = document.getElementById('menu-container');
 const navigationTemplate = document.getElementById('navigation-menu');
 
-hamburgerBtn.addEventListener('click', () => {
-  // Check if the menu is already open
-  const existingMenu = document.getElementById('navigation-menu-modal');
-  
-  if (existingMenu) {
-    // If it's already there, remove it (close the menu)
-    existingMenu.remove();
-  } else {
-    // 1. Grab the content inside the template
-    const menuContent = navigationTemplate.content.cloneNode(true);
-    
-    // 2. Put it inside our wrapper container
-    container.appendChild(menuContent);
-  }
-});
+if (hamburgerBtn && container && navigationTemplate) {
+  hamburgerBtn.addEventListener('click', () => {
+    const existingMenu = document.getElementById('navigation-menu-modal');
 
-// Optional: Close the menu if the user clicks anywhere else on the screen
+    if (existingMenu) {
+      existingMenu.remove();
+    } else {
+      const menuContent = navigationTemplate.content.cloneNode(true);
+      container.appendChild(menuContent);
+      const logoutLink = document.getElementById('library-logout');
+      if (logoutLink && typeof logoutUser === 'function') {
+        logoutLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          logoutUser();
+          window.location.href = 'landing_page.html';
+        });
+      }
+    }
+  });
+}
+
 document.addEventListener('click', (e) => {
   const existingMenu = document.getElementById('navigation-menu-modal');
-  if (existingMenu && !hamburgerBtn.contains(e.target) && !existingMenu.contains(e.target)) {
+  if (existingMenu && hamburgerBtn && !hamburgerBtn.contains(e.target) && !existingMenu.contains(e.target)) {
     existingMenu.remove();
   }
 });
