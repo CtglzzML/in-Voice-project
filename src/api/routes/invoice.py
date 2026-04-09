@@ -1,9 +1,10 @@
 # src/api/routes/invoice.py
 import asyncio
 import json
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from sse_starlette.sse import EventSourceResponse
 from src.api.schemas import StartRequest, StartResponse, ReplyRequest
+from src.api.auth import get_current_user
 from src.sessions.manager import session_store
 from src.agent.runner import run_agent
 from src.db.supabase import get_invoice
@@ -18,12 +19,17 @@ router = APIRouter(prefix="/invoice", tags=["Invoice"])
     summary="Start an invoice session",
     description=(
         "Creates a new invoice session and starts the AI agent in the background. "
-        "Returns a `session_id` to use with `/stream` and `/reply`."
+        "Returns a `session_id` to use with `/stream` and `/reply`. "
+        "Requires a valid Supabase session token in the Authorization header."
     ),
 )
-async def start(body: StartRequest, background_tasks: BackgroundTasks):
-    session_id = session_store.create(body.user_id)
-    background_tasks.add_task(run_agent, session_id, body.user_id, body.transcript)
+async def start(
+    body: StartRequest,
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user),
+):
+    session_id = session_store.create(user_id)
+    background_tasks.add_task(run_agent, session_id, user_id, body.transcript)
     return StartResponse(session_id=session_id)
 
 
@@ -37,7 +43,7 @@ async def start(body: StartRequest, background_tasks: BackgroundTasks):
     ),
 )
 async def stream(session_id: str):
-    session = session_store.get(session_id)  # raises SessionNotFound → caught globally
+    session = session_store.get(session_id)
 
     already_connected = session["stream_connected"]
     session["stream_connected"] = True
