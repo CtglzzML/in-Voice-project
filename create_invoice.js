@@ -1,5 +1,6 @@
 const addItemBtn = document.getElementById('add-line-item');
-const itemTable = document.querySelector('.item-list');
+// FIX 1: Target the tbody directly instead of the table
+const itemTable = document.getElementById('item-list-body'); 
 const rowTemplate = document.getElementById('non-empty-row');
 const emptyRowTemplate = document.getElementById('empty-row');
 const taxInput = document.getElementById('inv-tax');
@@ -8,6 +9,7 @@ const preview = document.getElementById('logo-preview');
 const logoPlaceholder = document.getElementById('placeholder-logo');
 const seePreviewBtn = document.querySelector('.preview-btn');
 const returnBtn = document.querySelector('.return-btn');
+const deleteLogoBtn = document.getElementById('delete-logo-btn');
 
 function formatCurrency(value) {
     return `$${Number(value).toFixed(2)}`;
@@ -31,7 +33,9 @@ function renderEmptyStateIfNeeded() {
     if (rows.length === 0 && !existingEmptyRow) {
         const clone = emptyRowTemplate.content.cloneNode(true);
         const tr = clone.querySelector('tr');
-        tr.classList.add('empty-row');
+        if (tr) {
+            tr.classList.add('empty-row');
+        }
         itemTable.appendChild(clone);
     }
 
@@ -42,102 +46,115 @@ function renderEmptyStateIfNeeded() {
 
 function calculateInvoice() {
     let subtotal = 0;
-    const rows = document.querySelectorAll('.item-row');
+    // Look specifically inside the itemTable (tbody) for rows
+    const rows = itemTable.querySelectorAll('.item-row');
 
     rows.forEach(row => {
-        const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-        const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+        const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
+        const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
         const total = qty * rate;
 
-        row.querySelector('.item-total').innerText = formatCurrency(total);
+        const totalElement = row.querySelector('.item-total');
+        if (totalElement) {
+            totalElement.innerText = formatCurrency(total);
+        }
+
         subtotal += total;
     });
 
-    const taxPercent = parseFloat(taxInput.value) || 0;
+    const taxPercent = parseFloat(taxInput?.value) || 0;
     const taxAmount = subtotal * (taxPercent / 100);
     const totalAmount = subtotal + taxAmount;
 
-    const totalsArea = document.querySelector('.preview-totals');
-    const totalRows = totalsArea.querySelectorAll('.preview-total-row span:last-child');
+    const subtotalEl = document.getElementById('total-subtotal');
+    const taxEl = document.getElementById('total-tva');
+    const finalEl = document.getElementById('total-final');
+    const taxLabelEl = document.getElementById('total-tva-label');
 
-    if (totalRows.length >= 3) {
-        totalRows[0].innerText = formatCurrency(subtotal);
-        totalRows[1].innerText = formatCurrency(taxAmount);
-        totalRows[2].innerText = formatCurrency(totalAmount);
-        const taxLabel = totalsArea.querySelectorAll('.preview-total-row span:first-child')[1];
-        if (taxLabel) taxLabel.innerText = `Tax (${taxPercent}%):`;
-    }
+    if (subtotalEl) subtotalEl.innerText = formatCurrency(subtotal);
+    if (taxEl) taxEl.innerText = formatCurrency(taxAmount);
+    if (finalEl) finalEl.innerText = formatCurrency(totalAmount);
+    if (taxLabelEl) taxLabelEl.innerText = `Tax (${taxPercent}%):`;
 
     updateLivePreview();
 }
 
-// 1. UPDATED: addNewRow now accepts data to fill the fields
 function addNewRow(itemData = null) {
+    if (!rowTemplate) return;
+
     const clone = rowTemplate.content.cloneNode(true);
     const row = clone.querySelector('tr');
 
-    // Fill fields if data is provided (from Load)
+    if (!row) return;
+
     if (itemData) {
-        row.querySelector('.item-desc').value = itemData.description || '';
-        row.querySelector('.item-qty').value = itemData.qty || 0;
-        row.querySelector('.item-rate').value = itemData.rate || 0;
+        const descInput = row.querySelector('.item-desc');
+        const qtyInput = row.querySelector('.item-qty');
+        const rateInput = row.querySelector('.item-rate');
+
+        if (descInput) descInput.value = itemData.description || '';
+        if (qtyInput) qtyInput.value = itemData.qty ?? 0;
+        if (rateInput) rateInput.value = itemData.rate ?? 0;
     }
 
-    row.querySelector('.delete-btn').addEventListener('click', () => {
-        row.remove();
-        renderEmptyStateIfNeeded();
-        calculateInvoice();
-        saveDraftToSession();
-    });
-
-    row.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', () => {
-            calculateInvoice();
+    const deleteBtn = row.querySelector('.delete-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            row.remove();
+            renderEmptyStateIfNeeded();
+            calculateInvoice(); // Recalculate after removal
             saveDraftToSession();
         });
-    });
+    }
 
     itemTable.appendChild(row);
     renderEmptyStateIfNeeded();
     calculateInvoice();
 }
 
-taxInput.addEventListener('input', () => {
-    calculateInvoice();
-    saveDraftToSession();
+// FIX 2: Global listener for the table body. 
+// This handles any typing in ANY row, old or new.
+itemTable.addEventListener('input', (e) => {
+    if (e.target.classList.contains('item-qty') || e.target.classList.contains('item-rate')) {
+        calculateInvoice();
+        saveDraftToSession();
+    }
 });
 
 function getInvoiceData() {
-    const items = Array.from(document.querySelectorAll('.item-row')).map(row => {
+    const items = Array.from(itemTable.querySelectorAll('.item-row')).map(row => {
+        const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
+        const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
+
         return {
-            description: row.querySelector('.item-desc').value.trim(),
-            qty: parseFloat(row.querySelector('.item-qty').value) || 0,
-            rate: parseFloat(row.querySelector('.item-rate').value) || 0,
-            total: (parseFloat(row.querySelector('.item-qty').value) || 0) * (parseFloat(row.querySelector('.item-rate').value) || 0)
+            description: row.querySelector('.item-desc')?.value.trim() || '',
+            qty: qty,
+            rate: rate,
+            total: qty * rate
         };
     });
 
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-    const taxPercent = parseFloat(taxInput.value) || 0;
+    const taxPercent = parseFloat(taxInput?.value) || 0;
     const taxAmount = subtotal * (taxPercent / 100);
 
     return {
-        invoiceNumber: document.getElementById('inv-number').value.trim(),
-        invoiceDate: document.getElementById('inv-date').value,
-        dueDate: document.getElementById('inv-due').value,
+        invoiceNumber: document.getElementById('inv-number')?.value.trim() || '',
+        invoiceDate: document.getElementById('inv-date')?.value || '',
+        dueDate: document.getElementById('inv-due')?.value || '',
         taxPercent: taxPercent,
         taxAmount: taxAmount,
         subtotal: subtotal,
         totalAmount: subtotal + taxAmount,
-        companyName: document.getElementById('company-name').value.trim(),
-        companyAddress: document.getElementById('company-address').value.trim(),
-        companyPhone: document.getElementById('company-phone').value.trim(),
-        companyEmail: document.getElementById('company-email').value.trim(),
-        clientName: document.getElementById('client-name').value.trim(),
-        clientAddress: document.getElementById('client-address').value.trim(),
-        clientPhone: document.getElementById('client-phone').value.trim(),
-        clientEmail: document.getElementById('client-email').value.trim(),
-        comment: document.getElementById('comment').value.trim(),
+        companyName: document.getElementById('company-name')?.value.trim() || '',
+        companyAddress: document.getElementById('company-address')?.value.trim() || '',
+        companyPhone: document.getElementById('company-phone')?.value.trim() || '',
+        companyEmail: document.getElementById('company-email')?.value.trim() || '',
+        clientName: document.getElementById('client-name')?.value.trim() || '',
+        clientAddress: document.getElementById('client-address')?.value.trim() || '',
+        clientPhone: document.getElementById('client-phone')?.value.trim() || '',
+        clientEmail: document.getElementById('client-email')?.value.trim() || '',
+        comment: document.getElementById('comment')?.value.trim() || '',
         items: items
     };
 }
@@ -146,13 +163,11 @@ function saveDraftToSession() {
     const data = getInvoiceData();
     const dataString = JSON.stringify(data);
     sessionStorage.setItem('invoiceDraft', dataString);
-    localStorage.setItem('persistentInvoiceDraft', dataString); // Persistent copy
+    localStorage.setItem('persistentInvoiceDraft', dataString);
 }
 
 function loadDraftFromSession() {
     const raw = sessionStorage.getItem('invoiceDraft');
-
-    // Load Logo from LocalStorage
     const savedLogo = localStorage.getItem('invoiceLogo');
     if (savedLogo && preview) {
         preview.src = savedLogo;
@@ -168,141 +183,97 @@ function loadDraftFromSession() {
 
     try {
         const data = JSON.parse(raw);
+        const fields = ['inv-number', 'inv-date', 'inv-due', 'inv-tax', 'company-name', 'company-address', 'company-phone', 'company-email', 'client-name', 'client-address', 'client-phone', 'client-email', 'comment'];
+        const dataKeys = ['invoiceNumber', 'invoiceDate', 'dueDate', 'taxPercent', 'companyName', 'companyAddress', 'companyPhone', 'companyEmail', 'clientName', 'clientAddress', 'clientPhone', 'clientEmail', 'comment'];
 
-        document.getElementById('inv-number').value = data.invoiceNumber || '';
-        document.getElementById('inv-date').value = data.invoiceDate || '';
-        document.getElementById('inv-due').value = data.dueDate || '';
-        document.getElementById('inv-tax').value = data.taxPercent ?? '';
-        document.getElementById('company-name').value = data.companyName || '';
-        document.getElementById('company-address').value = data.companyAddress || '';
-        document.getElementById('company-phone').value = data.companyPhone || '';
-        document.getElementById('company-email').value = data.companyEmail || '';
-        document.getElementById('client-name').value = data.clientName || '';
-        document.getElementById('client-address').value = data.clientAddress || '';
-        document.getElementById('client-phone').value = data.clientPhone || '';
-        document.getElementById('client-email').value = data.clientEmail || '';
-        document.getElementById('comment').value = data.comment || '';
+        fields.forEach((id, index) => {
+            const el = document.getElementById(id);
+            if (el) el.value = data[dataKeys[index]] ?? '';
+        });
 
-        itemTable.innerHTML = ''; // Clear table before filling from data
-
+        itemTable.innerHTML = '';
         if (Array.isArray(data.items) && data.items.length > 0) {
             data.items.forEach(item => addNewRow(item));
         } else {
             renderEmptyStateIfNeeded();
         }
-
         calculateInvoice();
     } catch (error) {
         console.error('Error loading invoice draft:', error);
         renderEmptyStateIfNeeded();
+        calculateInvoice();
     }
 }
 
-// 2. UPDATED: Stop updateLivePreview from overwriting the item list table
 function updateLivePreview() {
     const data = getInvoiceData();
+    const previewCompanyName = document.querySelector('.preview-company p');
+    if (previewCompanyName) previewCompanyName.textContent = data.companyName || 'My Company';
 
-    // Update text fields
-    document.querySelector('.preview-company').textContent = data.companyName || 'My Company';
-    document.querySelector('.preview-invoice-meta p').textContent = `# ${data.invoiceNumber || '---'}`;
-    document.querySelector('.bill-box p').textContent = data.clientName || 'xClient Inc.';
+    const setPrev = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setPrev('preview-invoice-number', `# ${data.invoiceNumber || '---'}`);
+    setPrev('preview-date', `Date ${formatDate(data.invoiceDate)}`);
+    setPrev('preview-company-address', `From: ${data.companyAddress || '-'}`);
+    setPrev('preview-company-phone', `Phone: ${data.companyPhone || '-'}`);
+    setPrev('preview-company-email', `Email: ${data.companyEmail || '-'}`);
+    setPrev('preview-client-name', data.clientName || 'Client name: -');
+    setPrev('preview-client-address', `Client address: ${data.clientAddress || '-'}`);
+    setPrev('preview-client-phone', `Client phone: ${data.clientPhone || '-'}`);
+    setPrev('preview-client-email', `Client email: ${data.clientEmail || '-'}`);
 
-    document.getElementById('preview-company-address').textContent = `From: ${data.companyAddress || '-'}`;
-    document.getElementById('preview-company-phone').textContent = `Phone: ${data.companyPhone || '-'}`;
-    document.getElementById('preview-company-email').textContent = `Email: ${data.companyEmail || '-'}`;
-
-    document.getElementById('preview-client-address').textContent = `Client address: ${data.clientAddress || '-'}`;
-    document.getElementById('preview-client-phone').textContent = `Client phone: ${data.clientPhone || '-'}`;
-    document.getElementById('preview-client-email').textContent = `Client email: ${data.clientEmail || '-'}`;
-
-    // Logo
     const previewLogoDisplay = document.getElementById('preview-logo-display');
     const savedLogo = localStorage.getItem('invoiceLogo');
-    if (savedLogo) {
-        previewLogoDisplay.src = savedLogo;
-        previewLogoDisplay.style.display = 'block';
-    } else {
-        previewLogoDisplay.style.display = 'none';
+    if (previewLogoDisplay) {
+        if (savedLogo) { previewLogoDisplay.src = savedLogo; previewLogoDisplay.style.display = 'block'; }
+        else { previewLogoDisplay.style.display = 'none'; }
     }
 
     const previewComment = document.querySelector('.preview-note-content');
-    if (previewComment) {
-        previewComment.textContent = data.comment || 'Nothing to add';
-    }
-
-    // Table rows in Live Preview
-    const previewTable = document.querySelector('.item-list');
-    // Important: Only clear and re-render if you have a separate preview table 
-    // or just update the totals if the items are already handled in the editor.
+    if (previewComment) previewComment.textContent = data.comment || 'Nothing to add';
 }
 
-// --- BUTTONS & INPUT LISTENERS ---
+if (taxInput) taxInput.addEventListener('input', calculateInvoice);
 
-addItemBtn.addEventListener('click', () => {
-    addNewRow(); // Just adds one empty row
-    saveDraftToSession();
-});
-
-document.querySelectorAll(
-    '#inv-number, #inv-date, #inv-due, #company-name, #company-address, #company-phone, #company-email, #client-name, #client-address, #client-phone, #client-email, #comment'
-).forEach(input => {
-    input.addEventListener('input', () => {
-        updateLivePreview();
-        saveDraftToSession();
+if (addItemBtn) {
+    addItemBtn.addEventListener('click', (e) => {
+        e.stopImmediatePropagation();
+        addNewRow();
     });
+}
+
+document.querySelectorAll('#inv-number, #inv-date, #inv-due, #company-name, #company-address, #company-phone, #company-email, #client-name, #client-address, #client-phone, #client-email, #comment').forEach(input => {
+    input.addEventListener('input', updateLivePreview);
 });
 
-fileInput.addEventListener('change', function () {
-    if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const imageData = e.target.result;
-
-            // Update the Left Panel (Upload area)
-            preview.src = imageData;
-            preview.style.display = 'block';
-            logoPlaceholder.style.display = 'none';
-
-            // Save it
-            localStorage.setItem('invoiceLogo', imageData);
-
-            // TRIGGER the preview update immediately
-            updateLivePreview();
-        };
-        reader.readAsDataURL(this.files[0]);
-    }
-});
-
-const deleteLogoBtn = document.getElementById('delete-logo-btn');
+if (fileInput) {
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageData = e.target.result;
+                if (preview) { preview.src = imageData; preview.style.display = 'block'; }
+                if (logoPlaceholder) logoPlaceholder.style.display = 'none';
+                localStorage.setItem('invoiceLogo', imageData);
+                updateLivePreview();
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+}
 
 if (deleteLogoBtn) {
     deleteLogoBtn.addEventListener('click', () => {
-        // Clear Left Panel
-        preview.src = "";
-        preview.style.display = 'none';
-        logoPlaceholder.style.display = 'block';
-        fileInput.value = "";
-
-        // Clear Storage
+        if (preview) { preview.src = ''; preview.style.display = 'none'; }
+        if (logoPlaceholder) logoPlaceholder.style.display = 'block';
+        if (fileInput) fileInput.value = '';
         localStorage.removeItem('invoiceLogo');
-
-        // Update Live Preview
         updateLivePreview();
     });
 }
 
-if (seePreviewBtn) {
-    seePreviewBtn.addEventListener('click', () => {
-        saveDraftToSession(); // Save data first
-        window.location.href = 'invoice_preview.html';
-    });
-}
-
-if (returnBtn) {
-    returnBtn.addEventListener('click', () => {
-        // Change this to your actual home or library page
-        window.history.back();
-    });
-}
+if (seePreviewBtn) seePreviewBtn.addEventListener('click', () => { saveDraftToSession(); window.location.href = 'invoice_preview.html'; });
+if (returnBtn) returnBtn.addEventListener('click', () => { window.history.back(); });
 
 loadDraftFromSession();
+updateLivePreview();
+calculateInvoice();

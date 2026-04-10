@@ -12,6 +12,8 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="../css/color_scheme.css" />
   <link rel="stylesheet" href="../css/invoice_library.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 </head>
 
 <body>
@@ -23,8 +25,11 @@
         <h1>Library</h1>
       </div>
 
-      <button class="user-button" type="button" aria-label="User menu">
-        <span class="user-icon"></span>
+      <div id="menu-container"></div>
+      <button id="hamburger-btn">
+          <span></span>
+          <span></span>
+          <span></span>
       </button>
     </header>
 
@@ -33,12 +38,8 @@
       <section class="library-list-section">
         <div>
           <form class="search-form" id="library-search-form">
-            <input
-              class="search-input"
-              type="text"
-              placeholder="Search invoices, clients, emails, or tags"
-              autocomplete="off"
-            />
+            <input class="search-input" type="text" placeholder="Search invoices, clients, emails, or tags"
+              autocomplete="off" />
             <button class="search-btn" type="submit" aria-label="Search">🔍</button>
           </form>
           <ul class="suggestion-list hidden"></ul>
@@ -122,6 +123,12 @@
       </td>
     </tr>
   </template>
+
+  <template id="navigation-menu">
+  <div id="navigation-menu-modal">
+    <a href="landing_page.html">Go to Landing Page</a>
+  </div>
+</template>
 
   <template id="library-item-row-template">
     <tr data-db-id="">

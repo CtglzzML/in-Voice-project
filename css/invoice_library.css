@@ -183,7 +183,9 @@
   background: #62588f;
   color: #fff;
   border-radius: 4px;
-  min-height: 640px;
+
+  width: fit-content;
+  
   padding: 18px 18px 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
 }
@@ -213,7 +215,11 @@
 
 .preview-sheet {
   background: #fff;
-  min-height: 470px;
+
+  min-width: 750px;
+  max-width: 750px;
+  aspect-ratio: 1 / 1.414;
+
   border-radius: 2px;
   padding: 24px;
   margin-bottom: 14px;
@@ -475,7 +481,8 @@
   }
 
   .preview-sheet {
-    min-height: 280px;
+    min-width: 750px;
+    max-width: 750px;
     padding: 18px;
   }
 }
@@ -538,4 +545,44 @@
 }
 .tags-row {
     display: none !important;
+}
+
+/* Styling the hamburger button */
+#hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 25px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+#hamburger-btn span {
+  width: 100%;
+  height: 3px;
+  background-color: #333;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Styling the modal template content when it appears */
+#navigation-menu-modal {
+  position: absolute;
+  top: 50px;
+  right: 20px;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 15px;
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+#navigation-menu-modal a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
 }

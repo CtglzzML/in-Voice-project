@@ -7,7 +7,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: './test_ui.html',
-        create_invoice: './pages/create_invoice.html'
+        create_invoice: './pages/create_invoice.html',
+        landing_page: './pages/landing_page.html'
       }
     }
   }

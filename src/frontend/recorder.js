@@ -6,6 +6,7 @@ export const recorder = (() => {
   let mediaRecorder = null;
 
   function init() {
+    agentStream.registerListenCallback(() => listenForReply());
     const recordBtn   = document.querySelector('#record-btn');
     const replyInput  = document.querySelector('#reply-input');
     const replySendBtn = document.querySelector('#reply-send-btn');
@@ -15,9 +16,22 @@ export const recorder = (() => {
 
     recordBtn.addEventListener('click', () => {
       if (recognition || mediaRecorder) return;
+      if (typeof agentStream.isActive === 'function' && agentStream.isActive()) {
+        listenForReply();
+        return;
+      }
       _setRecordingState(true);
       _startCapture('en-US', _onMainTranscript);
     });
+    
+    const abandonBtn = document.querySelector('#abandon-btn');
+    if (abandonBtn) {
+        abandonBtn.addEventListener('click', () => {
+            if (typeof agentStream.abandonSession === 'function') {
+                agentStream.abandonSession();
+            }
+        });
+    }
 
     if (replySendBtn) replySendBtn.addEventListener('click', () => {
       agentStream.sendReply(replyInput.value);
@@ -34,12 +48,16 @@ export const recorder = (() => {
   }
 
   function listenForReply() {
+    if (recognition || mediaRecorder) return;
+
     const replyInput = document.querySelector('#reply-input');
 
     _setAutoListenState(true);
+    _setRecordingState(true);
 
     _startCapture('en-US', (transcript) => {
       _setAutoListenState(false);
+      _setRecordingState(false);
 
       if (!transcript) {
         if (replyInput) replyInput.focus();
@@ -88,7 +106,7 @@ export const recorder = (() => {
     r.onerror = once((err) => {
       console.warn('SpeechRecognition error:', err.error);
       if (err.error === 'not-allowed') {
-        _showError('Accès au microphone refusé.');
+        _showError('Access to microphone refused.');
         callback('');
       } else {
         _startWhisper(callback);
@@ -168,7 +186,7 @@ export const recorder = (() => {
         const blob = new Blob(chunks, { type: 'audio/webm' });
         
         const loader = _showAutoSendCountdown(() => {});
-        loader.innerHTML = '<span>Transcription en cours...</span>';
+        loader.innerHTML = '<span>Transcription in progress...</span>';
         
         const transcript = await _transcribeWhisper(blob);
         loader.remove();
@@ -184,7 +202,7 @@ export const recorder = (() => {
       }, 15000);
       
     }).catch(() => {
-      _showError('Accès au microphone refusé.');
+      _showError('Access to microphone refused.');
       callback('');
     });
   }
@@ -208,7 +226,7 @@ export const recorder = (() => {
     btn.disabled = active;
     btn.classList.toggle('recording', active);
     const label = btn.querySelector('.record-btn-label');
-    if (label) label.textContent = active ? 'Listening…' : 'Start recording';
+    if (label) label.textContent = active ? "I'm listening…" : 'Start recording';
   }
 
   function _setAutoListenState(active) {
@@ -234,7 +252,7 @@ export const recorder = (() => {
   function _onMainTranscript(transcript) {
     _setRecordingState(false);
     if (!transcript) {
-      _showError('Aucune voix détectée — réessayez (ou tapez votre demande en dessous).');
+      _showError('No voice detected — try again (or write your request down below).');
       return;
     }
     agentStream.start(transcript);
@@ -243,8 +261,13 @@ export const recorder = (() => {
   function _showError(msg) {
     const box  = document.querySelector('#agent-status');
     const text = document.querySelector('#status-text');
-    if (box)  { box.classList.remove('hidden'); box.style.color = 'red'; }
+    if (box)  { 
+      box.classList.remove('hidden', 'thinking', 'done'); 
+      box.classList.add('error');
+    }
     if (text) text.textContent = msg;
+    const dot = document.querySelector('.ai-status-dot');
+    if (dot) dot.classList.remove('pulse');
   }
 
   if (document.readyState === 'loading') {

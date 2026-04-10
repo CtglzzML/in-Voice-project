@@ -6,6 +6,8 @@ const searchInput = document.querySelector('.search-input');
 const searchForm = document.getElementById('library-search-form');
 const createInvoiceBtn = document.querySelector('.create-invoice-btn');
 const downloadInvoiceBtn = document.querySelector('.download-invoice-btn');
+const previewTitle = document.querySelector('.preview-title');
+
 
 const emptyRowTemplate = document.getElementById('empty-library-row-template');
 
@@ -152,29 +154,40 @@ function buildInvoicePreviewHtml(invoice) {
     const itemsRows = buildItemsRows(data.items);
 
     return `
-       <div style="width: 100%; max-width: 700px; margin: 0 auto; color: #111; font-family: Inter, sans-serif;">
+    <div style="
+        width: 100%; 
+        max-width: 700px; 
+        min-height: 850px; /* Adjust based on your aspect ratio */
+        margin: 0 auto; 
+        color: #111; 
+        font-family: Inter, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: white;
+        padding: 40px;
+        box-sizing: border-box;
+    ">
+        <div class="invoice-header">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 28px;">
-                
-                <div>
-                    ${savedLogo ? `<img src="${savedLogo}" alt="Logo" style="max-width: 140px; max-height: 70px; object-fit: contain; display: block; margin-bottom: 12px;">` : ''}
-                    <div style="font-size: 1rem; font-weight: 500;">
-                        ${data.companyName || 'My company'}
+                <div style="display: flex; align-items: flex-start; gap: 25px;">
+                    <div>
+                        ${savedLogo ? `<img src="${savedLogo}" alt="Logo" style="max-width: 140px; max-height: 70px; object-fit: contain; display: block; margin-bottom: 8px;">` : ''}
+                        <div style="font-size: 1rem; font-weight: 600; line-height: 1.2;">
+                            ${data.companyName || 'My company'}
+                        </div>
                     </div>
-                    <div style="margin-bottom: 18px; line-height: 1.6;">
-                    
+                    <div style="font-size: 0.85rem; line-height: 1.5; padding-top: 5px; color: #444;">
+                        <div><strong>Address:</strong> ${data.companyAddress || '-'}</div>
+                        <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
+                        <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
                     </div>
                 </div>
-                <div>
-                    <div><strong>Address:</strong> ${data.companyAddress || '-'}</div>
-                    <div><strong>Phone:</strong> ${data.companyPhone || '-'}</div>
-                    <div><strong>Email:</strong> ${data.companyEmail || '-'}</div>
-                </div>
-                
                 <div style="text-align: right;">
                     <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600;">INVOICE</h3>
                     <p style="margin: 4px 0;"># ${data.invoiceNumber || '---'}</p>
-                    <p style="margin: 0;">Date ${formatDate(data.invoiceDate)}</p>
-                    <p style="margin: 4px 0 0;">Due ${formatDate(data.dueDate)}</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Date: ${formatDate(data.invoiceDate)}</p>
+                    <p style="margin: 4px 0 0; font-size: 0.9rem;">Due: ${formatDate(data.dueDate)}</p>
                 </div>
             </div>
 
@@ -183,13 +196,15 @@ function buildInvoicePreviewHtml(invoice) {
                 <div style="margin-top: 4px; font-weight: 500;">${data.clientName || 'xClient Inc.'}</div>
             </div>
 
-            <div style="margin-bottom: 18px; line-height: 1.6;">
+            <div style="margin-bottom: 18px; line-height: 1.6; font-size: 0.9rem;">
                 <div><strong>Client address:</strong> ${data.clientAddress || '-'}</div>
                 <div><strong>Client phone:</strong> ${data.clientPhone || '-'}</div>
                 <div><strong>Client email:</strong> ${data.clientEmail || '-'}</div>
             </div>
+        </div>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <div style="flex: 1; margin-bottom: 30px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background: #000; color: #fff;">
                         <th style="text-align: left; padding: 12px;">Description</th>
@@ -202,29 +217,34 @@ function buildInvoicePreviewHtml(invoice) {
                     ${itemsRows}
                 </tbody>
             </table>
+        </div>
 
-            <div style="width: 220px; margin-left: auto; line-height: 1.8;">
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Subtotal:</span>
-                    <span>${formatCurrency(data.subtotal || 0)}</span>
+        <div class="invoice-footer">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #eee; padding-top: 20px;">
+                <div style="max-width: 60%;">
+                    <strong style="font-size: 0.9rem;">Comments:</strong>
+                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || 'Thank you for your business!'}</p>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Tax (${data.taxPercent || 0}%):</span>
-                    <span>${formatCurrency(data.taxAmount || 0)}</span>
-                </div>
-                <div style="height: 1px; background: rgba(0,0,0,0.5); margin: 8px 0;"></div>
-                <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                    <span>TOTAL:</span>
-                    <span>${formatCurrency(data.totalAmount || 0)}</span>
-                </div>
-            </div>
 
-            <div style="margin-top: 28px;">
-                <strong>Comments:</strong>
-                <p style="margin-top: 8px; white-space: pre-wrap;">${data.comment || 'Nothing to add'}</p>
+                <div style="width: 220px; line-height: 1.8;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Subtotal:</span>
+                        <span>${formatCurrency(data.subtotal || 0)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Tax (${data.taxPercent || 0}%):</span>
+                        <span>${formatCurrency(data.taxAmount || 0)}</span>
+                    </div>
+                    <div style="height: 1px; background: #000; margin: 8px 0;"></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem;">
+                        <span>TOTAL:</span>
+                        <span>${formatCurrency(data.totalAmount || 0)}</span>
+                    </div>
+                </div>
             </div>
         </div>
-    `;
+    </div>
+`;
 }
 
 function renderTags(tags) {
@@ -354,7 +374,6 @@ function filterInvoices(invoices, searchState) {
 }
 
 function showPreview(item) {
-    const previewTitle = document.querySelector('.preview-title');
     const previewSheet = document.querySelector('.preview-sheet');
     const descriptionText = document.querySelector('.description-text');
     const tagsList = document.getElementById('tags-list');
@@ -472,7 +491,7 @@ function handleSearch() {
     const searchState = getSearchState();
     const filtered = filterInvoices(invoices, searchState);
 
-    renderLibrary(filtered);
+    renderLibraryTable(filtered);
 
     // Keep preview consistent with the list filter.
     if (!selectedLibraryItem) return;
@@ -551,11 +570,33 @@ if (tagsListEl) {
     });
 }
 
+function downloadInvoicePDF() {
+    if (!selectedInvoice) {
+        alert('Please select an invoice first.');
+        return;
+    }
+
+    const element = buildPrintableDocument(buildInvoicePreviewHtml(selectedInvoice)); // The container holding your invoice
+
+    // Optional settings to make it look professional
+    const opt = {
+        margin: 0.5,
+        filename: `Invoice_${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 }, // Higher scale = better quality
+        jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' }
+    };
+
+    // New Promise-based usage:
+    window.html2pdf().set(opt).from(element).save();
+}
+
 if (createInvoiceBtn) {
     createInvoiceBtn.addEventListener('click', () => {
         window.location.href = 'create_invoice.html';
     });
 }
+/*
 function downloadSelectedInvoicePdf() {
     if (!selectedInvoice) {
         alert('Please select an invoice first.');
@@ -574,6 +615,7 @@ function downloadSelectedInvoicePdf() {
     printWindow.document.write(buildPrintableDocument(invoiceHtml));
     printWindow.document.close();
 }
+*/
 
 function normalizeText(value) {
     return String(value ?? '').toLowerCase().trim();
@@ -642,7 +684,7 @@ function initSearch() {
 function initButtons() {
     if (downloadBtn) {
         downloadBtn.addEventListener('click', () => {
-            downloadSelectedInvoicePdf();
+            downloadInvoicePDF();
         });
     }
 
@@ -668,5 +710,41 @@ function initLibrary() {
     initSearch();
     initButtons();
 }
+
+// Re-initialize whenever the page becomes visible (back button, tab switch, etc.)
+window.addEventListener('pageshow', (event) => {
+    // Re-fetch data and re-render the table
+    savedInvoices = getSavedInvoices();
+    filteredInvoices = [...savedInvoices];
+    renderLibraryTable(filteredInvoices);
+});
+
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const container = document.getElementById('menu-container');
+const navigationTemplate = document.getElementById('navigation-menu');
+
+hamburgerBtn.addEventListener('click', () => {
+  // Check if the menu is already open
+  const existingMenu = document.getElementById('navigation-menu-modal');
+  
+  if (existingMenu) {
+    // If it's already there, remove it (close the menu)
+    existingMenu.remove();
+  } else {
+    // 1. Grab the content inside the template
+    const menuContent = navigationTemplate.content.cloneNode(true);
+    
+    // 2. Put it inside our wrapper container
+    container.appendChild(menuContent);
+  }
+});
+
+// Optional: Close the menu if the user clicks anywhere else on the screen
+document.addEventListener('click', (e) => {
+  const existingMenu = document.getElementById('navigation-menu-modal');
+  if (existingMenu && !hamburgerBtn.contains(e.target) && !existingMenu.contains(e.target)) {
+    existingMenu.remove();
+  }
+});
 
 document.addEventListener('DOMContentLoaded', initLibrary);
