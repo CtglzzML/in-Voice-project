@@ -54,13 +54,13 @@ if (editForm) {
                 const filePath = `${user.id}/${fileName}`;
                 
                 const { error: uploadError, data: uploadData } = await window._supabase.storage
-                    .from('avatars')
+                    .from('logos')
                     .upload(filePath, file);
                     
                 if (uploadError) throw uploadError;
                 
                 const { data } = window._supabase.storage
-                    .from('avatars')
+                    .from('logos')
                     .getPublicUrl(filePath);
                     
                 logo_url = data.publicUrl;
