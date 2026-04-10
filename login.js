@@ -7,22 +7,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   var signupBtn = document.querySelector('.signup-button');
   var googleBtn = document.querySelector('.google-button');
 
-  if (loginForm && emailInput && passwordInput) {
-    loginForm.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      var btn = loginForm.querySelector('button[type="submit"]');
-      btn.disabled = true;
-      btn.textContent = 'Logging in…';
-
-      var ok = await loginUser(emailInput.value, passwordInput.value);
-      if (ok) {
-        await redirectAfterLoginWithProfileCheck();
-      } else {
-        btn.disabled = false;
-        btn.textContent = 'Log in';
-      }
-    });
-  }
+  // Email/password login logic removed in favor of Google-only auth
 
   if (signupBtn) {
     signupBtn.addEventListener('click', function () {
