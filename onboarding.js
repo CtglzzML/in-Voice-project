@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     btn.textContent = 'Saving…';
 
     var name = document.getElementById('ob-name').value.trim();
-    var siret = document.getElementById('ob-siret').value.trim();
+    var companyName = document.getElementById('ob-company-name').value.trim();
     var address = document.getElementById('ob-address').value.trim();
     var tvaNuumber = document.getElementById('ob-tva-number').value.trim();
     var defaultTva = document.getElementById('ob-default-tva').value;
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       id: user.id,
       email: user.email,
       name: name,
-      siret: siret || null,
+      Company_name: companyName || null,
       address: address || null,
       tva_number: tvaNuumber || null,
       default_tva: defaultTva ? parseFloat(defaultTva) : null
@@ -64,10 +64,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (logoFile) {
       var logoPath = user.id + '/' + logoFile.name;
       var uploadResult = await _supabase.storage
-        .from('logos')
+        .from('Logo')
         .upload(logoPath, logoFile, { upsert: true });
       if (!uploadResult.error) {
-        var urlResult = _supabase.storage.from('logos').getPublicUrl(logoPath);
+        var urlResult = _supabase.storage.from('Logo').getPublicUrl(logoPath);
         profileData.logo_url = urlResult.data.publicUrl;
       }
     }

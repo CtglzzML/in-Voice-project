@@ -437,7 +437,7 @@ async function autofillFromProfile() {
 
         // Autofill only if currently empty
         if (companyName && (!companyName.value || companyName.value.trim() === '')) {
-            companyName.value = profile.name || '';
+            companyName.value = profile.Company_name || profile.name || '';
             changed = true;
         }
         if (companyAddress && (!companyAddress.value || companyAddress.value.trim() === '')) {

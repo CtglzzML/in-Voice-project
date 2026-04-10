@@ -7,7 +7,7 @@ async function fillAccountPage() {
 
   var title = document.querySelector('main .account-username');
   var emailEl = document.querySelector('main .account-email');
-  var siretEl = document.querySelector('main .account-siret');
+  var companyEl = document.querySelector('main .account-company-name');
   var tvaEl = document.querySelector('main .account-tva');
   var defaultTvaEl = document.querySelector('main .account-default-tva');
   var addressEl = document.querySelector('main .account-address');
@@ -19,7 +19,7 @@ async function fillAccountPage() {
   if (title) title.textContent = displayUsername;
   if (emailEl) emailEl.textContent = displayEmail;
 
-  if (siretEl) siretEl.textContent = profile.siret || '—';
+  if (companyEl) companyEl.textContent = profile.Company_name || '—';
   if (tvaEl) tvaEl.textContent = profile.tva_number || '—';
   if (defaultTvaEl) defaultTvaEl.textContent = profile.default_tva != null ? profile.default_tva + '%' : '—';
   if (addressEl) addressEl.textContent = profile.address || '—';

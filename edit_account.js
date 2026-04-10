@@ -13,8 +13,7 @@ async function loadProfileData() {
     
     if (profile) {
         document.getElementById('user-name').value = profile.name || '';
-        document.getElementById('company-name').value = profile.company_name || '';
-        document.getElementById('ob-siret').value = profile.siret || '';
+        document.getElementById('company-name').value = profile.Company_name || '';
         document.getElementById('ob-address').value = profile.address || '';
         document.getElementById('ob-tva-number').value = profile.tva_number || '';
         document.getElementById('ob-default-tva').value = profile.default_tva ?? '';
@@ -36,8 +35,7 @@ if (editForm) {
         submitBtn.innerText = 'Applying...';
 
         const name = document.getElementById('user-name').value;
-        const companyName = document.getElementById('company-name').value;
-        const siret = document.getElementById('ob-siret').value;
+        const companyName = document.getElementById('company-name') ? document.getElementById('company-name').value : '';
         const address = document.getElementById('ob-address').value;
         const tvaNumber = document.getElementById('ob-tva-number').value;
         const defaultTva = document.getElementById('ob-default-tva').value;
@@ -54,13 +52,13 @@ if (editForm) {
                 const filePath = `${user.id}/${fileName}`;
                 
                 const { error: uploadError, data: uploadData } = await window._supabase.storage
-                    .from('logos')
+                    .from('Logo')
                     .upload(filePath, file);
                     
                 if (uploadError) throw uploadError;
                 
                 const { data } = window._supabase.storage
-                    .from('logos')
+                    .from('Logo')
                     .getPublicUrl(filePath);
                     
                 logo_url = data.publicUrl;
@@ -68,8 +66,7 @@ if (editForm) {
 
             const updatePayload = {
                 name: name,
-                company_name: companyName,
-                siret: siret || null,
+                Company_name: companyName || null,
                 address: address || null,
                 tva_number: tvaNumber || null,
                 default_tva: defaultTva ? parseFloat(defaultTva) : null

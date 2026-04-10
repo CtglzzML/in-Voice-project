@@ -7,14 +7,14 @@ class UserProfile(BaseModel):
     id: str
     email: Optional[str] = None
     name: Optional[str] = None
-    siret: Optional[str] = None
+    company_name: Optional[str] = None
     address: Optional[str] = None
     tva_number: Optional[str] = None
     logo_url: Optional[str] = None
     default_tva: Optional[Decimal] = None
 
     def missing_mandatory_fields(self) -> list[str]:
-        mandatory = ["name", "siret", "address", "default_tva"]
+        mandatory = ["name", "address", "default_tva"]
         return [f for f in mandatory if getattr(self, f) is None]
 
 
