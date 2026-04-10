@@ -41,7 +41,7 @@
 
           <!-- Record button -->
           <button id="record-btn" class="record-btn">
-            <span class="record-btn-icon">🎤</span>
+            <img src="../images/microphone-white.svg" alt="" aria-hidden="true" class="record-btn-icon" />
             <span class="record-btn-label">Start recording</span>
             <span class="record-rings">
               <span></span><span></span><span></span>
@@ -189,7 +189,9 @@
       <div class="invoice-editor-card">
         <div class="editor-topbar">
           <h3>PREVIEW</h3>
-          <button class="preview-btn">See preview</button>
+          <div class="preview-btn-wrap" data-preview-hint="Fill client name, at least one contact (phone or email), and add at least one item to preview.">
+            <button class="preview-btn">See preview</button>
+          </div>
         </div>
 
         <div class="preview-sheet">

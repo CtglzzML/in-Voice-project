@@ -54,7 +54,7 @@ async function applyUserGreeting(user) {
     if (!displayName) displayName = (user.user_metadata && user.user_metadata.full_name) || '';
     if (!displayName) displayName = user.email ? user.email.split('@')[0] : 'User';
 
-    labelEl.textContent = 'Hi ' + displayName;
+    labelEl.textContent = 'Hi, ' + displayName;
 }
 
 function getSavedCustomers() {

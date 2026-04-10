@@ -148,7 +148,7 @@ async function applyUserGreeting() {
     if (!displayName) displayName = (user.user_metadata && user.user_metadata.full_name) || '';
     if (!displayName) displayName = user.email ? user.email.split('@')[0] : 'User';
 
-    labelEl.textContent = 'Hi ' + displayName;
+    labelEl.textContent = 'Hi, ' + displayName;
   } catch (_) {
     // Keep the fallback label if profile lookup fails.
   }
@@ -244,17 +244,10 @@ if (userBtn && menuTemplate) {
       nameEl.textContent = userBtnLabel.textContent.replace(/^Hi\s+/i, '');
     }
 
-    var dash = document.getElementById('go-to-dashboard');
     var inv = document.getElementById('go-to-invoices');
     var usr = document.getElementById('go-to-account');
     var out = document.getElementById('signout');
 
-    if (dash) {
-      dash.addEventListener('click', function (e) {
-        e.preventDefault();
-        window.location.href = 'dashboard.html';
-      });
-    }
     if (inv) {
       inv.addEventListener('click', function (e) {
         e.preventDefault();
