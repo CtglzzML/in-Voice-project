@@ -111,7 +111,7 @@ function addNewRow(itemData = null) {
             calculateInvoice();
             saveDraftToSession();
         });
-    }
+    });
 
     itemTable.appendChild(row);
     renderEmptyStateIfNeeded();
