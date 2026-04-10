@@ -118,17 +118,22 @@ function addNewRow(itemData = null) {
     calculateInvoice();
 }
 
-taxInput.addEventListener('input', () => {
-    calculateInvoice();
-    saveDraftToSession();
-});
+if (taxInput) {
+    taxInput.addEventListener('input', () => {
+        calculateInvoice();
+        saveDraftToSession();
+    });
+}
 
 function getInvoiceData() {
-    const items = Array.from(document.querySelectorAll('.item-row')).map(row => {
+    const items = Array.from(itemTable?.querySelectorAll('.item-row') || []).map(row => {
+        const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
+        const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
+
         return {
             description: row.querySelector('.item-desc')?.value.trim() || '',
-            qty: qty,
-            rate: rate,
+            qty,
+            rate,
             total: qty * rate
         };
     });
@@ -167,7 +172,7 @@ function saveDraftToSession() {
 }
 
 function loadDraftFromSession() {
-    const raw = sessionStorage.getItem('invoiceDraft');
+    const raw = sessionStorage.getItem('invoiceDraft') || localStorage.getItem('persistentInvoiceDraft');
 
     // Load Logo from LocalStorage
     const savedLogo = localStorage.getItem('invoiceLogo');
@@ -220,47 +225,50 @@ function loadDraftFromSession() {
 
 function updateLivePreview() {
     const data = getInvoiceData();
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
 
-    // Update text fields
-    document.querySelector('.preview-company').textContent = data.companyName || 'My Company';
-    document.querySelector('.preview-invoice-meta p').textContent = `# ${data.invoiceNumber || '---'}`;
-    document.querySelector('.bill-box p').textContent = data.clientName || 'xClient Inc.';
+    const previewCompanyName = document.querySelector('.preview-company p');
+    if (previewCompanyName) previewCompanyName.textContent = data.companyName || 'My Company';
 
-    document.getElementById('preview-company-address').textContent = `From: ${data.companyAddress || '-'}`;
-    document.getElementById('preview-company-phone').textContent = `Phone: ${data.companyPhone || '-'}`;
-    document.getElementById('preview-company-email').textContent = `Email: ${data.companyEmail || '-'}`;
+    setText('preview-invoice-number', `# ${data.invoiceNumber || '---'}`);
+    setText('preview-date', `Date ${formatDate(data.invoiceDate)}`);
+    setText('preview-company-address', `From: ${data.companyAddress || '-'}`);
+    setText('preview-company-phone', `Phone: ${data.companyPhone || '-'}`);
+    setText('preview-company-email', `Email: ${data.companyEmail || '-'}`);
+    setText('preview-client-name', data.clientName || 'Client name: -');
+    setText('preview-client-address', `Client address: ${data.clientAddress || '-'}`);
+    setText('preview-client-phone', `Client phone: ${data.clientPhone || '-'}`);
+    setText('preview-client-email', `Client email: ${data.clientEmail || '-'}`);
 
-    document.getElementById('preview-client-address').textContent = `Client address: ${data.clientAddress || '-'}`;
-    document.getElementById('preview-client-phone').textContent = `Client phone: ${data.clientPhone || '-'}`;
-    document.getElementById('preview-client-email').textContent = `Client email: ${data.clientEmail || '-'}`;
-
-    // Logo
     const previewLogoDisplay = document.getElementById('preview-logo-display');
     const savedLogo = localStorage.getItem('invoiceLogo');
-    if (savedLogo) {
-        previewLogoDisplay.src = savedLogo;
-        previewLogoDisplay.style.display = 'block';
-    } else {
-        previewLogoDisplay.style.display = 'none';
+    if (previewLogoDisplay) {
+        if (savedLogo) {
+            previewLogoDisplay.src = savedLogo;
+            previewLogoDisplay.style.display = 'block';
+        } else {
+            previewLogoDisplay.src = '';
+            previewLogoDisplay.style.display = 'none';
+        }
     }
 
     const previewComment = document.querySelector('.preview-note-content');
     if (previewComment) {
         previewComment.textContent = data.comment || 'Nothing to add';
     }
-
-    // Table rows in Live Preview
-    const previewTable = document.querySelector('.item-list');
-    // Important: Only clear and re-render if you have a separate preview table 
-    // or just update the totals if the items are already handled in the editor.
 }
 
 // --- BUTTONS & INPUT LISTENERS ---
 
-addItemBtn.addEventListener('click', () => {
-    addNewRow(); // Just adds one empty row
-    saveDraftToSession();
-});
+if (addItemBtn) {
+    addItemBtn.addEventListener('click', () => {
+        addNewRow();
+        saveDraftToSession();
+    });
+}
 
 document.querySelectorAll(
     '#inv-number, #inv-date, #inv-due, #company-name, #company-address, #company-phone, #company-email, #client-name, #client-address, #client-phone, #client-email, #comment'
@@ -271,38 +279,45 @@ document.querySelectorAll(
     });
 });
 
-fileInput.addEventListener('change', function () {
-    if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const imageData = e.target.result;
+if (fileInput) {
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageData = e.target.result;
 
-            // Update the Left Panel (Upload area)
-            preview.src = imageData;
-            preview.style.display = 'block';
-            logoPlaceholder.style.display = 'none';
+                if (preview) {
+                    preview.src = imageData;
+                    preview.style.display = 'block';
+                }
 
-            // Save it
-            localStorage.setItem('invoiceLogo', imageData);
+                if (logoPlaceholder) {
+                    logoPlaceholder.style.display = 'none';
+                }
 
-            // TRIGGER the preview update immediately
-            updateLivePreview();
-        };
-        reader.readAsDataURL(this.files[0]);
-    }
-});
-
-const deleteLogoBtn = document.getElementById('delete-logo-btn');
+                localStorage.setItem('invoiceLogo', imageData);
+                updateLivePreview();
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+}
 
 if (deleteLogoBtn) {
     deleteLogoBtn.addEventListener('click', () => {
-        // Clear Left Panel
-        preview.src = "";
-        preview.style.display = 'none';
-        logoPlaceholder.style.display = 'block';
-        fileInput.value = "";
+        if (preview) {
+            preview.src = '';
+            preview.style.display = 'none';
+        }
 
-        // Clear Storage
+        if (logoPlaceholder) {
+            logoPlaceholder.style.display = 'block';
+        }
+
+        if (fileInput) {
+            fileInput.value = '';
+        }
+
         localStorage.removeItem('invoiceLogo');
         updateLivePreview();
     });
