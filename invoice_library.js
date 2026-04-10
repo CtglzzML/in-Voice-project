@@ -16,6 +16,7 @@ const previewSheet = document.querySelector('.preview-sheet');
 const descriptionText = document.querySelector('.description-text');
 const tagsList = document.getElementById('tags-list');
 const downloadBtn = document.querySelector('.download-invoice-btn');
+const INVOICE_TAGS_KEY = 'invoiceLibraryTags';
 
 let savedInvoices = [];
 let filteredInvoices = [];
@@ -40,15 +41,93 @@ function formatDate(dateString) {
 }
 
 function getSavedInvoices() {
-    const raw = localStorage.getItem('savedInvoices');
-    if (!raw) return [];
+    return Array.isArray(savedInvoices) ? [...savedInvoices] : [];
+}
+
+function getStoredInvoiceTags() {
+    try {
+        const raw = localStorage.getItem(INVOICE_TAGS_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+        console.error('Error reading invoice tags:', error);
+        return {};
+    }
+}
+
+function setStoredInvoiceTags(tagsById) {
+    localStorage.setItem(INVOICE_TAGS_KEY, JSON.stringify(tagsById || {}));
+}
+
+async function loadInvoicesFromSupabase() {
+    if (!window.invoiceStorage || typeof window.invoiceStorage.fetchInvoicesFromSupabase !== 'function') {
+        return [];
+    }
+
+    const user = typeof window.getCurrentUser === 'function' ? await window.getCurrentUser() : null;
+    if (!user) return [];
+
+    const profile = typeof window.invoiceStorage.fetchUserProfile === 'function'
+        ? await window.invoiceStorage.fetchUserProfile(user)
+        : {};
+
+    if (typeof window.invoiceStorage.migrateLegacyInvoices === 'function') {
+        await window.invoiceStorage.migrateLegacyInvoices({ user, profile });
+    }
+
+    return window.invoiceStorage.fetchInvoicesFromSupabase({
+        user,
+        profile,
+        tagsById: getStoredInvoiceTags()
+    });
+}
+
+function selectInvoice(invoice) {
+    selectedInvoice = invoice || null;
+    selectedLibraryItem = invoice || null;
+
+    if (!invoice) {
+        renderEmptyPreview();
+        return;
+    }
+
+    renderPreview(invoice);
+}
+
+function highlightSelectedRow(dbId) {
+    const rows = document.querySelectorAll('#library-items tr');
+    rows.forEach(row => {
+        row.classList.toggle('selected-row', row.dataset.dbId === dbId);
+    });
+}
+
+async function refreshLibraryData(options) {
+    const preserveSelectedId = options && options.preserveSelectedId;
 
     try {
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        savedInvoices = await loadInvoicesFromSupabase();
+        filteredInvoices = filterInvoices(savedInvoices, getSearchState());
+        renderLibraryTable(filteredInvoices);
+
+        if (!filteredInvoices.length) {
+            renderEmptyPreview();
+            return;
+        }
+
+        if (preserveSelectedId) {
+            const updatedSelection = filteredInvoices.find(invoice => invoice.dbId === preserveSelectedId);
+            if (updatedSelection) {
+                highlightSelectedRow(preserveSelectedId);
+                selectInvoice(updatedSelection);
+                return;
+            }
+        }
+
+        renderEmptyPreview();
     } catch (error) {
-        console.error('Error reading saved invoices:', error);
-        return [];
+        console.error('Error loading invoices from Supabase:', error);
+        renderEmptyState();
+        renderEmptyPreview();
     }
 }
 
@@ -91,14 +170,8 @@ function createRow(invoice) {
     cells[7].textContent = formatCurrency(getInvoiceTotal(invoice));
 
     row.addEventListener('click', () => {
-        document.querySelectorAll('#library-items tr').forEach(item => {
-            item.classList.remove('selected-row');
-        });
-
-        row.classList.add('selected-row');
-        selectedInvoice = invoice;
-        selectedLibraryItem = invoice;
-        renderPreview(invoice);
+        highlightSelectedRow(invoice.dbId || '');
+        selectInvoice(invoice);
     });
 
     return clone;
@@ -151,7 +224,7 @@ function buildItemsRows(items) {
 
 function buildInvoicePreviewHtml(invoice) {
     const data = invoice?.fullInvoice || invoice || {};
-    const savedLogo = localStorage.getItem('invoiceLogo');
+    const savedLogo = data.companyLogo || localStorage.getItem('invoiceLogo');
     const itemsRows = buildItemsRows(data.items);
 
     return `
@@ -251,24 +324,27 @@ function buildInvoicePreviewHtml(invoice) {
 function renderTags(tags) {
     if (!tagsList) return;
 
-    tagsList.innerHTML = '';
+    tagsList.innerHTML = `<button class="add-tag-btn" type="button" aria-label="Add tag">+</button>`;
 
-    if (!Array.isArray(tags) || !tags.length) {
-        return;
-    }
+    if (!Array.isArray(tags) || !tags.length) return;
 
     tags.forEach(tag => {
-        const tagEl = document.createElement('span');
-        tagEl.textContent = tag;
-        tagEl.style.display = 'inline-flex';
-        tagEl.style.alignItems = 'center';
-        tagEl.style.padding = '6px 10px';
-        tagEl.style.borderRadius = '999px';
-        tagEl.style.background = '#f3efff';
-        tagEl.style.color = '#5b43c7';
-        tagEl.style.fontSize = '0.85rem';
-        tagEl.style.fontWeight = '600';
-        tagsList.appendChild(tagEl);
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+
+        const text = document.createElement('span');
+        text.textContent = tag;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-tag-btn';
+        removeBtn.dataset.tag = tag;
+        removeBtn.setAttribute('aria-label', `Remove tag ${tag}`);
+        removeBtn.textContent = '×';
+
+        chip.appendChild(text);
+        chip.appendChild(removeBtn);
+        tagsList.appendChild(chip);
     });
 }
 
@@ -325,16 +401,19 @@ function parseTagsInput(raw) {
 }
 
 function persistInvoiceTags(dbId, tags) {
-    const savedInvoices = getSavedInvoices();
+    const nextTags = Array.isArray(tags) ? tags : [];
+    const tagsById = getStoredInvoiceTags();
+    tagsById[dbId] = nextTags;
+    setStoredInvoiceTags(tagsById);
+
     const idx = savedInvoices.findIndex(i => i.dbId === dbId);
     if (idx < 0) return null;
 
-    savedInvoices[idx].tags = tags;
+    savedInvoices[idx].tags = nextTags;
     if (savedInvoices[idx].fullInvoice && typeof savedInvoices[idx].fullInvoice === 'object') {
-        savedInvoices[idx].fullInvoice.tags = tags;
+        savedInvoices[idx].fullInvoice.tags = nextTags;
     }
 
-    localStorage.setItem('savedInvoices', JSON.stringify(savedInvoices));
     return savedInvoices[idx];
 }
 
@@ -409,13 +488,16 @@ function showPreview(item) {
 }
 
 function renderPreview(invoice) {
+    selectedInvoice = invoice || null;
+    selectedLibraryItem = invoice || null;
+    previewTitle.textContent = `Preview: ${invoice?.fullInvoice?.invoiceNumber || invoice?.fileName || 'Invoice'}`;
     previewSheet.innerHTML = buildInvoicePreviewHtml(invoice);
 
     if (descriptionText) {
-        descriptionText.textContent = invoice.description || 'No description available yet.';
+        descriptionText.textContent = invoice?.description || invoice?.fullInvoice?.comment || 'No description available yet.';
     }
 
-    renderTags(invoice.tags || []);
+    renderTags(getInvoiceTags(invoice));
 }
 
 function buildPrintableDocument(invoiceHtml) {
@@ -504,7 +586,8 @@ function handleSearch() {
         return;
     }
 
-    showPreview(updated);
+    highlightSelectedRow(updated.dbId || '');
+    renderPreview(updated);
 }
 
 if (searchInput) {
@@ -744,28 +827,16 @@ function initButtons() {
     }
 }
 
-function initLibrary() {
-    savedInvoices = getSavedInvoices();
-    filteredInvoices = [...savedInvoices];
-
-    if (!savedInvoices.length) {
-        renderEmptyState();
-        renderEmptyPreview();
-    } else {
-        renderLibraryTable(filteredInvoices);
-        renderEmptyPreview();
-    }
-
+async function initLibrary() {
+    await refreshLibraryData();
     initSearch();
     initButtons();
 }
 
 // Re-initialize whenever the page becomes visible (back button, tab switch, etc.)
-window.addEventListener('pageshow', (event) => {
-    // Re-fetch data and re-render the table
-    savedInvoices = getSavedInvoices();
-    filteredInvoices = [...savedInvoices];
-    renderLibraryTable(filteredInvoices);
+window.addEventListener('pageshow', async () => {
+    const selectedId = selectedLibraryItem ? selectedLibraryItem.dbId : '';
+    await refreshLibraryData({ preserveSelectedId: selectedId });
 });
 
 const userBtn = document.querySelector('.user-button');
@@ -886,4 +957,6 @@ if (userBtn && menuTemplate) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', initLibrary);
+document.addEventListener('DOMContentLoaded', () => {
+    initLibrary();
+});

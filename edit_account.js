@@ -1,5 +1,32 @@
 const editForm = document.getElementById('signup-form');
 const cancelBtn = document.getElementById('cancel-btn');
+const logoInput = document.getElementById('user-logo');
+const logoImage = document.getElementById('edit-logo-image');
+const logoPlaceholder = document.getElementById('edit-logo-placeholder');
+let currentProfile = {};
+
+function getMergedProfile(profile, user) {
+    const cachedProfile = typeof window.getProfileCache === 'function' ? window.getProfileCache() : {};
+    const merged = Object.assign({}, cachedProfile, profile || {});
+    merged.email = merged.email || (user && user.email) || '';
+    merged.phone = merged.phone || (user && user.phone) || '';
+    return merged;
+}
+
+function setLogoPreview(src) {
+    if (!logoImage || !logoPlaceholder) return;
+
+    if (src) {
+        logoImage.src = src;
+        logoImage.style.display = 'block';
+        logoPlaceholder.style.display = 'none';
+        return;
+    }
+
+    logoImage.removeAttribute('src');
+    logoImage.style.display = 'none';
+    logoPlaceholder.style.display = 'block';
+}
 
 async function loadProfileData() {
     if (!window.getCurrentUser || !window._supabase) return;
@@ -10,24 +37,18 @@ async function loadProfileData() {
     document.getElementById('user-email').value = user.email || '';
 
     var { data: profile } = await window._supabase.from('users').select('*').eq('id', user.id).maybeSingle();
-    var displayName = '';
-    
-    if (profile) {
-        document.getElementById('user-name').value = profile.name || '';
-        document.getElementById('company-name').value = profile.Company_name || '';
-        document.getElementById('ob-address').value = profile.address || '';
-        document.getElementById('ob-tva-number').value = profile.tva_number || '';
-        document.getElementById('ob-default-tva').value = profile.default_tva ?? '';
-        displayName = profile.name || '';
+    currentProfile = getMergedProfile(profile, user);
+    if (typeof window.setProfileCache === 'function') {
+        window.setProfileCache(currentProfile);
     }
 
-    if (!displayName) displayName = (user.user_metadata && user.user_metadata.full_name) || '';
-    if (!displayName) displayName = user.email ? user.email.split('@')[0] : 'User';
-
-    var userBtnLabel = document.querySelector('.user-button span:not(.user-icon)') || document.querySelector('.user-button span');
-    if (userBtnLabel) {
-        userBtnLabel.textContent = 'Hi ' + displayName;
-    }
+    document.getElementById('user-name').value = currentProfile.name || '';
+    document.getElementById('company-name').value = currentProfile.Company_name || currentProfile.company_name || '';
+    document.getElementById('ob-address').value = currentProfile.address || '';
+    document.getElementById('ob-phone').value = currentProfile.phone || '';
+    document.getElementById('ob-tva-number').value = currentProfile.tva_number || '';
+    document.getElementById('ob-default-tva').value = currentProfile.default_tva ?? '';
+    setLogoPreview(currentProfile.logo_url || '');
 }
 
 if (editForm) {
@@ -47,6 +68,7 @@ if (editForm) {
         const name = document.getElementById('user-name').value;
         const companyName = document.getElementById('company-name') ? document.getElementById('company-name').value : '';
         const address = document.getElementById('ob-address').value;
+        const phone = document.getElementById('ob-phone').value;
         const tvaNumber = document.getElementById('ob-tva-number').value;
         const defaultTva = document.getElementById('ob-default-tva').value;
         const logoInput = document.getElementById('user-logo');
@@ -78,6 +100,7 @@ if (editForm) {
                 name: name,
                 Company_name: companyName || null,
                 address: address || null,
+                phone: phone || null,
                 tva_number: tvaNumber || null,
                 default_tva: defaultTva ? parseFloat(defaultTva) : null
             };
@@ -86,12 +109,30 @@ if (editForm) {
                 updatePayload.logo_url = logo_url;
             }
 
-            const { error: updateError } = await window._supabase
+            let { error: updateError } = await window._supabase
                 .from('users')
                 .update(updatePayload)
                 .eq('id', user.id);
 
+            if (updateError && updatePayload.phone !== undefined) {
+                const fallbackPayload = Object.assign({}, updatePayload);
+                delete fallbackPayload.phone;
+                const fallbackResult = await window._supabase
+                    .from('users')
+                    .update(fallbackPayload)
+                    .eq('id', user.id);
+                updateError = fallbackResult.error || null;
+            }
+
             if (updateError) throw updateError;
+
+            currentProfile = Object.assign({}, currentProfile, updatePayload, {
+                email: user.email || currentProfile.email || '',
+                logo_url: logo_url || currentProfile.logo_url || ''
+            });
+            if (typeof window.setProfileCache === 'function') {
+                window.setProfileCache(currentProfile);
+            }
             
             alert("Changes applied successfully!");
             window.location.href = 'account_page.html';
@@ -109,6 +150,19 @@ if (cancelBtn) {
     cancelBtn.addEventListener('click', (e) => {
         e.preventDefault();
         window.location.href = 'account_page.html';
+    });
+}
+
+if (logoInput) {
+    logoInput.addEventListener('change', () => {
+        const file = logoInput.files && logoInput.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setLogoPreview(event.target && event.target.result ? event.target.result : '');
+        };
+        reader.readAsDataURL(file);
     });
 }
 

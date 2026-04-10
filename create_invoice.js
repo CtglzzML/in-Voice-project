@@ -426,48 +426,62 @@ async function autofillFromProfile() {
         if (!user) return;
         
         const { data: profile } = await window._supabase.from('users').select('*').eq('id', user.id).maybeSingle();
-        if (!profile) return;
+        const cachedProfile = typeof window.getProfileCache === 'function' ? window.getProfileCache() : {};
+        const mergedProfile = Object.assign({}, cachedProfile, profile || {});
+        mergedProfile.email = mergedProfile.email || user.email || '';
+        mergedProfile.phone = mergedProfile.phone || user.phone || '';
+        if (typeof window.setProfileCache === 'function') {
+            window.setProfileCache(mergedProfile);
+        }
+        if (!Object.keys(mergedProfile).length) return;
         
         const companyName = document.getElementById('company-name');
         const companyAddress = document.getElementById('company-address');
+        const companyPhone = document.getElementById('company-phone');
         const companyEmail = document.getElementById('company-email');
         const taxInput = document.getElementById('inv-tax');
+        const profileCompanyName = mergedProfile.Company_name || mergedProfile.company_name || mergedProfile.name || (user.user_metadata && user.user_metadata.full_name) || '';
+        const profileAddress = mergedProfile.address || '';
+        const profilePhone = mergedProfile.phone || '';
+        const profileEmail = mergedProfile.email || '';
         
         let changed = false;
 
-        // Autofill only if currently empty
-        if (companyName && (!companyName.value || companyName.value.trim() === '')) {
-            companyName.value = profile.Company_name || profile.name || '';
+        // Keep seller/account info aligned with the saved profile.
+        if (companyName && companyName.value !== profileCompanyName) {
+            companyName.value = profileCompanyName;
             changed = true;
         }
-        if (companyAddress && (!companyAddress.value || companyAddress.value.trim() === '')) {
-            companyAddress.value = profile.address || '';
+        if (companyAddress && companyAddress.value !== profileAddress) {
+            companyAddress.value = profileAddress;
             changed = true;
         }
-        if (companyEmail && (!companyEmail.value || companyEmail.value.trim() === '')) {
-            companyEmail.value = profile.email || '';
+        if (companyPhone && companyPhone.value !== profilePhone) {
+            companyPhone.value = profilePhone;
             changed = true;
         }
-        if (taxInput && (!taxInput.value || taxInput.value === '0')) {
-            if (profile.default_tva != null) {
-                taxInput.value = profile.default_tva;
-                changed = true;
-            }
+        if (companyEmail && companyEmail.value !== profileEmail) {
+            companyEmail.value = profileEmail;
+            changed = true;
+        }
+        if (taxInput && mergedProfile.default_tva != null && String(taxInput.value) !== String(mergedProfile.default_tva)) {
+            taxInput.value = mergedProfile.default_tva;
+            changed = true;
         }
         
         // Also pre-fill logo if available and not set locally
-        if (profile.logo_url && !localStorage.getItem('invoiceLogo')) {
+        if (mergedProfile.logo_url && !localStorage.getItem('invoiceLogo')) {
             const preview = document.getElementById('logo-preview');
             const logoPlaceholder = document.getElementById('placeholder-logo');
 
             if (preview) {
-                preview.src = profile.logo_url;
+                preview.src = mergedProfile.logo_url;
                 preview.style.display = 'block';
             }
             if (logoPlaceholder) {
                 logoPlaceholder.style.display = 'none';
             }
-            localStorage.setItem('invoiceLogo', profile.logo_url);
+            localStorage.setItem('invoiceLogo', mergedProfile.logo_url);
             changed = true;
         }
 

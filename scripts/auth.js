@@ -7,6 +7,7 @@
 
   var SUPABASE_URL = 'https://jixjcksmeswhbqfdrrac.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppeGpja3NtZXN3aGJxZmRycmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODA2MDcsImV4cCI6MjA4OTc1NjYwN30.gWyEySptecP_RLpzLjm7lE4shwPYdIckRd00Oeg5o_s';
+  var PROFILE_CACHE_KEY = 'invoiceApp_profileCache';
 
   var sb = global.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   global._supabase = sb;
@@ -87,6 +88,28 @@
   function setCurrentUser() { }
   function isValidSessionUser() { return true; }
 
+  function getProfileCache() {
+    try {
+      var raw = global.localStorage.getItem(PROFILE_CACHE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function setProfileCache(profile) {
+    if (!profile || typeof profile !== 'object') return;
+    try {
+      var existing = getProfileCache();
+      global.localStorage.setItem(
+        PROFILE_CACHE_KEY,
+        JSON.stringify(Object.assign({}, existing, profile))
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   global.getCurrentUser = getCurrentUser;
   global.isLoggedIn = isLoggedIn;
   global.loginUser = loginUser;
@@ -100,5 +123,7 @@
   global.migrateLegacySession = migrateLegacySession;
   global.setCurrentUser = setCurrentUser;
   global.isValidSessionUser = isValidSessionUser;
+  global.getProfileCache = getProfileCache;
+  global.setProfileCache = setProfileCache;
 
 })(typeof window !== 'undefined' ? window : global);

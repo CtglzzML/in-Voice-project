@@ -3,7 +3,11 @@ async function fillAccountPage() {
   if (!user) return;
 
   var { data: profile } = await _supabase.from('users').select('*').eq('id', user.id).maybeSingle();
-  profile = profile || {};
+  var cachedProfile = typeof getProfileCache === 'function' ? getProfileCache() : {};
+  profile = Object.assign({}, cachedProfile, profile || {});
+  profile.email = profile.email || user.email || '';
+  profile.phone = profile.phone || user.phone || '';
+  if (typeof setProfileCache === 'function') setProfileCache(profile);
 
   var title = document.querySelector('main .account-username');
   var emailEl = document.querySelector('main .account-email');
@@ -11,6 +15,7 @@ async function fillAccountPage() {
   var tvaEl = document.querySelector('main .account-tva');
   var defaultTvaEl = document.querySelector('main .account-default-tva');
   var addressEl = document.querySelector('main .account-address');
+  var phoneEl = document.querySelector('main .account-phone');
   var logoContainer = document.getElementById('account-logo-container');
 
   var displayEmail = profile.email || user.email || '';
@@ -21,21 +26,21 @@ async function fillAccountPage() {
   if (userBtnLabel) userBtnLabel.textContent = 'Hi ' + displayUsername;
   if (emailEl) emailEl.textContent = displayEmail;
 
-  if (companyEl) companyEl.textContent = profile.Company_name || '—';
+  if (companyEl) companyEl.textContent = profile.Company_name || profile.company_name || '—';
   if (tvaEl) tvaEl.textContent = profile.tva_number || '—';
   if (defaultTvaEl) defaultTvaEl.textContent = profile.default_tva != null ? profile.default_tva + '%' : '—';
   if (addressEl) addressEl.textContent = profile.address || '—';
+  if (phoneEl) phoneEl.textContent = profile.phone || '—';
 
   if (logoContainer && profile.logo_url) {
     logoContainer.innerHTML = '';
+    logoContainer.classList.add('has-profile-image');
     var img = document.createElement('img');
     img.src = profile.logo_url;
     img.alt = 'Company Logo';
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '50%';
     logoContainer.appendChild(img);
+  } else if (logoContainer) {
+    logoContainer.classList.remove('has-profile-image');
   }
 }
 

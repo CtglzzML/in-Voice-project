@@ -9,6 +9,7 @@ class UserProfile(BaseModel):
     name: Optional[str] = None
     company_name: Optional[str] = None
     address: Optional[str] = None
+    phone: Optional[str] = None
     tva_number: Optional[str] = None
     logo_url: Optional[str] = None
     default_tva: Optional[Decimal] = None

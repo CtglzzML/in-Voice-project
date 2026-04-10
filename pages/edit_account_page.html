@@ -26,15 +26,10 @@
     <main class="dashboard-page">
         <header class="dashboard-header">
             <img src="../images/logo.png" alt="inVoice Logo">
-
-            <button class="user-button" type="button" aria-label="Account menu">
-                <span>Hi User</span>
-                <span class="user-icon"></span>
-            </button>
         </header>
 
         <section class="dashboard-content">
-            <article class="card">
+            <article class="card edit-account-card">
                 <div class="card-header">
                     <h2>Edit Account</h2>
                 </div>
@@ -63,6 +58,11 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="ob-phone">Phone <span class="label-optional">(optional)</span></label>
+                            <input type="tel" id="ob-phone" name="phone" placeholder="+47 123 45 678" />
+                        </div>
+
+                        <div class="form-group">
                             <label for="ob-tva-number">TVA number <span class="label-optional">(optional)</span></label>
                             <input type="text" id="ob-tva-number" name="tva_number" placeholder="FR12345678901" />
                         </div>
@@ -72,9 +72,15 @@
                             <input type="number" id="ob-default-tva" name="default_tva" placeholder="20" min="0" max="100" step="0.1" />
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group form-group-logo">
                             <label for="user-logo">Company Logo <span class="label-optional">(optional)</span></label>
-                            <input type="file" id="user-logo" name="logo" accept="image/*">
+                            <div class="edit-logo-upload">
+                                <label for="user-logo" class="custom-file-upload" id="edit-logo-label">
+                                    <img src="" id="edit-logo-image" alt="Current company logo">
+                                    <img src="../images/image-missing-svgrepo-com.svg" id="edit-logo-placeholder" class="custom-file-upload" alt="placeholder logo">
+                                    <input type="file" id="user-logo" name="logo" accept="image/*">
+                                </label>
+                            </div>
                         </div>
 
                         <div class="action-row">
@@ -87,53 +93,6 @@
             </article>
         </section>
     </main>
-    <template id="user-profile-menu">
-        <div id="user-profile-menu-modal" class="profile-menu">
-            <div>
-                <span class="profile-username" id="username">User</span>
-            </div>
-            <div>
-                <a href="dashboard.html" class="sign-out-link">Go to Dashboard</a>
-                <a href="invoice_library.html" class="sign-out-link">Invoice library</a>
-                <a href="account_page.html" class="sign-out-link">Account</a>
-                <a href="#" class="sign-out-link" id="signout">Sign Out</a>
-            </div>
-        </div>
-    </template>
-
-    <script>
-    (function() {
-        var userBtn = document.querySelector('.user-button');
-        var menuTpl = document.getElementById('user-profile-menu');
-        if (!userBtn || !menuTpl) return;
-
-        userBtn.addEventListener('click', function () {
-            var existing = document.getElementById('user-profile-menu-modal');
-            if (existing) { existing.remove(); return; }
-            document.body.appendChild(menuTpl.content.cloneNode(true));
-
-            var nameEl = document.getElementById('username');
-            var userBtnLabel = userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
-            if (nameEl && userBtnLabel) {
-                nameEl.textContent = userBtnLabel.textContent.replace(/^Hi\s+/i, '');
-            }
-
-            var out = document.getElementById('signout');
-            if (out) {
-                out.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    logoutUser().then(function () { window.location.href = 'landing_page.html'; });
-                });
-            }
-        });
-
-        document.addEventListener('click', function (e) {
-            var modal = document.getElementById('user-profile-menu-modal');
-            if (modal && !userBtn.contains(e.target) && !modal.contains(e.target)) modal.remove();
-        });
-    })();
-    </script>
-
     <script src="../edit_account.js"></script>
 </body>
 

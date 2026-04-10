@@ -30,64 +30,32 @@ function getStoredInvoice() {
     }
 }
 
-function getSavedInvoices() {
-    const raw = localStorage.getItem('savedInvoices');
-    if (!raw) return [];
+async function saveInvoiceToLibrary() {
+    const currentInvoice = getStoredInvoice();
+    if (!currentInvoice) {
+        return { ok: false, error: new Error('No invoice data found.') };
+    }
+
+    if (!window.invoiceStorage || typeof window.invoiceStorage.saveInvoiceToSupabase !== 'function') {
+        return { ok: false, error: new Error('Invoice storage is not available on this page.') };
+    }
 
     try {
-        return JSON.parse(raw);
+        await window.invoiceStorage.saveInvoiceToSupabase(currentInvoice);
+        return { ok: true };
     } catch (error) {
-        console.error('Error reading saved invoices:', error);
-        return [];
+        console.error('Error saving invoice to Supabase:', error);
+        return { ok: false, error: error };
     }
 }
 
-function saveInvoiceToLibrary() {
-    const currentInvoice = getStoredInvoice();
-    if (!currentInvoice) return false;
-
-    const savedInvoices = getSavedInvoices();
-
-    const invoiceToSave = {
-        dbId: Date.now().toString(),
-        fileName: currentInvoice.invoiceNumber
-            ? `INV-${currentInvoice.invoiceNumber}`
-            : `INV-${Date.now()}`,
-        client: currentInvoice.clientName || '-',
-        email: currentInvoice.clientEmail || '-',
-        vat: currentInvoice.taxPercent != null ? `${currentInvoice.taxPercent}%` : '0%',
-        phone: currentInvoice.clientPhone || '-',
-        country: currentInvoice.clientAddress || '-',
-        city: '-',
-        code: '-',
-        id: currentInvoice.invoiceNumber || Date.now().toString(),
-        date: currentInvoice.invoiceDate || '',
-        description: currentInvoice.comment || 'No description available yet.',
-        tags: [],
-        fullInvoice: currentInvoice
-    };
-
-    const alreadyExists = savedInvoices.some(invoice => {
-        return (
-            invoice.fullInvoice &&
-            invoice.fullInvoice.invoiceNumber === currentInvoice.invoiceNumber &&
-            invoice.fullInvoice.invoiceDate === currentInvoice.invoiceDate &&
-            invoice.fullInvoice.clientName === currentInvoice.clientName
-        );
-    });
-
-    if (!alreadyExists) {
-        savedInvoices.unshift(invoiceToSave);
-        localStorage.setItem('savedInvoices', JSON.stringify(savedInvoices));
-    }
-
-    return true;
+function getLogoForInvoice(data) {
+    return (data && data.companyLogo) || localStorage.getItem('invoiceLogo') || '';
 }
 
 function renderInvoicePreview() {
     const data = getStoredInvoice();
-    // 1. Fetch the logo from storage
-    const savedLogo = localStorage.getItem('invoiceLogo');
+    const savedLogo = getLogoForInvoice(data);
 
     if (!data) {
         pdfFrame.innerHTML = `<p>No invoice data found.</p>`;
@@ -247,14 +215,23 @@ if (backBtn) {
 }
 
 if (createBtn) {
-    createBtn.addEventListener('click', () => {
-        const savedOk = saveInvoiceToLibrary();
-        if (!savedOk) {
-            alert('No invoice data found to save.');
+    createBtn.addEventListener('click', async () => {
+        createBtn.disabled = true;
+        createBtn.textContent = 'Saving...';
+
+        const saveResult = await saveInvoiceToLibrary();
+        if (!saveResult.ok) {
+            alert(saveResult.error && saveResult.error.message ? saveResult.error.message : 'Could not save this invoice.');
+            createBtn.disabled = false;
+            createBtn.textContent = 'Create invoice';
             return;
         }
 
-        if (document.querySelector('.popup-card')) return;
+        if (document.querySelector('.popup-card')) {
+            createBtn.disabled = false;
+            createBtn.textContent = 'Create invoice';
+            return;
+        }
 
         const template = document.getElementById('invoice-created-template');
         const clone = template.content.cloneNode(true);
@@ -279,6 +256,9 @@ if (createBtn) {
                 }, 500);
             }
         });
+
+        createBtn.disabled = false;
+        createBtn.textContent = 'Create invoice';
     });
 }
 renderInvoicePreview();
@@ -287,22 +267,20 @@ const fileInput = document.getElementById('company-logo');
 const preview = document.getElementById('logo-preview');
 const labelText = document.getElementById('label-text');
 
-fileInput.addEventListener('change', function () {
-    const file = this.files[0]; // Get the first selected file
+if (fileInput && preview && labelText) {
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
 
-    if (file) {
-        const reader = new FileReader();
+        if (file) {
+            const reader = new FileReader();
 
-        // When the file is finished being read...
-        reader.addEventListener('load', function () {
-            // 1. Set the <img> src to the file data
-            preview.setAttribute('src', this.result);
-            // 2. Show the image
-            preview.style.display = 'block';
-            // 3. Hide the placeholder text
-            labelText.style.display = 'none';
-        });
+            reader.addEventListener('load', function () {
+                preview.setAttribute('src', this.result);
+                preview.style.display = 'block';
+                labelText.style.display = 'none';
+            });
 
-        reader.readAsDataURL(file);
-    }
-});
+            reader.readAsDataURL(file);
+        }
+    });
+}

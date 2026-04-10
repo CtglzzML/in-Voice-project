@@ -153,7 +153,7 @@
 }
 
 .accent-btn {
-    background: #c0392b;
+    background: var(--accent, #de7768);
     color: #fff;
 }
 

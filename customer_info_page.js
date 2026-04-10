@@ -9,6 +9,7 @@ const deleteCustomerBtn = document.getElementById('delete-customer-btn');
 const goDashboardBtn = document.getElementById('go-dashboard-btn');
 const userBtn = document.querySelector('.user-button');
 const menuTemplate = document.getElementById('user-profile-menu');
+const LOCAL_CUSTOMERS_KEY = 'savedCustomers';
 
 let allClients = [];
 let selectedClient = null;
@@ -16,6 +17,23 @@ let selectedClient = null;
 function getUserButtonLabelEl() {
     if (!userBtn) return null;
     return userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
+}
+
+function hasMeaningfulValue(value) {
+    const normalized = String(value || '').trim();
+    return normalized !== '' && normalized !== '-' && normalized !== '—';
+}
+
+function isFilledClient(client) {
+    if (!client || typeof client !== 'object') return false;
+
+    return [
+        client.name,
+        client.email,
+        client.phone,
+        client.company,
+        client.address
+    ].some(hasMeaningfulValue);
 }
 
 async function applyUserGreeting(user) {
@@ -39,6 +57,105 @@ async function applyUserGreeting(user) {
     labelEl.textContent = 'Hi ' + displayName;
 }
 
+function getSavedCustomers() {
+    try {
+        const raw = localStorage.getItem(LOCAL_CUSTOMERS_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function setSavedCustomers(customers) {
+    localStorage.setItem(LOCAL_CUSTOMERS_KEY, JSON.stringify(customers));
+}
+
+function getSavedInvoices() {
+    try {
+        const raw = localStorage.getItem('savedInvoices');
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function makeCustomerKey(client) {
+    const email = (client.email || '').trim().toLowerCase();
+    if (email) return 'email:' + email;
+
+    const name = (client.name || '').trim().toLowerCase();
+    const phone = (client.phone || '').trim().toLowerCase();
+    const address = (client.address || '').trim().toLowerCase();
+    return ['client', name, phone, address].join('|');
+}
+
+function buildCustomerFromInvoice(invoice) {
+    const data = invoice && invoice.fullInvoice ? invoice.fullInvoice : invoice;
+    if (!data) return null;
+
+    const name = (data.clientName || invoice.client || '').trim();
+    const email = (data.clientEmail || invoice.email || '').trim();
+    const phone = (data.clientPhone || invoice.phone || '').trim();
+    const address = (data.clientAddress || invoice.country || '').trim();
+    const company = (data.clientCompany || invoice.company || '').trim();
+
+    if (!name && !email && !phone && !address) return null;
+
+    return {
+        id: invoice.dbId || invoice.id || 'local-' + Date.now(),
+        localKey: makeCustomerKey({ name, email, phone, address }),
+        name: name || '—',
+        email: email || '',
+        phone: phone || '',
+        address: address || '',
+        company: company || '',
+        source: 'local'
+    };
+}
+
+function bootstrapSavedCustomersFromInvoices() {
+    const savedCustomers = getSavedCustomers();
+    if (savedCustomers.length) return savedCustomers;
+
+    const invoices = getSavedInvoices();
+    const deduped = new Map();
+
+    invoices.forEach(function (invoice) {
+        const customer = buildCustomerFromInvoice(invoice);
+        if (!customer) return;
+        deduped.set(customer.localKey, customer);
+    });
+
+    const customers = Array.from(deduped.values());
+    if (customers.length) setSavedCustomers(customers);
+    return customers;
+}
+
+function mergeClients(remoteClients, localClients) {
+    const merged = new Map();
+
+    (remoteClients || []).forEach(function (client) {
+        const normalized = Object.assign({}, client, {
+            source: 'remote',
+            localKey: makeCustomerKey(client)
+        });
+        merged.set(normalized.localKey, normalized);
+    });
+
+    (localClients || []).forEach(function (client) {
+        if (!client || !client.localKey) return;
+        if (!merged.has(client.localKey)) {
+            merged.set(client.localKey, client);
+        }
+    });
+
+    return Array.from(merged.values()).filter(isFilledClient).sort(function (a, b) {
+        return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+}
+
 // ───────────────── Load clients from DB ─────────────────
 async function loadClients() {
     if (!window._supabase || typeof window.getCurrentUser !== 'function') return;
@@ -56,10 +173,12 @@ async function loadClients() {
 
     if (error) {
         console.error('Error loading clients:', error);
-        return;
     }
 
-    allClients = data || [];
+    const localClients = bootstrapSavedCustomersFromInvoices();
+    allClients = mergeClients(data || [], localClients);
+    selectedClient = null;
+    updateActionButtons();
     renderTable(allClients);
 }
 
@@ -85,7 +204,8 @@ function renderTable(clients) {
         tr.dataset.clientId = client.id;
 
         // Shorten the UUID for display
-        const shortId = 'CIV#' + (client.id || '').substring(0, 4).toUpperCase();
+        const rawId = String(client.id || '').replace(/^local-/, '');
+        const shortId = 'CIV#' + rawId.substring(0, 4).toUpperCase();
 
         tr.innerHTML = `
             <td>${shortId}</td>
@@ -183,14 +303,21 @@ if (deleteCustomerBtn) {
         if (!selectedClient) return;
         if (!confirm('Are you sure you want to delete "' + selectedClient.name + '"? This cannot be undone.')) return;
 
-        const { error } = await window._supabase
-            .from('clients')
-            .delete()
-            .eq('id', selectedClient.id);
+        if (selectedClient.source === 'local') {
+            const remaining = getSavedCustomers().filter(function (client) {
+                return client.localKey !== selectedClient.localKey;
+            });
+            setSavedCustomers(remaining);
+        } else {
+            const { error } = await window._supabase
+                .from('clients')
+                .delete()
+                .eq('id', selectedClient.id);
 
-        if (error) {
-            alert('Failed to delete client: ' + (error.message || ''));
-            return;
+            if (error) {
+                alert('Failed to delete client: ' + (error.message || ''));
+                return;
+            }
         }
 
         selectedClient = null;

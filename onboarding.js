@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     var name = document.getElementById('ob-name').value.trim();
     var companyName = document.getElementById('ob-company-name').value.trim();
     var address = document.getElementById('ob-address').value.trim();
+    var phone = document.getElementById('ob-phone').value.trim();
     var tvaNuumber = document.getElementById('ob-tva-number').value.trim();
     var defaultTva = document.getElementById('ob-default-tva').value;
 
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       name: name,
       Company_name: companyName || null,
       address: address || null,
+      phone: phone || null,
       tva_number: tvaNuumber || null,
       default_tva: defaultTva ? parseFloat(defaultTva) : null
     };
@@ -73,11 +75,20 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     var result = await _supabase.from('users').insert(profileData);
+    if (result.error && profileData.phone !== undefined) {
+      var fallbackProfileData = Object.assign({}, profileData);
+      delete fallbackProfileData.phone;
+      result = await _supabase.from('users').insert(fallbackProfileData);
+    }
     if (result.error) {
       alert('Error saving profile: ' + result.error.message);
       btn.disabled = false;
       btn.textContent = 'Save and continue';
       return;
+    }
+
+    if (typeof setProfileCache === 'function') {
+      setProfileCache(profileData);
     }
 
     window.location.href = 'dashboard.html';
