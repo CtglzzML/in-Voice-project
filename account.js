@@ -23,8 +23,7 @@ async function fillAccountPage() {
   var userBtnLabel = document.querySelector('.user-button span:not(.user-icon)') || document.querySelector('.user-button span');
 
   if (title) title.textContent = displayUsername;
-  if (userBtnLabel) userBtnLabel.textContent = 'Hi ' + displayUsername;
-  if (emailEl) emailEl.textContent = displayEmail;
+  if (userBtnLabel) userBtnLabel.textContent = 'Hi,
 
   if (companyEl) companyEl.textContent = profile.Company_name || profile.company_name || '—';
   if (tvaEl) tvaEl.textContent = profile.tva_number || '—';

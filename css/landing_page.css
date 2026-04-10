@@ -125,16 +125,7 @@
   justify-content: center;
   width: 54px;
   height: 54px;
-}
-
-.mic-icon::before {
-  content: "🎤";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.2rem;
-  color: #fff;
-  line-height: 1;
+  background: url("../images/microphone-white.svg") center center / contain no-repeat;
 }
 
 .sound {

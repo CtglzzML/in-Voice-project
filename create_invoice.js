@@ -7,6 +7,7 @@ const fileInput = document.getElementById('company-logo');
 const preview = document.getElementById('logo-preview');
 const logoPlaceholder = document.getElementById('placeholder-logo');
 const seePreviewBtn = document.querySelector('.preview-btn');
+const seePreviewBtnWrap = document.querySelector('.preview-btn-wrap');
 const returnBtn = document.querySelector('.return-btn');
 const deleteLogoBtn = document.getElementById('delete-logo-btn');
 
@@ -145,6 +146,70 @@ function getInvoiceData() {
     };
 }
 
+function getClientPreviewValidationState() {
+    const clientNameInput = document.getElementById('client-name');
+    const clientPhoneInput = document.getElementById('client-phone');
+    const clientEmailInput = document.getElementById('client-email');
+    const hasItem = document.querySelectorAll('.item-row').length > 0;
+
+    const clientName = clientNameInput ? clientNameInput.value.trim() : '';
+    const clientPhone = clientPhoneInput ? clientPhoneInput.value.trim() : '';
+    const clientEmail = clientEmailInput ? clientEmailInput.value.trim() : '';
+
+    return {
+        clientNameInput,
+        clientPhoneInput,
+        clientEmailInput,
+        hasClientName: clientName.length > 0,
+        hasClientContact: clientPhone.length > 0 || clientEmail.length > 0,
+        hasItem: hasItem
+    };
+}
+
+function updatePreviewButtonState() {
+    if (!seePreviewBtn) return;
+    const state = getClientPreviewValidationState();
+    const isValid = state.hasClientName && state.hasClientContact && state.hasItem;
+    const hint = isValid
+        ? 'Ready to open preview.'
+        : 'Fill client name, at least one contact (phone or email), and add at least one item to preview.';
+
+    seePreviewBtn.disabled = !isValid;
+    seePreviewBtn.title = hint;
+
+    if (seePreviewBtnWrap) {
+        seePreviewBtnWrap.setAttribute('data-preview-hint', hint);
+    }
+}
+
+function showPreviewValidationError(state) {
+    const missingFields = [];
+    if (!state.hasClientName) {
+        missingFields.push('• Client name');
+    }
+    if (!state.hasClientContact) {
+        missingFields.push('• Client phone or client email');
+    }
+    if (!state.hasItem) {
+        missingFields.push('• At least one invoice item');
+    }
+
+    alert('Please complete client information before previewing:\n' + missingFields.join('\n'));
+
+    if (!state.hasClientName && state.clientNameInput) {
+        state.clientNameInput.focus();
+        return;
+    }
+
+    if (state.clientPhoneInput) {
+        state.clientPhoneInput.focus();
+    } else if (state.clientEmailInput) {
+        state.clientEmailInput.focus();
+    } else if (addItemBtn) {
+        addItemBtn.focus();
+    }
+}
+
 function saveDraftToSession() {
     const data = getInvoiceData();
     const dataString = JSON.stringify(data);
@@ -169,6 +234,7 @@ function loadDraftFromSession() {
     if (!raw) {
         renderEmptyStateIfNeeded();
         calculateInvoice();
+        updatePreviewButtonState();
         return;
     }
 
@@ -212,10 +278,12 @@ function loadDraftFromSession() {
         }
 
         calculateInvoice();
+        updatePreviewButtonState();
     } catch (error) {
         console.error('Error loading invoice draft:', error);
         renderEmptyStateIfNeeded();
         calculateInvoice();
+        updatePreviewButtonState();
     }
 }
 
@@ -309,6 +377,7 @@ if (addItemBtn) {
     addItemBtn.addEventListener('click', (e) => {
         e.stopImmediatePropagation(); // 🔥 evita duplicados de otros listeners
         addNewRow();
+        updatePreviewButtonState();
         saveDraftToSession();
     });
 }
@@ -329,6 +398,7 @@ if (itemTable) {
                 row.remove();
                 renderEmptyStateIfNeeded();
                 calculateInvoice();
+                updatePreviewButtonState();
                 saveDraftToSession();
             }
         }
@@ -340,6 +410,7 @@ document.querySelectorAll(
 ).forEach(input => {
     input.addEventListener('input', () => {
         updateLivePreview();
+        updatePreviewButtonState();
         saveDraftToSession();
     });
 });
@@ -391,7 +462,15 @@ if (deleteLogoBtn) {
 }
 
 if (seePreviewBtn) {
-    seePreviewBtn.addEventListener('click', () => {
+    seePreviewBtn.addEventListener('click', (e) => {
+        const state = getClientPreviewValidationState();
+        if (!(state.hasClientName && state.hasClientContact && state.hasItem)) {
+            e.preventDefault();
+            showPreviewValidationError(state);
+            updatePreviewButtonState();
+            return;
+        }
+
         saveDraftToSession();
         window.location.href = 'invoice_preview.html';
     });
@@ -491,6 +570,8 @@ async function autofillFromProfile() {
             saveDraftToSession();
         }
 
+        updatePreviewButtonState();
+
     } catch (e) {
         console.error("Error autofilling profile:", e);
     }
@@ -517,6 +598,7 @@ function autofillFromSelectedClient() {
         if (clientPhone) clientPhone.value = client.phone || '';
 
         updateLivePreview();
+        updatePreviewButtonState();
         saveDraftToSession();
     } catch (e) {
         console.error('Error autofilling selected client:', e);
@@ -526,5 +608,6 @@ function autofillFromSelectedClient() {
 loadDraftFromSession();
 updateLivePreview();
 calculateInvoice();
+updatePreviewButtonState();
 autofillFromProfile();
 autofillFromSelectedClient();

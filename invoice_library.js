@@ -883,7 +883,7 @@ async function applyUserGreeting() {
         if (!user) return 'User';
 
         const displayName = await resolveDisplayName(user);
-        labelEl.textContent = 'Hi ' + displayName;
+        labelEl.textContent = 'Hi, ' + displayName;
         return displayName;
     } catch (_) {
         return 'User';
