@@ -102,6 +102,7 @@ body {
 
 .login-button-wrapper,
 .google-button-wrapper {
+    font-family: 'Inter', sans-serif;
     display: flex;
     justify-content: center;
 }
@@ -112,6 +113,9 @@ body {
 }
 
 .login-button {
+    font-family: 'Inter', sans-serif;
+    padding: 0.2rem 0.5rem;
+    box-sizing: content-box;
     min-width: 122px;
     height: 32px;
     border: none;
@@ -156,6 +160,8 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
+    font-family: 'Inter', sans-serif;
+    padding: 0.2rem 0.5rem;
     padding: 0.45rem 0.9rem;
     border: 1px solid #dadce0;    
     border-radius: 8px;
@@ -200,6 +206,8 @@ body {
 }
 
 .signup-button {
+    font-family: 'Inter', sans-serif;
+    padding: 0.5rem;
     min-width: 122px;
     height: 32px;
     border: none;
@@ -352,4 +360,4 @@ a.signup-button {
     color: var(--text-muted, #888);
     text-decoration: underline;
     cursor: pointer;
-}
+}

@@ -29,7 +29,7 @@
       <img src="../images/logo.png" alt="inVoice Logo">
 
       <button class="user-button" type="button">
-        <span>Dashboard</span>
+        <span>Hi User</span>
         <span class="user-icon"></span>
       </button>
     </header>
@@ -77,15 +77,16 @@
     </section>
   </main>
 
-  <template id="profile-menu-template">
-    <div class="profile-menu">
+  <template id="user-profile-menu">
+    <div id="user-profile-menu-modal" class="profile-menu">
       <div>
-        <span class="profile-username">Username</span>
+        <span class="profile-username" id="username">User</span>
       </div>
       <div>
-        <a href="invoice_library.html" class="sign-out-link">Invoice library</a>
-        <a href="account_page.html" class="sign-out-link">Account</a>
-        <a href="#" class="sign-out-link" id="dashboard-signout">Sign Out</a>
+        <a href="#" class="sign-out-link" id="go-to-dashboard">Go to Dashboard</a>
+        <a href="#" class="sign-out-link" id="go-to-account">Account Settings</a>
+        <a href="#" class="sign-out-link" id="go-to-invoices">Invoice library</a>
+        <a href="#" class="sign-out-link" id="signout">Sign Out</a>
       </div>
     </div>
   </template>

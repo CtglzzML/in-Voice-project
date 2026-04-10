@@ -28,7 +28,7 @@
             <img src="../images/logo.png" alt="inVoice Logo">
 
             <button class="user-button" type="button" aria-label="Account menu">
-                <span>Account Profile</span>
+                <span>Hi User</span>
                 <span class="user-icon"></span>
             </button>
         </header>
@@ -90,7 +90,7 @@
     <template id="user-profile-menu">
         <div id="user-profile-menu-modal" class="profile-menu">
             <div>
-                <span class="profile-username" id="username">Username</span>
+                <span class="profile-username" id="username">User</span>
             </div>
             <div>
                 <a href="dashboard.html" class="sign-out-link">Go to Dashboard</a>
@@ -111,6 +111,12 @@
             var existing = document.getElementById('user-profile-menu-modal');
             if (existing) { existing.remove(); return; }
             document.body.appendChild(menuTpl.content.cloneNode(true));
+
+            var nameEl = document.getElementById('username');
+            var userBtnLabel = userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
+            if (nameEl && userBtnLabel) {
+                nameEl.textContent = userBtnLabel.textContent.replace(/^Hi\s+/i, '');
+            }
 
             var out = document.getElementById('signout');
             if (out) {

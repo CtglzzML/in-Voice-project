@@ -15,8 +15,10 @@ async function fillAccountPage() {
 
   var displayEmail = profile.email || user.email || '';
   var displayUsername = profile.name || (user.user_metadata && user.user_metadata.full_name) || displayEmail || 'User';
+  var userBtnLabel = document.querySelector('.user-button span:not(.user-icon)') || document.querySelector('.user-button span');
 
   if (title) title.textContent = displayUsername;
+  if (userBtnLabel) userBtnLabel.textContent = 'Hi ' + displayUsername;
   if (emailEl) emailEl.textContent = displayEmail;
 
   if (companyEl) companyEl.textContent = profile.Company_name || '—';

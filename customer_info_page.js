@@ -13,12 +13,40 @@ const menuTemplate = document.getElementById('user-profile-menu');
 let allClients = [];
 let selectedClient = null;
 
+function getUserButtonLabelEl() {
+    if (!userBtn) return null;
+    return userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
+}
+
+async function applyUserGreeting(user) {
+    const labelEl = getUserButtonLabelEl();
+    if (!labelEl || !user) return;
+
+    let displayName = '';
+
+    if (window._supabase) {
+        const { data: profile } = await window._supabase
+            .from('users')
+            .select('name')
+            .eq('id', user.id)
+            .maybeSingle();
+        displayName = (profile && profile.name) || '';
+    }
+
+    if (!displayName) displayName = (user.user_metadata && user.user_metadata.full_name) || '';
+    if (!displayName) displayName = user.email ? user.email.split('@')[0] : 'User';
+
+    labelEl.textContent = 'Hi ' + displayName;
+}
+
 // ───────────────── Load clients from DB ─────────────────
 async function loadClients() {
     if (!window._supabase || typeof window.getCurrentUser !== 'function') return;
 
     const user = await window.getCurrentUser();
     if (!user) return;
+
+    await applyUserGreeting(user);
 
     const { data, error } = await window._supabase
         .from('clients')
@@ -177,6 +205,12 @@ if (userBtn && menuTemplate) {
         const existing = document.getElementById('user-profile-menu-modal');
         if (existing) { existing.remove(); return; }
         document.body.appendChild(menuTemplate.content.cloneNode(true));
+
+        const nameEl = document.getElementById('username');
+        const userBtnLabel = getUserButtonLabelEl();
+        if (nameEl && userBtnLabel) {
+            nameEl.textContent = userBtnLabel.textContent.replace(/^Hi\s+/i, '');
+        }
 
         var out = document.getElementById('signout');
         if (out) {

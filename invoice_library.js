@@ -771,6 +771,59 @@ window.addEventListener('pageshow', (event) => {
 const userBtn = document.querySelector('.user-button');
 const menuTemplate = document.getElementById('user-profile-menu');
 
+function getUserButtonLabelEl() {
+    if (!userBtn) return null;
+    return userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
+}
+
+async function resolveDisplayName(user) {
+    if (!user) return 'User';
+
+    let profileName = '';
+    if (window._supabase) {
+        try {
+            const { data: profile } = await window._supabase
+                .from('users')
+                .select('name')
+                .eq('id', user.id)
+                .maybeSingle();
+            profileName = (profile && profile.name) || '';
+        } catch (_) {
+            profileName = '';
+        }
+    }
+
+    return (
+        profileName ||
+        (user.user_metadata && user.user_metadata.full_name) ||
+        (user.email ? user.email.split('@')[0] : '') ||
+        'User'
+    );
+}
+
+async function applyUserGreeting() {
+    const labelEl = getUserButtonLabelEl();
+    if (!labelEl || typeof getCurrentUser !== 'function') {
+        return 'User';
+    }
+
+    try {
+        const user = await getCurrentUser();
+        if (!user) return 'User';
+
+        const displayName = await resolveDisplayName(user);
+        labelEl.textContent = 'Hi ' + displayName;
+        return displayName;
+    } catch (_) {
+        return 'User';
+    }
+}
+
+let cachedDisplayName = 'User';
+applyUserGreeting().then((displayName) => {
+    cachedDisplayName = displayName || 'User';
+});
+
 if (userBtn && menuTemplate) {
     userBtn.addEventListener('click', async () => {
         const existing = document.getElementById('user-profile-menu-modal');
@@ -782,18 +835,10 @@ if (userBtn && menuTemplate) {
         const clone = menuTemplate.content.cloneNode(true);
         document.body.appendChild(clone);
 
+        cachedDisplayName = await applyUserGreeting();
         const nameEl = document.getElementById('username');
-        if (nameEl && typeof getCurrentUser === 'function') {
-            try {
-                const user = await getCurrentUser();
-                const displayName =
-                    (user && user.user_metadata && user.user_metadata.full_name) ||
-                    (user && user.email) ||
-                    'User';
-                nameEl.textContent = displayName;
-            } catch (_) {
-                nameEl.textContent = 'User';
-            }
+        if (nameEl) {
+            nameEl.textContent = cachedDisplayName;
         }
 
         const dash = document.getElementById('go-to-dashboard');

@@ -10,6 +10,7 @@ async function loadProfileData() {
     document.getElementById('user-email').value = user.email || '';
 
     var { data: profile } = await window._supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+    var displayName = '';
     
     if (profile) {
         document.getElementById('user-name').value = profile.name || '';
@@ -17,6 +18,15 @@ async function loadProfileData() {
         document.getElementById('ob-address').value = profile.address || '';
         document.getElementById('ob-tva-number').value = profile.tva_number || '';
         document.getElementById('ob-default-tva').value = profile.default_tva ?? '';
+        displayName = profile.name || '';
+    }
+
+    if (!displayName) displayName = (user.user_metadata && user.user_metadata.full_name) || '';
+    if (!displayName) displayName = user.email ? user.email.split('@')[0] : 'User';
+
+    var userBtnLabel = document.querySelector('.user-button span:not(.user-icon)') || document.querySelector('.user-button span');
+    if (userBtnLabel) {
+        userBtnLabel.textContent = 'Hi ' + displayName;
     }
 }
 
