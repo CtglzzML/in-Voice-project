@@ -122,34 +122,7 @@ export const formUpdater = (() => {
     });
   }
 
-  function recalcTotals() {
-    const rows = document.querySelectorAll('#item-list-body .item-row');
-    const tva = parseFloat(document.querySelector('#inv-tax')?.value) || 0;
-    let subtotal = 0;
-
-    rows.forEach(row => {
-      const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
-      const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
-      const lineTotal = qty * rate;
-      const totalCell = row.querySelector('.item-total');
-      if (totalCell) totalCell.textContent = `$${lineTotal.toFixed(2)}`;
-      subtotal += lineTotal;
-    });
-
-    const tvaAmount = subtotal * tva / 100;
-    const total = subtotal + tvaAmount;
-
-    _setText('#total-subtotal', `$${subtotal.toFixed(2)}`);
-    _setText('#total-tva', `$${tvaAmount.toFixed(2)}`);
-    _setText('#total-final', `$${total.toFixed(2)}`);
-    const tvaLabel = document.querySelector('#total-tva-label');
-    if (tvaLabel) tvaLabel.textContent = `Tax (${tva}%):`;
-  }
-
   document.addEventListener('input', (e) => {
-    if (e.target.matches('.item-qty, .item-rate, #inv-tax')) {
-      recalcTotals();
-    }
     if (e.target.matches('#inv-number')) {
       _setText('#preview-invoice-number', `# ${e.target.value || '---'}`);
     }
@@ -186,5 +159,5 @@ export const formUpdater = (() => {
     }
   });
 
-  return { update, updateProfile, unlockForm, recalcTotals, setInvoiceNumber };
+  return { update, updateProfile, unlockForm, setInvoiceNumber };
 })();

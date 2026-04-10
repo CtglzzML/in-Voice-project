@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="../css/color_scheme.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
   <link rel="stylesheet" href="../css/invoice_library.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -32,11 +33,9 @@
         <h1>Library</h1>
       </div>
 
-      <div id="menu-container"></div>
-      <button id="hamburger-btn">
-          <span></span>
-          <span></span>
-          <span></span>
+      <button class="user-button" type="button" aria-label="Account menu">
+        <span>Account Profile</span>
+        <span class="user-icon"></span>
       </button>
     </header>
 
@@ -131,12 +130,17 @@
     </tr>
   </template>
 
-  <template id="navigation-menu">
-    <div id="navigation-menu-modal">
-      <a href="dashboard.html">Dashboard</a>
-      <a href="invoice_library.html">Invoices</a>
-      <a href="account_page.html">Account</a>
-      <a href="#" id="library-logout">Logout</a>
+  <template id="user-profile-menu">
+    <div id="user-profile-menu-modal" class="profile-menu">
+      <div>
+        <span class="profile-username" id="username">Username</span>
+      </div>
+      <div>
+        <a href="#" class="sign-out-link" id="go-to-dashboard">Go to Dashboard</a>
+        <a href="#" class="sign-out-link" id="go-to-account">Account Settings</a>
+        <a href="#" class="sign-out-link" id="go-to-invoices">Invoice library</a>
+        <a href="#" class="sign-out-link" id="signout">Sign Out</a>
+      </div>
     </div>
   </template>
 

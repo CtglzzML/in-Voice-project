@@ -1245,3 +1245,68 @@ input:focus {
 .client-info {
   color: black;
 }
+
+/* ===========================
+   EXTRACTED FROM INLINE STYLES
+   =========================== */
+
+.icf-title {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #62588f;
+}
+
+#preview-date,
+#preview-due-date {
+  display: block;
+}
+
+#preview-due-date {
+  margin-top: 4px;
+}
+
+#preview-client-name {
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.preview-client-details {
+  margin-bottom: 18px;
+  line-height: 1.6;
+  font-size: 0.9rem;
+  color: #111;
+}
+
+.preview-client-details p {
+  margin: 2px 0;
+}
+
+.bottom-actions-row {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  margin: 10px 22px 0 auto;
+}
+
+.cancel-invoice-btn {
+  min-width: 148px;
+  min-height: 52px;
+  border: none;
+  border-radius: 5px;
+  background: #fee;
+  color: #d00;
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.cancel-invoice-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.94;
+}
+
+.bottom-actions-row .return-btn {
+  margin: 0;
+}

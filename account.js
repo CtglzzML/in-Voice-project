@@ -2,12 +2,39 @@ async function fillAccountPage() {
   var user = await getCurrentUser();
   if (!user) return;
 
+  var { data: profile } = await _supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+  profile = profile || {};
+
   var title = document.querySelector('main .account-username');
   var emailEl = document.querySelector('main .account-email');
-  var companyEl = document.querySelector('main .account-company');
-  if (title) title.textContent = (user.user_metadata && user.user_metadata.full_name) || user.email || 'User';
-  if (emailEl) emailEl.textContent = user.email || '';
-  if (companyEl) companyEl.textContent = (user.user_metadata && user.user_metadata.company_name) || '—';
+  var siretEl = document.querySelector('main .account-siret');
+  var tvaEl = document.querySelector('main .account-tva');
+  var defaultTvaEl = document.querySelector('main .account-default-tva');
+  var addressEl = document.querySelector('main .account-address');
+  var logoContainer = document.getElementById('account-logo-container');
+
+  var displayEmail = profile.email || user.email || '';
+  var displayUsername = profile.name || (user.user_metadata && user.user_metadata.full_name) || displayEmail || 'User';
+
+  if (title) title.textContent = displayUsername;
+  if (emailEl) emailEl.textContent = displayEmail;
+
+  if (siretEl) siretEl.textContent = profile.siret || '—';
+  if (tvaEl) tvaEl.textContent = profile.tva_number || '—';
+  if (defaultTvaEl) defaultTvaEl.textContent = profile.default_tva != null ? profile.default_tva + '%' : '—';
+  if (addressEl) addressEl.textContent = profile.address || '—';
+
+  if (logoContainer && profile.logo_url) {
+    logoContainer.innerHTML = '';
+    var img = document.createElement('img');
+    img.src = profile.logo_url;
+    img.alt = 'Company Logo';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '50%';
+    logoContainer.appendChild(img);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -41,6 +68,12 @@ document.addEventListener('DOMContentLoaded', async function () {
       document.body.appendChild(clone);
       var modal = document.getElementById('user-profile-menu-modal');
       if (!modal) return;
+
+      var nameEl = document.getElementById('username');
+      var mainNameEl = document.querySelector('main .account-username');
+      if (nameEl && mainNameEl) {
+        nameEl.textContent = mainNameEl.textContent;
+      }
 
       var dash = document.getElementById('go-to-dashboard');
       var inv = document.getElementById('go-to-invoices');

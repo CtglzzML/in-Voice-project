@@ -327,3 +327,29 @@ a.signup-button {
 .back-to-landing-btn:hover {
     text-decoration: underline;
 }
+
+/* ===========================
+   ONBOARDING PAGE
+   =========================== */
+
+.onboarding-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted, #888);
+    margin-top: 4px;
+}
+
+.required-star {
+    color: red;
+}
+
+.skip-wrapper {
+    text-align: center;
+    margin-top: 12px;
+}
+
+#skip-onboarding {
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+    text-decoration: underline;
+    cursor: pointer;
+}
