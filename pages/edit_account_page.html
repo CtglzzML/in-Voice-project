@@ -8,49 +8,92 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="../css/invoice_library.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    
     <link rel="stylesheet" href="../css/color_scheme.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/account_page.css" />
+    <link rel="stylesheet" href="../css/login_page.css" />
 </head>
 
 <body>
-    <h1>Edit Account</h1>
-    <form id="signup-form" class="grid card" enctype="multipart/form-data">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../scripts/auth.js"></script>
+    <script>
+        requireAuthOrRedirect('edit_account_page.html');
+    </script>
 
-        <div>
-            <label for="user-email">Email</label>
-            <input type="email" id="user-email" name="email" required>
-        </div>
+    <main class="dashboard-page">
+        <header class="dashboard-header">
+            <img src="../images/logo.png" alt="inVoice Logo">
+        </header>
 
-        <div>
-            <label for="user-name">Full Name</label>
-            <input type="text" id="user-name" name="full_name" required>
-        </div>
+        <section class="dashboard-content">
+            <article class="card edit-account-card">
+                <div class="card-header">
+                    <h2>Edit Account</h2>
+                </div>
+                <div class="card-body edit-form-card">
+                    <form id="signup-form" class="login-form">
+                        
+                        <div class="form-group">
+                            <label for="user-email">Email <span class="label-optional">(cannot be easily changed here)</span></label>
+                            <input type="email" id="user-email" name="email" disabled>
+                        </div>
 
-        <div>
-            <label for="user-username">Username</label>
-            <input type="text" id="user-username" name="username" required>
-        </div>
+                        <div class="form-group">
+                            <label for="user-name">Full Name</label>
+                            <input type="text" id="user-name" name="full_name" required>
+                        </div>
 
-        <div>
-            <label for="company-name">Company Name</label>
-            <input type="text" id="company-name" name="company_name">
-        </div>
-        <div>
-            <label for="user-logo">Company Logo</label>
-            <input type="file" id="user-logo" name="logo" accept="image/*">
-        </div>
 
-        <div>
-            <label for="user-password">Enter Password</label>
-            <input type="password" id="user-password" name="password" required>
-        </div>
+                        <div class="form-group">
+                            <label for="company-name">Company Name <span class="label-optional">(optional)</span></label>
+                            <input type="text" id="company-name" name="company_name" placeholder="Acme Inc." />
+                        </div>
 
-        <button type="submit">Apply</button>
-        <button type="submit">Cancel</button>
-        <button type="submit">Delete</button>
-    </form>
+                        <div class="form-group">
+                            <label for="ob-address">Address <span class="label-optional">(optional)</span></label>
+                            <input type="text" id="ob-address" name="address" placeholder="12 rue de la Paix, 75001 Paris" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ob-phone">Phone <span class="label-optional">(optional)</span></label>
+                            <input type="tel" id="ob-phone" name="phone" placeholder="+47 123 45 678" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ob-tva-number">TVA number <span class="label-optional">(optional)</span></label>
+                            <input type="text" id="ob-tva-number" name="tva_number" placeholder="FR12345678901" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ob-default-tva">Default TVA rate (%) <span class="label-optional">(optional)</span></label>
+                            <input type="number" id="ob-default-tva" name="default_tva" placeholder="20" min="0" max="100" step="0.1" />
+                        </div>
+
+                        <div class="form-group form-group-logo">
+                            <label for="user-logo">Company Logo <span class="label-optional">(optional)</span></label>
+                            <div class="edit-logo-upload">
+                                <label for="user-logo" class="custom-file-upload" id="edit-logo-label">
+                                    <img src="" id="edit-logo-image" alt="Current company logo">
+                                    <img src="../images/image-missing-svgrepo-com.svg" id="edit-logo-placeholder" class="custom-file-upload" alt="placeholder logo">
+                                    <input type="file" id="user-logo" name="logo" accept="image/*">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="action-row">
+                            <button type="submit" id="apply-btn" class="btn btn-primary">Apply</button>
+                            <button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button>
+                            <!-- <button type="button" id="delete-btn" class="btn btn-danger">Delete</button> -->
+                        </div>
+                    </form>
+                </div>
+            </article>
+        </section>
+    </main>
+    <script src="../edit_account.js"></script>
 </body>
 
 </html>

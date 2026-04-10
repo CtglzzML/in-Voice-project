@@ -4,109 +4,104 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>InVoice - Customer Info</title>
+    <title>inVoice - Customer Information</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="../css/invoice_library.css" />
     <link rel="stylesheet" href="../css/color_scheme.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/customer_info.css" />
 </head>
 
 <body>
-    <header class="dashboard-header">
-        <img src="" alt="inVoice Logo">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../scripts/auth.js"></script>
+    <script>
+        requireAuthOrRedirect('customer_info_page.html');
+    </script>
 
-        <button class="user-button" type="button">
-            <span>Welcome, User!</span>
-            <span class="user-icon">◔</span>
-        </button>
-    </header>
+    <main class="dashboard-page">
+        <header class="dashboard-header">
+            <img src="../images/logo.png" alt="inVoice Logo">
+            <button class="user-button" type="button" aria-label="Account menu">
+                <span>Hi User</span>
+                <span class="user-icon"></span>
+            </button>
+        </header>
 
-    <div class="card">
-        <div>
-            <div class="" id="">
-                <input type="text" class="" placeholder="search">
-                <button type="submit" class="">🔍</button>
+        <section class="customer-content">
+            <article class="card">
+                <div class="card-header">
+                    <h2>Customer information</h2>
+                </div>
+
+                <div class="card-body customer-card-body">
+                    <!-- Search Bar -->
+                    <div class="customer-search-row">
+                        <input type="text" id="customer-search" class="customer-search-input"
+                            placeholder="Search customers..." autocomplete="off" />
+                        <button type="button" id="customer-search-btn" class="customer-search-btn"
+                            aria-label="Search">🔍</button>
+                    </div>
+
+                    <!-- Customer Table -->
+                    <div class="customer-table-wrapper">
+                        <table class="customer-table" id="customer-table">
+                            <thead>
+                                <tr>
+                                    <th>Cust. ID</th>
+                                    <th>Client</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Company</th>
+                                    <th>Address</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customer-table-body">
+                                <tr class="empty-state-row">
+                                    <td colspan="6">
+                                        <div class="customer-empty-state">
+                                            <p>No customers found. They will appear here once created.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="customer-actions">
+                        <button type="button" id="create-invoice-btn" class="customer-action-btn accent-btn" disabled>
+                            Create an invoice
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Footer logo -->
+        <footer class="customer-footer">
+            <img src="../images/logo.png" alt="inVoice Logo" class="footer-logo" />
+        </footer>
+    </main>
+
+    <template id="user-profile-menu">
+        <div id="user-profile-menu-modal" class="profile-menu">
+            <div>
+                <span class="profile-username" id="username">User</span>
             </div>
-            <ul class="suggestion-list hidden"></ul>
+            <div>
+                <a href="dashboard.html" class="sign-out-link">Go to Dashboard</a>
+                <a href="invoice_library.html" class="sign-out-link">Invoice library</a>
+                <a href="account_page.html" class="sign-out-link">Account</a>
+                <a href="#" class="sign-out-link" id="signout">Sign Out</a>
+            </div>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>File Name</th>
-                    <th>Client Name</th>
-                    <th>Client Email</th>
-                    <th>VAT</th>
-                    <th>Phone #</th>
-                    <th>Country</th>
-                    <th>City</th>
-                    <th>Country Code</th>
-                    <th>ID</th>
-                    <th>Date</th>
-                    <th></th>
-                </tr>
-            </thead>
-        </table>
-        <button type="button" id="add-line-item">+ Add Item</button>
-    </div>
+    </template>
+
+    <script src="../customer_info_page.js"></script>
 </body>
-
-<template id="empty-row">
-    <tr>
-        <td colspan="10">
-            There are currently no clients in library.
-        </td>
-    </tr>
-</template>
-
-<template id="non-empty-row">
-    <tr class="item-row">
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td class="">
-            <input type="" class="" placeholder="">
-        </td>
-        <td>
-            <button type="button" class="delete-btn">&times;</button>
-        </td>
-    </tr>
-</template>
-
-<!--user profile menu-->
-<template id="user-profile-menu">
-    <div id="user-profile-menu-modal">
-        <span id="username">Username</span>
-        <a href="#" id="go-to-dashboard">Go to Dashboard</a>
-        <a href="#" id="">Go to Invoice Library Page</a>
-        <a href="#" id="signout">Sign Out</a>
-    </div>
-</template>
 
 </html>

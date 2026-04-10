@@ -17,6 +17,12 @@
 </head>
 
 <body>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../scripts/auth.js"></script>
+    <script src="../scripts/invoice_storage.js"></script>
+  <script>
+    requireAuthOrRedirect('invoice_preview.html');
+  </script>
   <main class="preview-page">
 
     <section class="preview-card">

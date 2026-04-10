@@ -3,7 +3,7 @@
 Pre-processes the voice transcript into structured data before the agent runs.
 Uses LLM structured output (Pydantic) to extract all available info in one shot.
 """
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
 
@@ -21,11 +21,13 @@ class ExtractedInvoice(BaseModel):
     tva_rate: Optional[float] = Field(None, description="VAT rate in % if mentioned (e.g. 20)")
     due_date: Optional[str] = Field(None, description="Due date ISO (YYYY-MM-DD) if mentioned")
     payment_terms: Optional[str] = Field(None, description="Payment terms if mentioned")
+    confidence_score: float = Field(0.0, description="Confidence score for the extraction (0.0 to 1.0)")
+    missing_fields: List[str] = Field(default_factory=list, description="List of mandatory fields not found in transcript")
 
 
 async def extract_from_transcript(transcript: str, api_key: str) -> ExtractedInvoice:
     """Extracts all invoice fields from a voice transcript in one structured LLM call."""
-    llm = ChatOpenAI(model="gpt-4o-mini", api_key=api_key, temperature=0)
+    llm = ChatOpenAI(model="gpt-5-mini", api_key=api_key, temperature=0)
     structured = llm.with_structured_output(ExtractedInvoice)
 
     result = await structured.ainvoke(
@@ -33,9 +35,6 @@ async def extract_from_transcript(transcript: str, api_key: str) -> ExtractedInv
 
 CRITICAL RULES:
 - Only extract real invoice information (client, service, price, date).
-- IGNORE voice command artefacts: words like "mets", "ajoute", "crée", "facture pour", "start",
-  "record", "ok", "hey", "canine", "voice", "fort" and similar are NOT product descriptions.
-  They are recognition noise — discard them entirely.
 - description: MUST ONLY contain the clean service or product name (e.g. "Web development",
   "Logo design", "Consulting"). ALL quantities, durations, or measurements MUST be EXCLUDED from
   the description. Example: "3 hours of web development" -> description="Web development", qty=3.

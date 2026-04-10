@@ -19,43 +19,37 @@ def session_id(store):
 
 # --- get_user_profile ---
 
-async def test_get_user_profile_emits_thinking_and_returns_profile(store, session_id):
+async def test_get_user_profile_returns_profile_object(store, session_id):
     profile = UserProfile(id="user-1", name="Alice", siret="123", address="Paris", default_tva=Decimal("20"))
     with patch("src.agent.tools.get_user", return_value=profile):
         with patch("src.agent.tools.session_store", store):
             from src.agent.tools import tool_get_user_profile
             result = await tool_get_user_profile("user-1", session_id)
-    assert "Alice" in result
-    event = await asyncio.wait_for(store.get(session_id)["sse_queue"].get(), timeout=1)
-    assert event["type"] == "thinking"
+    assert result is not None
+    assert result.name == "Alice"
+    assert result.default_tva == Decimal("20")
 
 
-async def test_get_user_profile_returns_missing_fields_if_incomplete(store, session_id):
-    profile = UserProfile(id="user-1", name=None, siret=None, address=None, default_tva=None)
-    with patch("src.agent.tools.get_user", return_value=profile):
+async def test_get_user_profile_returns_none_when_not_found(store, session_id):
+    with patch("src.agent.tools.get_user", return_value=None):
         with patch("src.agent.tools.session_store", store):
             from src.agent.tools import tool_get_user_profile
             result = await tool_get_user_profile("user-1", session_id)
-    assert "manquants" in result.lower() or "missing" in result.lower()
+    assert result is None
 
 
 # --- search_client ---
 
-async def test_search_client_returns_found_client(store, session_id):
+async def test_search_client_returns_found_dict(store, session_id):
     clients = [Client(id="c1", user_id="user-1", name="Marie Dupont", address="Lyon")]
     with patch("src.agent.tools.search_clients", return_value=clients):
         with patch("src.agent.tools.session_store", store):
             from src.agent.tools import tool_search_client
             result = await tool_search_client("Marie", "user-1", session_id)
-    assert "Marie Dupont" in result
-
-
-async def test_search_client_returns_not_found_message(store, session_id):
-    with patch("src.agent.tools.search_clients", return_value=[]):
-        with patch("src.agent.tools.session_store", store):
-            from src.agent.tools import tool_search_client
-            result = await tool_search_client("Unknown", "user-1", session_id)
-    assert "introuvable" in result.lower() or "not found" in result.lower()
+    assert result["found"] is True
+    assert result["client"].id == "c1"
+    assert result["client"].name == "Marie Dupont"
+    assert result["form_data"] is None
 
 
 # --- update_invoice_field ---
@@ -67,10 +61,10 @@ async def test_update_invoice_field_emits_invoice_update_event(store, session_id
             with patch("src.agent.tools.session_store", store):
                 from src.agent.tools import tool_update_invoice_field, InvoiceField
                 await tool_update_invoice_field(InvoiceField.payment_terms, "30 jours", "inv-1", session_id)
-    # drain thinking event first
+    # drain MESSAGE event first
     await store.get(session_id)["sse_queue"].get()
     event = await asyncio.wait_for(store.get(session_id)["sse_queue"].get(), timeout=1)
-    assert event["type"] == "invoice_update"
+    assert event["type"] == "INVOICE_UPDATED"
     assert event["field"] == "payment_terms"
 
 
@@ -79,7 +73,7 @@ async def test_update_invoice_field_emits_invoice_update_event(store, session_id
 async def test_ask_user_question_suspends_and_returns_reply(store, session_id):
     """
     tool_ask_user_question must:
-    1. Set awaiting_reply=True and emit a 'question' SSE event
+    1. Set awaiting_reply=True and emit a 'WAITING_USER_INPUT' SSE event
     2. Block until reply_queue has a value
     3. Return the reply string and reset awaiting_reply=False
     """
@@ -97,7 +91,7 @@ async def test_ask_user_question_suspends_and_returns_reply(store, session_id):
     assert result == "20%"
     assert store.get(session_id)["awaiting_reply"] is False
     event = store.get(session_id)["sse_queue"].get_nowait()
-    assert event["type"] == "question"
+    assert event["type"] == "WAITING_USER_INPUT"
     assert event["awaiting"] is True
 
 

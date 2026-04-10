@@ -374,7 +374,7 @@
 </div>
 
 <script>
-const BASE = 'https://in-voice-project-givm.onrender.com';
+const BASE = 'http://localhost:8000';
 
 // ── Global state ──
 let callActive    = false;
@@ -737,25 +737,25 @@ function openStream() {
     if (!callActive) return;
     const ev = JSON.parse(e.data);
 
-    if (ev.type === 'ping') return;
+    if (ev.type === 'ping' || ev.type === 'PING') return;
 
-    if (ev.type === 'thinking') {
-      setUI('', ev.message, 'act', 'Processing');
+    if (ev.type === 'thinking' || ev.type === 'MESSAGE') {
+      setUI('', ev.message || ev.content, 'act', 'Processing');
     }
-    else if (ev.type === 'profile') {
+    else if (ev.type === 'profile' || ev.type === 'PROFILE') {
       inv.emitter = ev.data || {};
       renderInvoice();
     }
-    else if (ev.type === 'invoice_update') {
+    else if (ev.type === 'invoice_update' || ev.type === 'INVOICE_UPDATED') {
       applyUpdate(ev.field, ev.value);
     }
-    else if (ev.type === 'question') {
+    else if (ev.type === 'question' || ev.type === 'WAITING_USER_INPUT') {
       // Agent asks → TTS → mic opens with VAD
       addMsg('agent', ev.message);
       await speak(ev.message);
       if (callActive) openMicWithVAD();
     }
-    else if (ev.type === 'done') {
+    else if (ev.type === 'done' || ev.type === 'DONE') {
       evtSource.close();
       fetchFinal(ev.invoice_id);
       addMsg('agent', '✅ Invoice confirmed!');
@@ -765,7 +765,7 @@ function openStream() {
       setUI('', 'Call ended', 'on', 'Done ✓');
       updateCallBtn();
     }
-    else if (ev.type === 'error') {
+    else if (ev.type === 'error' || ev.type === 'ERROR') {
       evtSource.close();
       callActive = false;
       releaseMic();

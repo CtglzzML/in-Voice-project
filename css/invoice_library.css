@@ -540,49 +540,113 @@
 .preview-menu-btn {
     display: none;
 }
-.user-button {
-    display: none !important;
-}
 .tags-row {
     display: none !important;
 }
 
-/* Styling the hamburger button */
-#hamburger-btn {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  width: 30px;
-  height: 25px;
-  background: transparent;
+.library-header .user-button {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 14px;
   border: none;
+  background: transparent;
+  color: #000;
+  font-family: "Inter", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
   cursor: pointer;
   padding: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  position: static;
+  flex-shrink: 0;
 }
 
-#hamburger-btn span {
-  width: 100%;
-  height: 3px;
-  background-color: #333;
-  border-radius: 2px;
-  transition: all 0.3s ease;
+.library-header .user-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  position: relative;
+  inset: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-/* Styling the modal template content when it appears */
-#navigation-menu-modal {
+.library-header .user-icon::before {
+  content: "";
   position: absolute;
-  top: 50px;
-  right: 20px;
-  background: white;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  padding: 15px;
-  border-radius: 5px;
-  z-index: 1000;
+  top: 14px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  transform: translateX(-50%);
 }
 
-#navigation-menu-modal a {
+.library-header .user-icon::after {
+  content: "";
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  width: 22px;
+  height: 12px;
+  background: #fff;
+  border-radius: 12px 12px 6px 6px;
+  transform: translateX(-50%);
+}
+
+.profile-menu {
+  display: block;
+  position: absolute;
+  top: 88px;
+  right: 32px;
+  z-index: 1000;
+  min-width: 220px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.profile-menu > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.profile-menu > div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-username {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+  padding: 0;
+  border-bottom: none;
+}
+
+.sign-out-link {
+  display: block;
+  padding: 9px 10px;
+  border-radius: 8px;
   text-decoration: none;
   color: #333;
-  font-weight: bold;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.sign-out-link:hover {
+  background: #f3f3f3;
 }

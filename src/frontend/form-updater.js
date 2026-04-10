@@ -44,12 +44,36 @@ export const formUpdater = (() => {
   }
 
   function updateProfile(data) {
-    _setInput('#company-name', data.name);
-    _setInput('#company-address', data.address);
-    _setInput('#company-email', data.email);
-    _setText('.preview-company', data.name);
-    _setText('#preview-company-address', data.address);
-    _setText('#preview-company-email', data.email);
+    const companyName = data.company_name || data.Company_name || data.name || '';
+    const companyAddress = data.address || '';
+    const companyPhone = data.phone || '';
+    const companyEmail = data.email || '';
+    const companyNameInput = document.querySelector('#company-name');
+    const companyAddressInput = document.querySelector('#company-address');
+    const companyPhoneInput = document.querySelector('#company-phone');
+    const companyEmailInput = document.querySelector('#company-email');
+    const taxInput = document.querySelector('#inv-tax');
+
+    // PROFILE SSE should fill missing account info, but never clobber
+    // seller details that already came from the saved profile or user edits.
+    _setInputIfBlank(companyNameInput, companyName);
+    _setInputIfBlank(companyAddressInput, companyAddress);
+    _setInputIfBlank(companyPhoneInput, companyPhone);
+    _setInputIfBlank(companyEmailInput, companyEmail);
+
+    if (taxInput && data.default_tva != null && (!taxInput.value || taxInput.value === '0')) {
+      taxInput.value = data.default_tva;
+    }
+
+    const resolvedCompanyName = (companyNameInput && companyNameInput.value) || companyName || 'My Company';
+    const resolvedAddress = (companyAddressInput && companyAddressInput.value) || companyAddress || '-';
+    const resolvedPhone = (companyPhoneInput && companyPhoneInput.value) || companyPhone || '-';
+    const resolvedEmail = (companyEmailInput && companyEmailInput.value) || companyEmail || '-';
+
+    _setText('.preview-company p', resolvedCompanyName);
+    _setText('#preview-company-address', `From: ${resolvedAddress}`);
+    _setText('#preview-company-phone', `Phone: ${resolvedPhone}`);
+    _setText('#preview-company-email', `Email: ${resolvedEmail}`);
   }
 
   function setInvoiceNumber(number) {
@@ -93,6 +117,13 @@ export const formUpdater = (() => {
     if (el && value != null) el.value = value;
   }
 
+  function _setInputIfBlank(el, value) {
+    if (!el || value == null) return;
+    if (!el.value || !String(el.value).trim()) {
+      el.value = value;
+    }
+  }
+
   function _setText(selector, value) {
     const el = document.querySelector(selector);
     if (el && value != null) el.textContent = value;
@@ -122,34 +153,7 @@ export const formUpdater = (() => {
     });
   }
 
-  function recalcTotals() {
-    const rows = document.querySelectorAll('#item-list-body .item-row');
-    const tva = parseFloat(document.querySelector('#inv-tax')?.value) || 0;
-    let subtotal = 0;
-
-    rows.forEach(row => {
-      const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
-      const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
-      const lineTotal = qty * rate;
-      const totalCell = row.querySelector('.item-total');
-      if (totalCell) totalCell.textContent = `$${lineTotal.toFixed(2)}`;
-      subtotal += lineTotal;
-    });
-
-    const tvaAmount = subtotal * tva / 100;
-    const total = subtotal + tvaAmount;
-
-    _setText('#total-subtotal', `$${subtotal.toFixed(2)}`);
-    _setText('#total-tva', `$${tvaAmount.toFixed(2)}`);
-    _setText('#total-final', `$${total.toFixed(2)}`);
-    const tvaLabel = document.querySelector('#total-tva-label');
-    if (tvaLabel) tvaLabel.textContent = `Tax (${tva}%):`;
-  }
-
   document.addEventListener('input', (e) => {
-    if (e.target.matches('.item-qty, .item-rate, #inv-tax')) {
-      recalcTotals();
-    }
     if (e.target.matches('#inv-number')) {
       _setText('#preview-invoice-number', `# ${e.target.value || '---'}`);
     }
@@ -186,5 +190,5 @@ export const formUpdater = (() => {
     }
   });
 
-  return { update, updateProfile, unlockForm, recalcTotals, setInvoiceNumber };
+  return { update, updateProfile, unlockForm, setInvoiceNumber };
 })();

@@ -20,7 +20,7 @@
 
     <header class="page-header">
         <div class="logo-wrapper">
-            <img src="./assets/logo.png" alt="inVOICE Logo" class="logo" />
+            <img src="../images/logo.png" alt="inVOICE Logo" class="logo" />
         </div>
     </header>
 
@@ -31,54 +31,28 @@
                     <h2>Log in</h2>
                 </header>
 
-                <form class="login-form">
-                    <div class="form-group">
-                        <label for="email">Email :</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="Company@pro.com"
-                            required
-                        />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Password :</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="SafePassword123"
-                            required
-                        />
-                    </div>
-
-                    <div class="login-button-wrapper">
-                        <button type="submit" class="login-button">Log in</button>
-                    </div>
-
-                    <div class="divider">
-                        <span class="divider-line"></span>
-                        <span class="divider-text">or</span>
-                        <span class="divider-line"></span>
-                    </div>
-
+                <div class="login-form" style="margin-top: 2rem; margin-bottom: 2rem;">
                     <div class="google-button-wrapper">
                         <button type="button" class="google-button">
                             <span class="google-icon">G</span>
                             <span>Sign in with Google</span>
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
 
             <div class="signup-section">
                 <p>Don't have an account?</p>
                 <button type="button" class="signup-button">Sign Up</button>
+                <a href="landing_page.html" class="back-to-landing-btn">
+                    Go back to Landing Page
+                </a>
             </div>
         </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../scripts/auth.js"></script>
+    <script src="../login.js"></script>
 </body>
 </html>

@@ -1,23 +1,17 @@
-const signupForm = document.getElementById('signup-form');
-const passwordInput = document.getElementById('user-password');
-const emailInput = document.getElementById('user-email');
+document.addEventListener('DOMContentLoaded', async function () {
+  if (await isLoggedIn()) {
+    window.location.replace('dashboard.html');
+    return;
+  }
 
-if (signupForm) {
-    signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+  var signupForm = document.getElementById('signup-form');
+  var googleBtn = document.getElementById('google-signup-btn');
 
-        const passwordValue = passwordInput.value;
-        const emailValue = emailInput.value;
+  // Email/password sign-up logic removed in favor of Google-only auth
 
-        if (passwordValue.length < 6) {
-            alert("Password must be at least 6 characters long.");
-            return;
-        }
-
-        // Logic to simulate account creation
-        console.log("Creating account for:", emailValue);
-        
-        // Redirect to login page after "successful" signup
-        window.location.href = 'login_page.html';
+  if (googleBtn) {
+    googleBtn.addEventListener('click', function () {
+      loginWithGoogle(window.location.origin + '/pages/onboarding.html');
     });
-}
+  }
+});

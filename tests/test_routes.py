@@ -9,10 +9,15 @@ from main import app
 
 @pytest.mark.asyncio
 async def test_start_returns_session_id():
-    with patch("src.api.routes.invoice.run_agent", new=AsyncMock()):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-            resp = await ac.post("/api/v1/invoice/start", json={"user_id": "u1", "transcript": "test"})
-        await asyncio.sleep(0)
+    from src.api.auth import get_current_user
+    app.dependency_overrides[get_current_user] = lambda: "test-user-id"
+    try:
+        with patch("src.api.routes.invoice.run_agent", new=AsyncMock()):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.post("/api/v1/invoice/start", json={"transcript": "test"})
+            await asyncio.sleep(0)
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
     assert resp.status_code == 200
     assert "session_id" in resp.json()
 
@@ -43,10 +48,15 @@ async def test_reply_409_when_session_not_awaiting():
 @pytest.mark.asyncio
 async def test_stream_receives_event_pushed_to_queue():
     from src.sessions.manager import session_store
-    with patch("src.api.routes.invoice.run_agent", new=AsyncMock()):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-            resp = await ac.post("/api/v1/invoice/start", json={"user_id": "u1", "transcript": "test"})
-    sid = resp.json()["session_id"]
+    from src.api.auth import get_current_user
+    app.dependency_overrides[get_current_user] = lambda: "test-user-id"
+    try:
+        with patch("src.api.routes.invoice.run_agent", new=AsyncMock()):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+                resp = await ac.post("/api/v1/invoice/start", json={"transcript": "test"})
+        sid = resp.json()["session_id"]
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
 
     await session_store.push_event(sid, {"type": "done", "invoice_id": "inv-1"})
 
@@ -133,3 +143,39 @@ async def test_session_not_awaiting_returns_409_from_handler():
         resp = await ac.post("/api/v1/invoice/reply", json={"session_id": sid, "reply": "hi"})
     assert resp.status_code == 409
     assert resp.json()["detail"] == "Session is not awaiting a reply"
+
+
+# --- Auth tests ---
+
+@pytest.mark.asyncio
+async def test_start_no_auth_header_returns_401():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        resp = await ac.post("/api/v1/invoice/start", json={"transcript": "test"})
+    assert resp.status_code == 401
+    assert resp.json()["detail"] == "Missing authorization header"
+
+
+@pytest.mark.asyncio
+async def test_start_malformed_auth_returns_401():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        resp = await ac.post(
+            "/api/v1/invoice/start",
+            json={"transcript": "test"},
+            headers={"Authorization": "NotBearer token"},
+        )
+    assert resp.status_code == 401
+    assert resp.json()["detail"] == "Invalid authorization format"
+
+
+@pytest.mark.asyncio
+async def test_start_invalid_token_returns_401():
+    with patch("src.api.auth._get_client") as mock_client:
+        mock_client.return_value.auth.get_user.side_effect = Exception("invalid token")
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            resp = await ac.post(
+                "/api/v1/invoice/start",
+                json={"transcript": "test"},
+                headers={"Authorization": "Bearer bad.token.here"},
+            )
+    assert resp.status_code == 401
+    assert resp.json()["detail"] == "Invalid or expired token"

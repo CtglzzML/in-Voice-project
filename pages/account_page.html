@@ -10,45 +10,88 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="../css/invoice_library.css" />
     <link rel="stylesheet" href="../css/color_scheme.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/account_page.css" />
 </head>
 
 <body>
 
-    <header class="dashboard-header">
-      <div class="brand">
-        <img src="" alt="inVoice Logo">
-        <span class="brand-dashboard">Account Profile</span>
-      </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../scripts/auth.js"></script>
+    <script>
+        requireAuthOrRedirect('account_page.html');
+    </script>
 
-      <button class="user-button" type="button">
-        <span class="user-icon">◔</span>
-      </button>
-    </header>
+    <main class="dashboard-page">
+        <header class="dashboard-header">
+            <img src="../images/logo.png" alt="inVoice Logo">
 
-    <main>
-        <div>
-            <img src="" alt="Company Logo">
-            <h2>Username</h2>
-            <p>email@website.com</p>
-            <p>Company Name</p>
-        </div>
-        <div>
-            <button type="button">Edit Account</button>
-            <button typ="button">Back to Dashboard</button>
-        </div>
+            <button class="user-button" type="button" aria-label="Account menu">
+                <span>Hi User</span>
+                <span class="user-icon"></span>
+            </button>
+        </header>
+
+        <section class="dashboard-content">
+            <article class="card">
+                <div class="card-header">
+                    <h2>Account Overview</h2>
+                </div>
+                <div class="card-body profile-card-body">
+                    <div class="profile-info-section">
+                        <div class="profile-avatar-placeholder" id="account-logo-container"></div>
+                        <h2 class="account-username">Username</h2>
+                        <p class="account-email">email@website.com</p>
+
+                        <div class="account-details">
+                            <div class="account-detail-row">
+                                <strong>Company Name</strong>
+                                <span class="account-company-name">—</span>
+                            </div>
+                            <div class="account-detail-row">
+                                <strong>TVA Number</strong>
+                                <span class="account-tva">—</span>
+                            </div>
+                            <div class="account-detail-row">
+                                <strong>Default TVA</strong>
+                                <span class="account-default-tva">—</span>
+                            </div>
+                            <div class="account-detail-row">
+                                <strong>Address</strong>
+                                <span class="account-address">—</span>
+                            </div>
+                            <div class="account-detail-row">
+                                <strong>Phone</strong>
+                                <span class="account-phone">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions-section">
+                        <button type="button" id="edit-account-btn" class="primary-action-btn">Edit Account</button>
+                        <button type="button" id="back-to-dashboard" class="secondary-action-btn">Back to dashboard</button>
+                    </div>
+                </div>
+            </article>
+        </section>
     </main>
-</body>
 
-<template id="user-profile-menu">
-    <div id="user-profile-menu-modal">
-        <span id="username">Username</span>
-        <a href="#" id="go-to-dashboard">Go to Dashboard</a>
-        <a href="#" id="">Go to Invoice Library Page</a>
-        <a href="#" id="">Go to Customer Library Page</a>
-        <a href="#" id="signout">Sign Out</a>
-    </div>
-</template>
+    <template id="user-profile-menu">
+        <div id="user-profile-menu-modal" class="profile-menu">
+            <div>
+                <span class="profile-username" id="username">User</span>
+            </div>
+            <div>
+                <a href="#" class="sign-out-link" id="go-to-dashboard">Go to Dashboard</a>
+                <a href="#" class="sign-out-link" id="go-to-invoices">Invoice library</a>
+                <!-- <a href="#" class="sign-out-link" id="go-to-customers">Client directory</a> -->
+                <a href="#" class="sign-out-link" id="signout">Sign Out</a>
+            </div>
+        </div>
+    </template>
+
+    <script src="../account.js"></script>
+</body>
 
 </html>

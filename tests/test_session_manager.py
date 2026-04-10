@@ -41,3 +41,15 @@ def test_cleanup_removes_session(store):
     store.cleanup(sid)
     with pytest.raises(SessionNotFound):
         store.get(sid)
+
+def test_session_has_state_field(store):
+    sid = store.create("u1")
+    assert store.get(sid)["state"] == "INIT"
+
+def test_session_has_extracted_data_field(store):
+    sid = store.create("u1")
+    assert store.get(sid)["extracted_data"] == {}
+
+def test_session_has_confidence_field(store):
+    sid = store.create("u1")
+    assert store.get(sid)["confidence"] == 0.0

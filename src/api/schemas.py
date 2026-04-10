@@ -3,7 +3,6 @@ from pydantic import BaseModel
 
 
 class StartRequest(BaseModel):
-    user_id: str
     transcript: str
 
 

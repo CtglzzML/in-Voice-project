@@ -16,6 +16,7 @@ const previewSheet = document.querySelector('.preview-sheet');
 const descriptionText = document.querySelector('.description-text');
 const tagsList = document.getElementById('tags-list');
 const downloadBtn = document.querySelector('.download-invoice-btn');
+const INVOICE_TAGS_KEY = 'invoiceLibraryTags';
 
 let savedInvoices = [];
 let filteredInvoices = [];
@@ -40,15 +41,93 @@ function formatDate(dateString) {
 }
 
 function getSavedInvoices() {
-    const raw = localStorage.getItem('savedInvoices');
-    if (!raw) return [];
+    return Array.isArray(savedInvoices) ? [...savedInvoices] : [];
+}
+
+function getStoredInvoiceTags() {
+    try {
+        const raw = localStorage.getItem(INVOICE_TAGS_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+        console.error('Error reading invoice tags:', error);
+        return {};
+    }
+}
+
+function setStoredInvoiceTags(tagsById) {
+    localStorage.setItem(INVOICE_TAGS_KEY, JSON.stringify(tagsById || {}));
+}
+
+async function loadInvoicesFromSupabase() {
+    if (!window.invoiceStorage || typeof window.invoiceStorage.fetchInvoicesFromSupabase !== 'function') {
+        return [];
+    }
+
+    const user = typeof window.getCurrentUser === 'function' ? await window.getCurrentUser() : null;
+    if (!user) return [];
+
+    const profile = typeof window.invoiceStorage.fetchUserProfile === 'function'
+        ? await window.invoiceStorage.fetchUserProfile(user)
+        : {};
+
+    if (typeof window.invoiceStorage.migrateLegacyInvoices === 'function') {
+        await window.invoiceStorage.migrateLegacyInvoices({ user, profile });
+    }
+
+    return window.invoiceStorage.fetchInvoicesFromSupabase({
+        user,
+        profile,
+        tagsById: getStoredInvoiceTags()
+    });
+}
+
+function selectInvoice(invoice) {
+    selectedInvoice = invoice || null;
+    selectedLibraryItem = invoice || null;
+
+    if (!invoice) {
+        renderEmptyPreview();
+        return;
+    }
+
+    renderPreview(invoice);
+}
+
+function highlightSelectedRow(dbId) {
+    const rows = document.querySelectorAll('#library-items tr');
+    rows.forEach(row => {
+        row.classList.toggle('selected-row', row.dataset.dbId === dbId);
+    });
+}
+
+async function refreshLibraryData(options) {
+    const preserveSelectedId = options && options.preserveSelectedId;
 
     try {
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        savedInvoices = await loadInvoicesFromSupabase();
+        filteredInvoices = filterInvoices(savedInvoices, getSearchState());
+        renderLibraryTable(filteredInvoices);
+
+        if (!filteredInvoices.length) {
+            renderEmptyPreview();
+            return;
+        }
+
+        if (preserveSelectedId) {
+            const updatedSelection = filteredInvoices.find(invoice => invoice.dbId === preserveSelectedId);
+            if (updatedSelection) {
+                highlightSelectedRow(preserveSelectedId);
+                selectInvoice(updatedSelection);
+                return;
+            }
+        }
+
+        renderEmptyPreview();
     } catch (error) {
-        console.error('Error reading saved invoices:', error);
-        return [];
+        console.error('Error loading invoices from Supabase:', error);
+        renderEmptyState();
+        renderEmptyPreview();
     }
 }
 
@@ -91,13 +170,8 @@ function createRow(invoice) {
     cells[7].textContent = formatCurrency(getInvoiceTotal(invoice));
 
     row.addEventListener('click', () => {
-        document.querySelectorAll('#library-items tr').forEach(item => {
-            item.classList.remove('selected-row');
-        });
-
-        row.classList.add('selected-row');
-        selectedInvoice = invoice;
-        renderPreview(invoice);
+        highlightSelectedRow(invoice.dbId || '');
+        selectInvoice(invoice);
     });
 
     return clone;
@@ -149,8 +223,8 @@ function buildItemsRows(items) {
 }
 
 function buildInvoicePreviewHtml(invoice) {
-    const data = invoice?.fullInvoice || {};
-    const savedLogo = localStorage.getItem('invoiceLogo');
+    const data = invoice?.fullInvoice || invoice || {};
+    const savedLogo = data.companyLogo || localStorage.getItem('invoiceLogo');
     const itemsRows = buildItemsRows(data.items);
 
     return `
@@ -158,7 +232,7 @@ function buildInvoicePreviewHtml(invoice) {
         width: 100%; 
         max-width: 700px; 
         min-height: 850px; /* Adjust based on your aspect ratio */
-        margin: 0 auto; 
+        margin: 18px auto 0; 
         color: #111; 
         font-family: Inter, sans-serif;
         display: flex;
@@ -219,11 +293,11 @@ function buildInvoicePreviewHtml(invoice) {
             </table>
         </div>
 
-        <div class="invoice-footer">
+        <div class="invoice-footer" style="margin-top: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #eee; padding-top: 20px;">
                 <div style="max-width: 60%;">
                     <strong style="font-size: 0.9rem;">Comments:</strong>
-                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || 'Thank you for your business!'}</p>
+                    <p style="margin-top: 8px; white-space: pre-wrap; font-size: 0.85rem; color: #555;">${data.comment || ''}</p>
                 </div>
 
                 <div style="width: 220px; line-height: 1.8;">
@@ -250,24 +324,27 @@ function buildInvoicePreviewHtml(invoice) {
 function renderTags(tags) {
     if (!tagsList) return;
 
-    tagsList.innerHTML = '';
+    tagsList.innerHTML = `<button class="add-tag-btn" type="button" aria-label="Add tag">+</button>`;
 
-    if (!Array.isArray(tags) || !tags.length) {
-        return;
-    }
+    if (!Array.isArray(tags) || !tags.length) return;
 
     tags.forEach(tag => {
-        const tagEl = document.createElement('span');
-        tagEl.textContent = tag;
-        tagEl.style.display = 'inline-flex';
-        tagEl.style.alignItems = 'center';
-        tagEl.style.padding = '6px 10px';
-        tagEl.style.borderRadius = '999px';
-        tagEl.style.background = '#f3efff';
-        tagEl.style.color = '#5b43c7';
-        tagEl.style.fontSize = '0.85rem';
-        tagEl.style.fontWeight = '600';
-        tagsList.appendChild(tagEl);
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+
+        const text = document.createElement('span');
+        text.textContent = tag;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-tag-btn';
+        removeBtn.dataset.tag = tag;
+        removeBtn.setAttribute('aria-label', `Remove tag ${tag}`);
+        removeBtn.textContent = '×';
+
+        chip.appendChild(text);
+        chip.appendChild(removeBtn);
+        tagsList.appendChild(chip);
     });
 }
 
@@ -324,16 +401,19 @@ function parseTagsInput(raw) {
 }
 
 function persistInvoiceTags(dbId, tags) {
-    const savedInvoices = getSavedInvoices();
+    const nextTags = Array.isArray(tags) ? tags : [];
+    const tagsById = getStoredInvoiceTags();
+    tagsById[dbId] = nextTags;
+    setStoredInvoiceTags(tagsById);
+
     const idx = savedInvoices.findIndex(i => i.dbId === dbId);
     if (idx < 0) return null;
 
-    savedInvoices[idx].tags = tags;
+    savedInvoices[idx].tags = nextTags;
     if (savedInvoices[idx].fullInvoice && typeof savedInvoices[idx].fullInvoice === 'object') {
-        savedInvoices[idx].fullInvoice.tags = tags;
+        savedInvoices[idx].fullInvoice.tags = nextTags;
     }
 
-    localStorage.setItem('savedInvoices', JSON.stringify(savedInvoices));
     return savedInvoices[idx];
 }
 
@@ -379,7 +459,7 @@ function showPreview(item) {
     const tagsList = document.getElementById('tags-list');
     const invoice = item.fullInvoice;
 
-    selectedInvoice = invoice || null;
+    selectedInvoice = item || null;
     selectedLibraryItem = item || null;
 
     previewTitle.textContent = `Preview: ${invoice?.invoiceNumber || item.fileName || 'Invoice'}`;
@@ -408,13 +488,16 @@ function showPreview(item) {
 }
 
 function renderPreview(invoice) {
+    selectedInvoice = invoice || null;
+    selectedLibraryItem = invoice || null;
+    previewTitle.textContent = `Preview: ${invoice?.fullInvoice?.invoiceNumber || invoice?.fileName || 'Invoice'}`;
     previewSheet.innerHTML = buildInvoicePreviewHtml(invoice);
 
     if (descriptionText) {
-        descriptionText.textContent = invoice.description || 'No description available yet.';
+        descriptionText.textContent = invoice?.description || invoice?.fullInvoice?.comment || 'No description available yet.';
     }
 
-    renderTags(invoice.tags || []);
+    renderTags(getInvoiceTags(invoice));
 }
 
 function buildPrintableDocument(invoiceHtml) {
@@ -499,11 +582,12 @@ function handleSearch() {
     const stillVisible = filtered.some(i => i.dbId === selectedLibraryItem.dbId);
 
     if (!updated || !stillVisible) {
-        resetPreview();
+        renderEmptyPreview();
         return;
     }
 
-    showPreview(updated);
+    highlightSelectedRow(updated.dbId || '');
+    renderPreview(updated);
 }
 
 if (searchInput) {
@@ -570,25 +654,73 @@ if (tagsListEl) {
     });
 }
 
-function downloadInvoicePDF() {
-    if (!selectedInvoice) {
+function getInvoiceForPdf() {
+    if (selectedLibraryItem && selectedLibraryItem.fullInvoice) {
+        return selectedLibraryItem;
+    }
+
+    if (selectedInvoice && selectedInvoice.fullInvoice) {
+        return selectedInvoice;
+    }
+
+    if (selectedInvoice) {
+        return { fullInvoice: selectedInvoice };
+    }
+
+    return null;
+}
+
+async function downloadInvoicePDF() {
+    const invoiceForPdf = getInvoiceForPdf();
+
+    if (!invoiceForPdf) {
         alert('Please select an invoice first.');
         return;
     }
 
-    const element = buildPrintableDocument(buildInvoicePreviewHtml(selectedInvoice)); // The container holding your invoice
+    if (!window.html2pdf) {
+        alert('PDF exporter failed to load. Please refresh and try again.');
+        return;
+    }
 
-    // Optional settings to make it look professional
+    const sourceHtml = buildInvoicePreviewHtml(invoiceForPdf);
+
+    const invoiceNumber = invoiceForPdf?.fullInvoice?.invoiceNumber || 'invoice';
+    const safeInvoiceNumber = String(invoiceNumber).replace(/[^a-zA-Z0-9-_]+/g, '_');
+
     const opt = {
-        margin: 0.5,
-        filename: `Invoice_${Date.now()}.pdf`,
+        margin: [0.35, 0.35, 0.35, 0.35],
+        filename: `Invoice_${safeInvoiceNumber}_${Date.now()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 }, // Higher scale = better quality
-        jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' }
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            scrollX: 0,
+            scrollY: 0
+        },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // New Promise-based usage:
-    window.html2pdf().set(opt).from(element).save();
+    try {
+        await window.html2pdf().set(opt).from(sourceHtml, 'string').save();
+    } catch (error) {
+        console.error('Failed to generate PDF from HTML string, trying preview fallback:', error);
+
+        const previewNode = previewSheet?.firstElementChild;
+        if (previewNode) {
+            try {
+                await window.html2pdf().set(opt).from(previewNode).save();
+                return;
+            } catch (fallbackError) {
+                console.error('Fallback PDF generation also failed:', fallbackError);
+            }
+        }
+
+        alert('Could not generate the PDF. Please refresh and try again.');
+    }
 }
 
 if (createInvoiceBtn) {
@@ -695,56 +827,136 @@ function initButtons() {
     }
 }
 
-function initLibrary() {
-    savedInvoices = getSavedInvoices();
-    filteredInvoices = [...savedInvoices];
-
-    if (!savedInvoices.length) {
-        renderEmptyState();
-        renderEmptyPreview();
-    } else {
-        renderLibraryTable(filteredInvoices);
-        renderEmptyPreview();
-    }
-
+async function initLibrary() {
+    await refreshLibraryData();
     initSearch();
     initButtons();
 }
 
 // Re-initialize whenever the page becomes visible (back button, tab switch, etc.)
-window.addEventListener('pageshow', (event) => {
-    // Re-fetch data and re-render the table
-    savedInvoices = getSavedInvoices();
-    filteredInvoices = [...savedInvoices];
-    renderLibraryTable(filteredInvoices);
+window.addEventListener('pageshow', async () => {
+    const selectedId = selectedLibraryItem ? selectedLibraryItem.dbId : '';
+    await refreshLibraryData({ preserveSelectedId: selectedId });
 });
 
-const hamburgerBtn = document.getElementById('hamburger-btn');
-const container = document.getElementById('menu-container');
-const navigationTemplate = document.getElementById('navigation-menu');
+const userBtn = document.querySelector('.user-button');
+const menuTemplate = document.getElementById('user-profile-menu');
 
-hamburgerBtn.addEventListener('click', () => {
-  // Check if the menu is already open
-  const existingMenu = document.getElementById('navigation-menu-modal');
-  
-  if (existingMenu) {
-    // If it's already there, remove it (close the menu)
-    existingMenu.remove();
-  } else {
-    // 1. Grab the content inside the template
-    const menuContent = navigationTemplate.content.cloneNode(true);
-    
-    // 2. Put it inside our wrapper container
-    container.appendChild(menuContent);
-  }
+function getUserButtonLabelEl() {
+    if (!userBtn) return null;
+    return userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
+}
+
+async function resolveDisplayName(user) {
+    if (!user) return 'User';
+
+    let profileName = '';
+    if (window._supabase) {
+        try {
+            const { data: profile } = await window._supabase
+                .from('users')
+                .select('name')
+                .eq('id', user.id)
+                .maybeSingle();
+            profileName = (profile && profile.name) || '';
+        } catch (_) {
+            profileName = '';
+        }
+    }
+
+    return (
+        profileName ||
+        (user.user_metadata && user.user_metadata.full_name) ||
+        (user.email ? user.email.split('@')[0] : '') ||
+        'User'
+    );
+}
+
+async function applyUserGreeting() {
+    const labelEl = getUserButtonLabelEl();
+    if (!labelEl || typeof getCurrentUser !== 'function') {
+        return 'User';
+    }
+
+    try {
+        const user = await getCurrentUser();
+        if (!user) return 'User';
+
+        const displayName = await resolveDisplayName(user);
+        labelEl.textContent = 'Hi ' + displayName;
+        return displayName;
+    } catch (_) {
+        return 'User';
+    }
+}
+
+let cachedDisplayName = 'User';
+applyUserGreeting().then((displayName) => {
+    cachedDisplayName = displayName || 'User';
 });
 
-// Optional: Close the menu if the user clicks anywhere else on the screen
-document.addEventListener('click', (e) => {
-  const existingMenu = document.getElementById('navigation-menu-modal');
-  if (existingMenu && !hamburgerBtn.contains(e.target) && !existingMenu.contains(e.target)) {
-    existingMenu.remove();
-  }
-});
+if (userBtn && menuTemplate) {
+    userBtn.addEventListener('click', async () => {
+        const existing = document.getElementById('user-profile-menu-modal');
+        if (existing) {
+            existing.remove();
+            return;
+        }
 
-document.addEventListener('DOMContentLoaded', initLibrary);
+        const clone = menuTemplate.content.cloneNode(true);
+        document.body.appendChild(clone);
+
+        cachedDisplayName = await applyUserGreeting();
+        const nameEl = document.getElementById('username');
+        if (nameEl) {
+            nameEl.textContent = cachedDisplayName;
+        }
+
+        const dash = document.getElementById('go-to-dashboard');
+        const inv = document.getElementById('go-to-invoices');
+        const usr = document.getElementById('go-to-account');
+        const out = document.getElementById('signout');
+
+        if (dash) {
+            dash.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'dashboard.html';
+            });
+        }
+        if (inv) {
+            inv.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'invoice_library.html';
+            });
+        }
+        if (usr) {
+            usr.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'account_page.html';
+            });
+        }
+        if (out) {
+            out.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (typeof logoutUser === 'function') {
+                    logoutUser().then(() => {
+                        window.location.href = 'landing_page.html';
+                    });
+                    return;
+                }
+                window.location.href = 'landing_page.html';
+            });
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('user-profile-menu-modal');
+        if (menu && !userBtn.contains(e.target) && !menu.contains(e.target)) {
+            menu.remove();
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initLibrary();
+});

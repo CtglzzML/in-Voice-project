@@ -1,7 +1,7 @@
 // js/agent-stream.js
 // Responsibility: SSE connection + POST /start + POST /reply
 
-const BASE_URL = window.INVOICE_BASE_URL ?? 'https://in-voice-project-givm.onrender.com/api/v1';
+const BASE_URL = window.INVOICE_BASE_URL ?? 'http://localhost:8000/api/v1';
 
 const agentStream = (() => {
   let sessionId = null;
@@ -89,32 +89,43 @@ const agentStream = (() => {
   function _handleEvent(event) {
     switch (event.type) {
       case 'thinking':
-        _showStatus(event.message || 'Agent thinking...');
+      case 'MESSAGE':
+        _showStatus(event.message || event.content || 'Agent thinking...');
         break;
 
       case 'profile':
+      case 'PROFILE':
         formUpdater.updateProfile(event.data);
         break;
 
       case 'invoice_update':
+      case 'INVOICE_UPDATED':
         formUpdater.update(event.field, event.value);
-        // Recalc only when user edits the form manually — backend sends totals as separate events
         break;
 
       case 'question':
+      case 'WAITING_USER_INPUT':
         _showQuestion(event.message);
         break;
 
       case 'done':
+      case 'DONE':
         _onDone(event.invoice_id, event.invoice_number);
         break;
 
       case 'error':
+      case 'ERROR':
         _showError(event.message || 'Agent error.');
         eventSource.close();
         break;
 
+      case 'NEED_CLIENT_INFO':
+        // V2: backend requests client info via form
+        // For now treat as a status message; form display handled by question event preceding this
+        break;
+
       case 'ping':
+      case 'PING':
         break;
     }
   }

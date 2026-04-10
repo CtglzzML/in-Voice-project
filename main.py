@@ -6,6 +6,9 @@ import os
 from src.api.routes.invoice import router as invoice_router
 from src.api.routes.audio import router as audio_router
 from src.sessions.manager import SessionNotFound, SessionNotAwaiting
+from src.agent.logger import configure_logging
+
+configure_logging()
 
 app = FastAPI(
     title="Invoice AI Agent",

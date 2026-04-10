@@ -102,6 +102,7 @@ body {
 
 .login-button-wrapper,
 .google-button-wrapper {
+    font-family: 'Inter', sans-serif;
     display: flex;
     justify-content: center;
 }
@@ -112,6 +113,9 @@ body {
 }
 
 .login-button {
+    font-family: 'Inter', sans-serif;
+    padding: 0.2rem 0.5rem;
+    box-sizing: content-box;
     min-width: 122px;
     height: 32px;
     border: none;
@@ -156,6 +160,8 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
+    font-family: 'Inter', sans-serif;
+    padding: 0.2rem 0.5rem;
     padding: 0.45rem 0.9rem;
     border: 1px solid #dadce0;    
     border-radius: 8px;
@@ -200,6 +206,8 @@ body {
 }
 
 .signup-button {
+    font-family: 'Inter', sans-serif;
+    padding: 0.5rem;
     min-width: 122px;
     height: 32px;
     border: none;
@@ -218,6 +226,62 @@ body {
 
 .signup-button:active {
     transform: scale(0.98);
+}
+
+/* —— Sign up (same card system as login) —— */
+.signup-page .login-card {
+    max-width: 460px;
+}
+
+.signup-form .form-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+.signup-form .form-group label {
+    min-width: auto;
+    text-align: left;
+    font-weight: 600;
+    color: #222222;
+}
+
+.signup-form .label-optional {
+    font-weight: 400;
+    font-size: 0.85em;
+    color: #666666;
+}
+
+.signup-form .form-group input[type="text"],
+.signup-form .form-group input[type="email"],
+.signup-form .form-group input[type="password"] {
+    width: 100%;
+    max-width: none;
+    height: 34px;
+}
+
+.signup-form .form-group input[type="file"] {
+    width: 100%;
+    max-width: none;
+    padding: 0.5rem 0.75rem;
+    height: auto;
+    border-radius: 10px;
+    background-color: #f8f8f8;
+    font-size: 0.85rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.signup-form .login-button-wrapper {
+    margin-top: 1.5rem;
+}
+
+a.signup-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
 @media (max-width: 520px) {
@@ -258,4 +322,42 @@ body {
     .divider {
         gap: 0.4rem;
     }
+}
+.back-to-landing-btn {
+    display: block;
+    margin-top: 10px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.back-to-landing-btn:hover {
+    text-decoration: underline;
+}
+
+/* ===========================
+   ONBOARDING PAGE
+   =========================== */
+
+.onboarding-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted, #888);
+    margin-top: 4px;
+}
+
+.required-star {
+    color: red;
+}
+
+.skip-wrapper {
+    text-align: center;
+    margin-top: 12px;
+}
+
+#skip-onboarding {
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+    text-decoration: underline;
+    cursor: pointer;
 }
