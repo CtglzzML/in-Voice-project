@@ -86,19 +86,23 @@ body {
   opacity: 0.94;
 }
 
-#contact-us-form button[type="submit"]:first-of-type {
-  align-self: flex-end;
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.submit-btn {
   min-width: 96px;
   background: var(--accent);
   color: #fff;
 }
 
-#contact-us-form button[type="submit"]:last-of-type {
-  align-self: flex-start;
+.return-btn {
   min-width: 110px;
   background: #62588f;
   color: #fff;
-  margin-top: -8px;
 }
 
 #contact-us-success-modal,
@@ -136,10 +140,12 @@ body {
     gap: 18px;
   }
 
-  #contact-us-form button[type="submit"]:first-of-type,
-  #contact-us-form button[type="submit"]:last-of-type {
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .submit-btn,
+  .return-btn {
     width: 100%;
-    align-self: stretch;
-    margin-top: 0;
   }
 }

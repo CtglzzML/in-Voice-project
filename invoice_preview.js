@@ -199,20 +199,140 @@ async function syncDraftLogoFromProfile() {
     }
 }
 
-function downloadInvoicePDF() {
-    const element = document.querySelector('.pdf-frame'); // The container holding your invoice
+const pdfImageCache = new Map();
 
-    // Optional settings to make it look professional
+function waitForImageLoad(img) {
+    return new Promise((resolve) => {
+        if (!img) {
+            resolve();
+            return;
+        }
+
+        if (img.complete) {
+            resolve();
+            return;
+        }
+
+        let settled = false;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+
+        img.addEventListener('load', finish, { once: true });
+        img.addEventListener('error', finish, { once: true });
+        window.setTimeout(finish, 4000);
+    });
+}
+
+async function waitForImages(root) {
+    if (!root) return;
+    const images = Array.from(root.querySelectorAll('img'));
+    await Promise.all(images.map(waitForImageLoad));
+}
+
+async function getPdfSafeImageSrc(src) {
+    if (!src || src.startsWith('data:')) return src;
+
+    if (pdfImageCache.has(src)) {
+        return pdfImageCache.get(src);
+    }
+
+    try {
+        const response = await fetch(src, {
+            mode: 'cors',
+            cache: 'force-cache'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Image request failed with status ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error || new Error('Could not read image blob.'));
+            reader.readAsDataURL(blob);
+        });
+
+        pdfImageCache.set(src, dataUrl);
+        return dataUrl;
+    } catch (error) {
+        console.warn('Could not inline PDF image, falling back to original source:', error);
+        pdfImageCache.set(src, src);
+        return src;
+    }
+}
+
+async function createPdfExportNode(sourceNode) {
+    if (!sourceNode) return null;
+
+    await waitForImages(sourceNode);
+
+    const exportNode = sourceNode.cloneNode(true);
+    const { width } = sourceNode.getBoundingClientRect();
+    exportNode.style.width = `${Math.ceil(width || 700)}px`;
+    exportNode.style.margin = '0';
+    exportNode.style.position = 'fixed';
+    exportNode.style.left = '-10000px';
+    exportNode.style.top = '0';
+    exportNode.style.zIndex = '-1';
+    exportNode.style.pointerEvents = 'none';
+    exportNode.style.background = '#ffffff';
+    exportNode.style.boxSizing = 'border-box';
+
+    document.body.appendChild(exportNode);
+
+    const images = Array.from(exportNode.querySelectorAll('img'));
+    await Promise.all(images.map(async (img) => {
+        const safeSrc = await getPdfSafeImageSrc(img.currentSrc || img.src);
+        if (safeSrc) {
+            img.crossOrigin = 'anonymous';
+            img.src = safeSrc;
+        }
+        await waitForImageLoad(img);
+    }));
+
+    return exportNode;
+}
+
+async function downloadInvoicePDF() {
+    const element = document.querySelector('.pdf-frame');
+    const invoiceNode = element?.firstElementChild || element;
+
+    if (!invoiceNode) {
+        alert('Could not find the invoice preview. Please refresh and try again.');
+        return;
+    }
+
     const opt = {
         margin: 0.5,
         filename: `Invoice_${Date.now()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 }, // Higher scale = better quality
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            scrollX: 0,
+            scrollY: 0
+        },
         jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' }
     };
 
-    // New Promise-based usage:
-    window.html2pdf().set(opt).from(element).save();
+    let exportNode = null;
+
+    try {
+        exportNode = await createPdfExportNode(invoiceNode);
+        await window.html2pdf().set(opt).from(exportNode).save();
+    } catch (error) {
+        console.error('Failed to generate the invoice PDF:', error);
+        alert('Could not generate the PDF. Please refresh and try again.');
+    } finally {
+        exportNode?.remove();
+    }
 }
 
 function hidePopupBeforePrint() {
@@ -266,7 +386,7 @@ if (createBtn) {
         const popup = document.querySelector('.popup-card');
         popup.style.display = 'block';
 
-        popup.addEventListener('click', (e) => {
+        popup.addEventListener('click', async (e) => {
             if (e.target.tagName !== 'BUTTON') return;
 
             if (e.target.innerText === 'Go to invoice library') {
@@ -275,11 +395,11 @@ if (createBtn) {
                 window.location.href = 'create_invoice.html'
             } else if (e.target.innerText === 'Download PDF') {
                 hidePopupBeforePrint();
-                downloadInvoicePDF();
-
-                setTimeout(() => {
+                try {
+                    await downloadInvoicePDF();
+                } finally {
                     restorePopupAfterPrint();
-                }, 500);
+                }
             }
         });
 

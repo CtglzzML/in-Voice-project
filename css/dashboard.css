@@ -1,6 +1,11 @@
+.dashboard-view {
+  font-family: "Montserrat", "Inter", sans-serif;
+}
+
 .dashboard-page {
   min-height: 100vh;
   padding: 36px 32px 48px;
+  font-family: "Montserrat", "Inter", sans-serif;
 }
 
 .dashboard-header {
@@ -25,8 +30,8 @@
 .dashboard-brand h1 {
   margin: 0;
   font-size: 2.05rem;
-  font-weight: 400;
-  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.04em;
   color: #111;
 }
 
@@ -37,9 +42,10 @@
   border: none;
   background: transparent;
   color: #000;
-  font-family: "Inter", sans-serif;
-  font-size: 1.1rem;
+  font-family: "Montserrat", "Inter", sans-serif;
+  font-size: 1rem;
   font-weight: 500;
+  letter-spacing: -0.02em;
   cursor: pointer;
   padding: 0;
 }
@@ -78,10 +84,11 @@
 }
 
 .card {
-  background: #d9d9d9;
+  background: #f4f1ff;
+  border: 1px solid rgba(98, 88, 143, 0.08);
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 12px 30px rgba(98, 88, 143, 0.12);
 }
 
 .card-header {
@@ -93,8 +100,10 @@
 
 .card-header h2 {
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .new-invoice-card {
@@ -116,9 +125,10 @@
   border-radius: 4px;
   background: var(--accent);
   color: #fff;
-  font-family: "Inter", sans-serif;
-  font-size: 0.98rem;
-  font-weight: 400;
+  font-family: "Montserrat", "Inter", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
@@ -155,12 +165,15 @@
   font-weight: 800;
   line-height: 1;
   color: #000;
+  letter-spacing: -0.06em;
 }
 
 .stat-label {
   margin: 0 0 18px;
-  font-size: 1rem;
-  font-weight: 400;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: #000;
   text-align: center;
 }
@@ -173,9 +186,10 @@
   border-radius: 4px;
   background: #62588f;
   color: #fff;
-  font-family: "Inter", sans-serif;
-  font-size: 0.95rem;
-  font-weight: 400;
+  font-family: "Montserrat", "Inter", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
@@ -205,8 +219,9 @@
 
 .profile-username {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
   color: #111;
 }
 
@@ -229,8 +244,9 @@
   border-radius: 8px;
   text-decoration: none;
   color: #333;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .sign-out-link:hover {

@@ -670,6 +670,105 @@ function getInvoiceForPdf() {
     return null;
 }
 
+const pdfImageCache = new Map();
+
+function waitForImageLoad(img) {
+    return new Promise((resolve) => {
+        if (!img) {
+            resolve();
+            return;
+        }
+
+        if (img.complete) {
+            resolve();
+            return;
+        }
+
+        let settled = false;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+
+        img.addEventListener('load', finish, { once: true });
+        img.addEventListener('error', finish, { once: true });
+        window.setTimeout(finish, 4000);
+    });
+}
+
+async function waitForImages(root) {
+    if (!root) return;
+    const images = Array.from(root.querySelectorAll('img'));
+    await Promise.all(images.map(waitForImageLoad));
+}
+
+async function getPdfSafeImageSrc(src) {
+    if (!src || src.startsWith('data:')) return src;
+
+    if (pdfImageCache.has(src)) {
+        return pdfImageCache.get(src);
+    }
+
+    try {
+        const response = await fetch(src, {
+            mode: 'cors',
+            cache: 'force-cache'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Image request failed with status ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error || new Error('Could not read image blob.'));
+            reader.readAsDataURL(blob);
+        });
+
+        pdfImageCache.set(src, dataUrl);
+        return dataUrl;
+    } catch (error) {
+        console.warn('Could not inline PDF image, falling back to original source:', error);
+        pdfImageCache.set(src, src);
+        return src;
+    }
+}
+
+async function createPdfExportNode(sourceNode) {
+    if (!sourceNode) return null;
+
+    await waitForImages(sourceNode);
+
+    const exportNode = sourceNode.cloneNode(true);
+    const { width } = sourceNode.getBoundingClientRect();
+    exportNode.style.width = `${Math.ceil(width || 700)}px`;
+    exportNode.style.margin = '0';
+    exportNode.style.position = 'fixed';
+    exportNode.style.left = '-10000px';
+    exportNode.style.top = '0';
+    exportNode.style.zIndex = '-1';
+    exportNode.style.pointerEvents = 'none';
+    exportNode.style.background = '#ffffff';
+    exportNode.style.boxSizing = 'border-box';
+
+    document.body.appendChild(exportNode);
+
+    const images = Array.from(exportNode.querySelectorAll('img'));
+    await Promise.all(images.map(async (img) => {
+        const safeSrc = await getPdfSafeImageSrc(img.currentSrc || img.src);
+        if (safeSrc) {
+            img.crossOrigin = 'anonymous';
+            img.src = safeSrc;
+        }
+        await waitForImageLoad(img);
+    }));
+
+    return exportNode;
+}
+
 async function downloadInvoicePDF() {
     const invoiceForPdf = getInvoiceForPdf();
 
@@ -683,10 +782,14 @@ async function downloadInvoicePDF() {
         return;
     }
 
-    const sourceHtml = buildInvoicePreviewHtml(invoiceForPdf);
-
     const invoiceNumber = invoiceForPdf?.fullInvoice?.invoiceNumber || 'invoice';
     const safeInvoiceNumber = String(invoiceNumber).replace(/[^a-zA-Z0-9-_]+/g, '_');
+    const previewNode = previewSheet?.firstElementChild;
+
+    if (!previewNode) {
+        alert('Could not find the invoice preview. Please refresh and try again.');
+        return;
+    }
 
     const opt = {
         margin: [0.35, 0.35, 0.35, 0.35],
@@ -704,22 +807,16 @@ async function downloadInvoicePDF() {
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
+    let exportNode = null;
+
     try {
-        await window.html2pdf().set(opt).from(sourceHtml, 'string').save();
+        exportNode = await createPdfExportNode(previewNode);
+        await window.html2pdf().set(opt).from(exportNode).save();
     } catch (error) {
-        console.error('Failed to generate PDF from HTML string, trying preview fallback:', error);
-
-        const previewNode = previewSheet?.firstElementChild;
-        if (previewNode) {
-            try {
-                await window.html2pdf().set(opt).from(previewNode).save();
-                return;
-            } catch (fallbackError) {
-                console.error('Fallback PDF generation also failed:', fallbackError);
-            }
-        }
-
+        console.error('Failed to generate the invoice PDF:', error);
         alert('Could not generate the PDF. Please refresh and try again.');
+    } finally {
+        exportNode?.remove();
     }
 }
 
