@@ -1,6 +1,7 @@
 const backBtn = document.querySelector('.btn-secondary');
 const createBtn = document.querySelector('.btn-primary');
 const pdfFrame = document.querySelector('.pdf-frame');
+let profileLogoUrl = '';
 
 function formatCurrency(value) {
     return `$${Number(value).toFixed(2)}`;
@@ -50,7 +51,7 @@ async function saveInvoiceToLibrary() {
 }
 
 function getLogoForInvoice(data) {
-    return (data && data.companyLogo) || localStorage.getItem('invoiceLogo') || '';
+    return profileLogoUrl || ((data && data.companyLogo) || '');
 }
 
 function renderInvoicePreview() {
@@ -173,6 +174,31 @@ function renderInvoicePreview() {
 `;
 }
 
+async function syncDraftLogoFromProfile() {
+    if (!window._supabase || typeof window.getCurrentUser !== 'function') return;
+
+    try {
+        const user = await window.getCurrentUser();
+        if (!user || !user.id) return;
+
+        const { data: profile } = await window._supabase
+            .from('users')
+            .select('logo_url')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        profileLogoUrl = (profile && profile.logo_url) || '';
+
+        const invoiceDraft = getStoredInvoice();
+        if (!invoiceDraft) return;
+
+        invoiceDraft.companyLogo = profileLogoUrl;
+        sessionStorage.setItem('invoiceDraft', JSON.stringify(invoiceDraft));
+    } catch (error) {
+        console.error('Error syncing profile logo for preview:', error);
+    }
+}
+
 function downloadInvoicePDF() {
     const element = document.querySelector('.pdf-frame'); // The container holding your invoice
 
@@ -261,26 +287,9 @@ if (createBtn) {
         createBtn.textContent = 'Create invoice';
     });
 }
-renderInvoicePreview();
-
-const fileInput = document.getElementById('company-logo');
-const preview = document.getElementById('logo-preview');
-const labelText = document.getElementById('label-text');
-
-if (fileInput && preview && labelText) {
-    fileInput.addEventListener('change', function () {
-        const file = this.files[0];
-
-        if (file) {
-            const reader = new FileReader();
-
-            reader.addEventListener('load', function () {
-                preview.setAttribute('src', this.result);
-                preview.style.display = 'block';
-                labelText.style.display = 'none';
-            });
-
-            reader.readAsDataURL(file);
-        }
-    });
+async function initInvoicePreviewPage() {
+    await syncDraftLogoFromProfile();
+    renderInvoicePreview();
 }
+
+initInvoicePreviewPage();

@@ -66,7 +66,17 @@
 
                     <div class="form-group">
                         <label for="ob-logo">Company logo <span class="label-optional">(optional)</span></label>
-                        <input type="file" id="ob-logo" accept="image/*" />
+                        <div class="onboarding-logo-upload" id="ob-logo-upload">
+                            <label for="ob-logo" class="onboarding-logo-picker" aria-label="Upload company logo">
+                                <div class="onboarding-custom-file-upload" id="ob-logo-label">
+                                    <img src="" id="ob-logo-preview" alt="Logo preview" />
+                                    <img src="../images/image-missing-svgrepo-com.svg" id="ob-placeholder-logo"
+                                        alt="placeholder logo" />
+                                    <input type="file" id="ob-logo" accept="image/*" />
+                                </div>
+                            </label>
+                            <button type="button" id="ob-delete-logo-btn" aria-label="Delete logo">🗑️</button>
+                        </div>
                     </div>
 
                     <div class="login-button-wrapper">

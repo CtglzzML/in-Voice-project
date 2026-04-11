@@ -224,7 +224,7 @@ function buildItemsRows(items) {
 
 function buildInvoicePreviewHtml(invoice) {
     const data = invoice?.fullInvoice || invoice || {};
-    const savedLogo = data.companyLogo || localStorage.getItem('invoiceLogo');
+    const savedLogo = data.companyLogo || '';
     const itemsRows = buildItemsRows(data.items);
 
     return `
@@ -847,6 +847,26 @@ function getUserButtonLabelEl() {
     return userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
 }
 
+function getUserButtonIconEl() {
+    if (!userBtn) return null;
+    return userBtn.querySelector('.user-icon');
+}
+
+function applyUserAvatar(user) {
+    const iconEl = getUserButtonIconEl();
+    if (!iconEl) return;
+
+    const avatarUrl = user && user.user_metadata && (user.user_metadata.avatar_url || user.user_metadata.picture);
+    if (avatarUrl) {
+        iconEl.classList.add('has-avatar');
+        iconEl.style.backgroundImage = 'url("' + String(avatarUrl).replace(/"/g, '%22') + '")';
+        return;
+    }
+
+    iconEl.classList.remove('has-avatar');
+    iconEl.style.backgroundImage = '';
+}
+
 async function resolveDisplayName(user) {
     if (!user) return 'User';
 
@@ -882,6 +902,8 @@ async function applyUserGreeting() {
         const user = await getCurrentUser();
         if (!user) return 'User';
 
+        applyUserAvatar(user);
+
         const displayName = await resolveDisplayName(user);
         labelEl.textContent = 'Hi, ' + displayName;
         return displayName;
@@ -913,8 +935,8 @@ if (userBtn && menuTemplate) {
         }
 
         const dash = document.getElementById('go-to-dashboard');
-        const inv = document.getElementById('go-to-invoices');
         const usr = document.getElementById('go-to-account');
+        const cust = document.getElementById('go-to-customers');
         const out = document.getElementById('signout');
 
         if (dash) {
@@ -923,16 +945,16 @@ if (userBtn && menuTemplate) {
                 window.location.href = 'dashboard.html';
             });
         }
-        if (inv) {
-            inv.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.location.href = 'invoice_library.html';
-            });
-        }
         if (usr) {
             usr.addEventListener('click', (e) => {
                 e.preventDefault();
                 window.location.href = 'account_page.html';
+            });
+        }
+        if (cust) {
+            cust.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'customer_info_page.html';
             });
         }
         if (out) {

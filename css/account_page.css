@@ -145,6 +145,21 @@
     word-break: break-word;
 }
 
+.account-company-logo {
+    display: inline-flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 36px;
+}
+
+.account-company-logo img {
+    display: block;
+    width: 96px;
+    max-height: 52px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
 /* ===========================
    EDIT ACCOUNT FORM
    =========================== */
@@ -190,6 +205,7 @@
 .edit-logo-upload {
     display: flex;
     align-items: center;
+    gap: 6px;
 }
 
 #user-logo {
@@ -219,6 +235,27 @@
     max-height: 100%;
     object-fit: contain;
     display: none;
+}
+
+#edit-delete-logo-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgb(239, 239, 239);
+    align-self: flex-end;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#edit-delete-logo-btn:hover {
+    background-color: rgb(244, 243, 249);
+    box-shadow: 0 0 10px #0000001f;
+}
+
+#edit-delete-logo-btn:active {
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0 0 10px #0000001f;
 }
 
 .action-row {

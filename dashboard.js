@@ -12,6 +12,26 @@ function getUserButtonLabelEl() {
   return userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
 }
 
+function getUserButtonIconEl() {
+  if (!userBtn) return null;
+  return userBtn.querySelector('.user-icon');
+}
+
+function applyUserAvatar(user) {
+  var iconEl = getUserButtonIconEl();
+  if (!iconEl) return;
+
+  var avatarUrl = user && user.user_metadata && (user.user_metadata.avatar_url || user.user_metadata.picture);
+  if (avatarUrl) {
+    iconEl.classList.add('has-avatar');
+    iconEl.style.backgroundImage = 'url("' + String(avatarUrl).replace(/"/g, '%22') + '")';
+    return;
+  }
+
+  iconEl.classList.remove('has-avatar');
+  iconEl.style.backgroundImage = '';
+}
+
 function hasMeaningfulValue(value) {
   const normalized = String(value || '').trim();
   return normalized !== '' && normalized !== '-' && normalized !== '—';
@@ -134,6 +154,8 @@ async function applyUserGreeting() {
     const user = await getCurrentUser();
     if (!user) return;
 
+    applyUserAvatar(user);
+
     let displayName = '';
 
     if (window._supabase) {
@@ -246,6 +268,7 @@ if (userBtn && menuTemplate) {
 
     var inv = document.getElementById('go-to-invoices');
     var usr = document.getElementById('go-to-account');
+    var cust = document.getElementById('go-to-customers');
     var out = document.getElementById('signout');
 
     if (inv) {
@@ -258,6 +281,12 @@ if (userBtn && menuTemplate) {
       usr.addEventListener('click', function (e) {
         e.preventDefault();
         window.location.href = 'account_page.html';
+      });
+    }
+    if (cust) {
+      cust.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.href = 'customer_info_page.html';
       });
     }
     if (out) {

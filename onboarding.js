@@ -24,6 +24,51 @@ document.addEventListener('DOMContentLoaded', async function () {
     nameInput.value = user.user_metadata.full_name;
   }
 
+  var logoInput = document.getElementById('ob-logo');
+  var logoPreview = document.getElementById('ob-logo-preview');
+  var logoPlaceholder = document.getElementById('ob-placeholder-logo');
+  var deleteLogoBtn = document.getElementById('ob-delete-logo-btn');
+
+  function resetLogoSelection() {
+    if (logoInput) {
+      logoInput.value = '';
+    }
+    if (logoPreview) {
+      logoPreview.src = '';
+      logoPreview.style.display = 'none';
+    }
+    if (logoPlaceholder) {
+      logoPlaceholder.style.display = 'block';
+    }
+  }
+
+  if (logoInput) {
+    logoInput.addEventListener('change', function () {
+      if (!this.files || !this.files[0]) {
+        resetLogoSelection();
+        return;
+      }
+
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        if (logoPreview) {
+          logoPreview.src = event.target.result;
+          logoPreview.style.display = 'block';
+        }
+        if (logoPlaceholder) {
+          logoPlaceholder.style.display = 'none';
+        }
+      };
+      reader.readAsDataURL(this.files[0]);
+    });
+  }
+
+  if (deleteLogoBtn) {
+    deleteLogoBtn.addEventListener('click', function () {
+      resetLogoSelection();
+    });
+  }
+
   var skipBtn = document.getElementById('skip-onboarding');
   if (skipBtn) {
     skipBtn.addEventListener('click', async function (e) {
@@ -62,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     };
 
     // Handle logo upload if provided
-    var logoFile = document.getElementById('ob-logo').files[0];
+    var logoFile = logoInput && logoInput.files ? logoInput.files[0] : null;
     if (logoFile) {
       var logoPath = user.id + '/' + logoFile.name;
       var uploadResult = await _supabase.storage

@@ -4,13 +4,12 @@ const itemTable = document.getElementById('item-list-body');
 const rowTemplate = document.getElementById('non-empty-row');
 const emptyRowTemplate = document.getElementById('empty-row');
 const taxInput = document.getElementById('inv-tax');
-const fileInput = document.getElementById('company-logo');
-const preview = document.getElementById('logo-preview');
-const logoPlaceholder = document.getElementById('placeholder-logo');
 const seePreviewBtn = document.querySelector('.preview-btn');
 const seePreviewBtnWrap = document.querySelector('.preview-btn-wrap');
 const returnBtn = document.querySelector('.return-btn');
-const deleteLogoBtn = document.getElementById('delete-logo-btn');
+const invoiceNumberInput = document.getElementById('inv-number');
+const previewBtnDefaultText = seePreviewBtn ? seePreviewBtn.textContent : 'See preview';
+let profileLogoUrl = '';
 
 function formatCurrency(value) {
     return `$${Number(value).toFixed(2)}`;
@@ -158,6 +157,7 @@ function getInvoiceData() {
         companyAddress: document.getElementById('company-address')?.value.trim() || '',
         companyPhone: document.getElementById('company-phone')?.value.trim() || '',
         companyEmail: document.getElementById('company-email')?.value.trim() || '',
+        companyLogo: profileLogoUrl || '',
         clientName: document.getElementById('client-name')?.value.trim() || '',
         clientAddress: document.getElementById('client-address')?.value.trim() || '',
         clientPhone: document.getElementById('client-phone')?.value.trim() || '',
@@ -168,6 +168,7 @@ function getInvoiceData() {
 }
 
 function getClientPreviewValidationState() {
+    const invoiceNumber = invoiceNumberInput ? invoiceNumberInput.value.trim() : '';
     const clientNameInput = document.getElementById('client-name');
     const clientPhoneInput = document.getElementById('client-phone');
     const clientEmailInput = document.getElementById('client-email');
@@ -178,9 +179,12 @@ function getClientPreviewValidationState() {
     const clientEmail = clientEmailInput ? clientEmailInput.value.trim() : '';
 
     return {
+        invoiceNumber,
+        invoiceNumberInput,
         clientNameInput,
         clientPhoneInput,
         clientEmailInput,
+        hasInvoiceNumber: invoiceNumber.length > 0,
         hasClientName: clientName.length > 0,
         hasClientContact: clientPhone.length > 0 || clientEmail.length > 0,
         hasItem: hasItem
@@ -190,13 +194,14 @@ function getClientPreviewValidationState() {
 function updatePreviewButtonState() {
     if (!seePreviewBtn) return;
     const state = getClientPreviewValidationState();
-    const isValid = state.hasClientName && state.hasClientContact && state.hasItem;
+    const isValid = state.hasInvoiceNumber && state.hasClientName && state.hasClientContact && state.hasItem;
     const hint = isValid
         ? 'Ready to open preview.'
-        : 'Fill client name, at least one contact (phone or email), and add at least one item to preview.';
+        : 'Fill invoice number, client name, at least one contact (phone or email), and add at least one item to preview.';
 
     seePreviewBtn.disabled = !isValid;
-    seePreviewBtn.title = hint;
+    seePreviewBtn.removeAttribute('title');
+    seePreviewBtn.setAttribute('aria-label', hint);
 
     if (seePreviewBtnWrap) {
         seePreviewBtnWrap.setAttribute('data-preview-hint', hint);
@@ -205,6 +210,9 @@ function updatePreviewButtonState() {
 
 function showPreviewValidationError(state) {
     const missingFields = [];
+    if (!state.hasInvoiceNumber) {
+        missingFields.push('• Invoice number');
+    }
     if (!state.hasClientName) {
         missingFields.push('• Client name');
     }
@@ -215,7 +223,12 @@ function showPreviewValidationError(state) {
         missingFields.push('• At least one invoice item');
     }
 
-    alert('Please complete client information before previewing:\n' + missingFields.join('\n'));
+    alert('Please complete required invoice information before previewing:\n' + missingFields.join('\n'));
+
+    if (!state.hasInvoiceNumber && state.invoiceNumberInput) {
+        state.invoiceNumberInput.focus();
+        return;
+    }
 
     if (!state.hasClientName && state.clientNameInput) {
         state.clientNameInput.focus();
@@ -231,6 +244,35 @@ function showPreviewValidationError(state) {
     }
 }
 
+async function isInvoiceNumberUniqueForCurrentUser(invoiceNumber) {
+    const normalized = String(invoiceNumber || '').trim();
+    if (!normalized) {
+        return false;
+    }
+
+    if (!window._supabase || typeof window.getCurrentUser !== 'function') {
+        return true;
+    }
+
+    const user = await window.getCurrentUser();
+    if (!user || !user.id) {
+        return true;
+    }
+
+    const result = await window._supabase
+        .from('invoices')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('invoice_number', normalized)
+        .limit(1);
+
+    if (result.error) {
+        throw result.error;
+    }
+
+    return !(Array.isArray(result.data) && result.data.length > 0);
+}
+
 function saveDraftToSession() {
     const data = getInvoiceData();
     const dataString = JSON.stringify(data);
@@ -241,17 +283,6 @@ function saveDraftToSession() {
 
 function loadDraftFromSession() {
     const raw = sessionStorage.getItem('invoiceDraft') || localStorage.getItem('persistentInvoiceDraft');
-
-    // Load Logo from LocalStorage
-    const savedLogo = localStorage.getItem('invoiceLogo');
-    if (savedLogo && preview) {
-        preview.src = savedLogo;
-        preview.style.display = 'block';
-
-        if (logoPlaceholder) {
-            logoPlaceholder.style.display = 'none';
-        }
-    }
 
     if (!raw) {
         renderEmptyStateIfNeeded();
@@ -315,10 +346,9 @@ function updateLivePreview() {
     setText('preview-client-email', `Client email: ${data.clientEmail || '-'}`);
 
     const previewLogoDisplay = document.getElementById('preview-logo-display');
-    const savedLogo = localStorage.getItem('invoiceLogo');
     if (previewLogoDisplay) {
-        if (savedLogo) {
-            previewLogoDisplay.src = savedLogo;
+        if (profileLogoUrl) {
+            previewLogoDisplay.src = profileLogoUrl;
             previewLogoDisplay.style.display = 'block';
         } else {
             previewLogoDisplay.src = '';
@@ -375,58 +405,39 @@ document.querySelectorAll(
     });
 });
 
-if (fileInput) {
-    fileInput.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const imageData = e.target.result;
-
-                if (preview) {
-                    preview.src = imageData;
-                    preview.style.display = 'block';
-                }
-
-                if (logoPlaceholder) {
-                    logoPlaceholder.style.display = 'none';
-                }
-
-                localStorage.setItem('invoiceLogo', imageData);
-                updateLivePreview();
-            };
-            reader.readAsDataURL(this.files[0]);
-        }
-    });
-}
-
-if (deleteLogoBtn) {
-    deleteLogoBtn.addEventListener('click', () => {
-        if (preview) {
-            preview.src = '';
-            preview.style.display = 'none';
-        }
-
-        if (logoPlaceholder) {
-            logoPlaceholder.style.display = 'block';
-        }
-
-        if (fileInput) {
-            fileInput.value = '';
-        }
-
-        localStorage.removeItem('invoiceLogo');
-        updateLivePreview();
-    });
-}
-
 if (seePreviewBtn) {
-    seePreviewBtn.addEventListener('click', (e) => {
+    seePreviewBtn.addEventListener('click', async (e) => {
         const state = getClientPreviewValidationState();
-        if (!(state.hasClientName && state.hasClientContact && state.hasItem)) {
+        if (!(state.hasInvoiceNumber && state.hasClientName && state.hasClientContact && state.hasItem)) {
             e.preventDefault();
             showPreviewValidationError(state);
             updatePreviewButtonState();
             return;
+        }
+
+        seePreviewBtn.disabled = true;
+        seePreviewBtn.textContent = 'Checking...';
+
+        try {
+            const isUnique = await isInvoiceNumberUniqueForCurrentUser(state.invoiceNumber);
+            if (!isUnique) {
+                alert('This invoice number already exists. Please choose a unique invoice number.');
+                if (state.invoiceNumberInput) {
+                    state.invoiceNumberInput.focus();
+                    state.invoiceNumberInput.select();
+                }
+                updatePreviewButtonState();
+                return;
+            }
+        } catch (error) {
+            console.error('Error checking invoice number uniqueness:', error);
+            alert('Could not validate invoice number uniqueness right now. Please try again.');
+            updatePreviewButtonState();
+            return;
+        } finally {
+            if (seePreviewBtn) {
+                seePreviewBtn.textContent = previewBtnDefaultText;
+            }
         }
 
         saveDraftToSession();
@@ -448,7 +459,6 @@ if (cancelInvoiceBtn) {
             // Clear all trace of the draft exactly as if they started over
             sessionStorage.removeItem('invoiceDraft');
             localStorage.removeItem('persistentInvoiceDraft');
-            localStorage.removeItem('invoiceLogo');
             
             // Send back to dashboard
             window.location.href = 'dashboard.html';
@@ -482,6 +492,7 @@ async function autofillFromProfile() {
         const profileAddress = mergedProfile.address || '';
         const profilePhone = mergedProfile.phone || '';
         const profileEmail = mergedProfile.email || '';
+        const nextProfileLogoUrl = mergedProfile.logo_url || '';
         
         let changed = false;
 
@@ -506,20 +517,9 @@ async function autofillFromProfile() {
             taxInput.value = mergedProfile.default_tva;
             changed = true;
         }
-        
-        // Also pre-fill logo if available and not set locally
-        if (mergedProfile.logo_url && !localStorage.getItem('invoiceLogo')) {
-            const preview = document.getElementById('logo-preview');
-            const logoPlaceholder = document.getElementById('placeholder-logo');
 
-            if (preview) {
-                preview.src = mergedProfile.logo_url;
-                preview.style.display = 'block';
-            }
-            if (logoPlaceholder) {
-                logoPlaceholder.style.display = 'none';
-            }
-            localStorage.setItem('invoiceLogo', mergedProfile.logo_url);
+        if (profileLogoUrl !== nextProfileLogoUrl) {
+            profileLogoUrl = nextProfileLogoUrl;
             changed = true;
         }
 

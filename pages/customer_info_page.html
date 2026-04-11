@@ -46,6 +46,25 @@
                             aria-label="Search">🔍</button>
                     </div>
 
+                    <form id="add-customer-form" class="add-customer-form hidden" autocomplete="off">
+                        <div class="add-customer-grid">
+                            <input type="text" id="new-customer-name" placeholder="Customer name *" required />
+                            <input type="email" id="new-customer-email" placeholder="Email (please provide at least one contact method)" />
+                            <input type="tel" id="new-customer-phone" placeholder="Phone (please provide at least one contact method)" />
+                            <input type="text" id="new-customer-company" placeholder="Company (optional)" />
+                            <input type="text" id="new-customer-address" placeholder="Address (optional)"
+                                class="add-customer-address" />
+                        </div>
+                        <div class="add-customer-actions">
+                            <button type="submit" id="save-customer-btn" class="customer-action-btn accent-btn">
+                                Save customer
+                            </button>
+                            <button type="button" id="cancel-add-customer-btn" class="customer-action-btn neutral-btn">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+
                     <!-- Customer Table -->
                     <div class="customer-table-wrapper">
                         <table class="customer-table" id="customer-table">
@@ -73,6 +92,9 @@
 
                     <!-- Action Buttons -->
                     <div class="customer-actions">
+                        <button type="button" id="add-customer-btn" class="customer-action-btn neutral-btn">
+                            Add customer
+                        </button>
                         <button type="button" id="create-invoice-btn" class="customer-action-btn accent-btn" disabled>
                             Create an invoice
                         </button>

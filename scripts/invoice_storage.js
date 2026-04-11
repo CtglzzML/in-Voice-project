@@ -305,27 +305,25 @@
     var profile = options && options.profile ? options.profile : await fetchUserProfile(user);
     var clients = options && Array.isArray(options.clients) ? options.clients : await fetchClientsForUser(user.id);
     var invoice = normalizeInvoice(invoiceInput);
+
+    if (!invoice.invoiceNumber) {
+      throw new Error('Invoice number is required.');
+    }
+
     var client = await ensureClientRecord(user.id, invoice, clients);
     var payload = buildInvoicePayload(user.id, invoice, client && client.id);
     var supabase = getSupabase();
 
     var existing = await findExistingInvoice(user.id, invoice);
-    var result;
-
     if (existing) {
-      result = await supabase
-        .from('invoices')
-        .update(payload)
-        .eq('id', existing.id)
-        .select()
-        .single();
-    } else {
-      result = await supabase
-        .from('invoices')
-        .insert(payload)
-        .select()
-        .single();
+      throw new Error('Invoice number "' + invoice.invoiceNumber + '" already exists. Please choose a unique invoice number.');
     }
+
+    var result = await supabase
+      .from('invoices')
+      .insert(payload)
+      .select()
+      .single();
 
     if (result.error) {
       throw result.error;

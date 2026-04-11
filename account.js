@@ -12,34 +12,59 @@ async function fillAccountPage() {
   var title = document.querySelector('main .account-username');
   var emailEl = document.querySelector('main .account-email');
   var companyEl = document.querySelector('main .account-company-name');
+  var companyLogoEl = document.querySelector('main .account-company-logo');
   var tvaEl = document.querySelector('main .account-tva');
   var defaultTvaEl = document.querySelector('main .account-default-tva');
   var addressEl = document.querySelector('main .account-address');
   var phoneEl = document.querySelector('main .account-phone');
-  var logoContainer = document.getElementById('account-logo-container');
+  var avatarContainer = document.getElementById('account-logo-container');
 
   var displayEmail = profile.email || user.email || '';
   var displayUsername = profile.name || (user.user_metadata && user.user_metadata.full_name) || displayEmail || 'User';
+  var googleAvatar = (user.user_metadata && (user.user_metadata.avatar_url || user.user_metadata.picture)) || '';
   var userBtnLabel = document.querySelector('.user-button span:not(.user-icon)') || document.querySelector('.user-button span');
+  var userBtnIcon = document.querySelector('.user-button .user-icon');
 
   if (title) title.textContent = displayUsername;
-  if (userBtnLabel) userBtnLabel.textContent = 'Hi,
+  if (emailEl) emailEl.textContent = displayEmail || '—';
+  if (userBtnLabel) userBtnLabel.textContent = 'Hi, ' + displayUsername;
+  if (userBtnIcon) {
+    if (googleAvatar) {
+      userBtnIcon.classList.add('has-avatar');
+      userBtnIcon.style.backgroundImage = 'url("' + String(googleAvatar).replace(/"/g, '%22') + '")';
+    } else {
+      userBtnIcon.classList.remove('has-avatar');
+      userBtnIcon.style.backgroundImage = '';
+    }
+  }
 
   if (companyEl) companyEl.textContent = profile.Company_name || profile.company_name || '—';
+  if (companyLogoEl) {
+    if (profile.logo_url) {
+      companyLogoEl.textContent = '';
+      var companyLogoImg = document.createElement('img');
+      companyLogoImg.src = profile.logo_url;
+      companyLogoImg.alt = 'Company Logo';
+      companyLogoEl.appendChild(companyLogoImg);
+    } else {
+      companyLogoEl.textContent = '—';
+    }
+  }
   if (tvaEl) tvaEl.textContent = profile.tva_number || '—';
   if (defaultTvaEl) defaultTvaEl.textContent = profile.default_tva != null ? profile.default_tva + '%' : '—';
   if (addressEl) addressEl.textContent = profile.address || '—';
   if (phoneEl) phoneEl.textContent = profile.phone || '—';
 
-  if (logoContainer && profile.logo_url) {
-    logoContainer.innerHTML = '';
-    logoContainer.classList.add('has-profile-image');
+  if (avatarContainer && googleAvatar) {
+    avatarContainer.innerHTML = '';
+    avatarContainer.classList.add('has-profile-image');
     var img = document.createElement('img');
-    img.src = profile.logo_url;
-    img.alt = 'Company Logo';
-    logoContainer.appendChild(img);
-  } else if (logoContainer) {
-    logoContainer.classList.remove('has-profile-image');
+    img.src = googleAvatar;
+    img.alt = 'Profile photo';
+    avatarContainer.appendChild(img);
+  } else if (avatarContainer) {
+    avatarContainer.innerHTML = '';
+    avatarContainer.classList.remove('has-profile-image');
   }
 }
 

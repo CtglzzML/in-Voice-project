@@ -4,6 +4,15 @@
 const customerTableBody = document.getElementById('customer-table-body');
 const searchInput = document.getElementById('customer-search');
 const searchBtn = document.getElementById('customer-search-btn');
+const addCustomerBtn = document.getElementById('add-customer-btn');
+const addCustomerForm = document.getElementById('add-customer-form');
+const saveCustomerBtn = document.getElementById('save-customer-btn');
+const cancelAddCustomerBtn = document.getElementById('cancel-add-customer-btn');
+const newCustomerNameInput = document.getElementById('new-customer-name');
+const newCustomerEmailInput = document.getElementById('new-customer-email');
+const newCustomerPhoneInput = document.getElementById('new-customer-phone');
+const newCustomerCompanyInput = document.getElementById('new-customer-company');
+const newCustomerAddressInput = document.getElementById('new-customer-address');
 const createInvoiceBtn = document.getElementById('create-invoice-btn');
 const deleteCustomerBtn = document.getElementById('delete-customer-btn');
 const goDashboardBtn = document.getElementById('go-dashboard-btn');
@@ -17,6 +26,26 @@ let selectedClient = null;
 function getUserButtonLabelEl() {
     if (!userBtn) return null;
     return userBtn.querySelector('span:not(.user-icon)') || userBtn.querySelector('span');
+}
+
+function getUserButtonIconEl() {
+    if (!userBtn) return null;
+    return userBtn.querySelector('.user-icon');
+}
+
+function applyUserAvatar(user) {
+    const iconEl = getUserButtonIconEl();
+    if (!iconEl) return;
+
+    const avatarUrl = user && user.user_metadata && (user.user_metadata.avatar_url || user.user_metadata.picture);
+    if (avatarUrl) {
+        iconEl.classList.add('has-avatar');
+        iconEl.style.backgroundImage = 'url("' + String(avatarUrl).replace(/"/g, '%22') + '")';
+        return;
+    }
+
+    iconEl.classList.remove('has-avatar');
+    iconEl.style.backgroundImage = '';
 }
 
 function hasMeaningfulValue(value) {
@@ -39,6 +68,8 @@ function isFilledClient(client) {
 async function applyUserGreeting(user) {
     const labelEl = getUserButtonLabelEl();
     if (!labelEl || !user) return;
+
+    applyUserAvatar(user);
 
     let displayName = '';
 
@@ -154,6 +185,32 @@ function mergeClients(remoteClients, localClients) {
     return Array.from(merged.values()).filter(isFilledClient).sort(function (a, b) {
         return String(a.name || '').localeCompare(String(b.name || ''));
     });
+}
+
+function normalizeOptionalField(inputEl) {
+    const value = inputEl && typeof inputEl.value === 'string' ? inputEl.value.trim() : '';
+    return value || null;
+}
+
+function setAddCustomerFormOpen(isOpen) {
+    if (!addCustomerForm) return;
+
+    addCustomerForm.classList.toggle('hidden', !isOpen);
+    if (!addCustomerBtn) return;
+
+    if (isOpen) {
+        addCustomerBtn.disabled = true;
+        if (newCustomerNameInput) {
+            newCustomerNameInput.focus();
+        }
+        return;
+    }
+
+    addCustomerBtn.disabled = false;
+}
+
+function resetAddCustomerForm() {
+    if (addCustomerForm) addCustomerForm.reset();
 }
 
 // ───────────────── Load clients from DB ─────────────────
@@ -275,6 +332,85 @@ if (searchInput) {
 if (searchBtn) {
     searchBtn.addEventListener('click', function () {
         filterClients(searchInput ? searchInput.value : '');
+    });
+}
+
+if (addCustomerBtn) {
+    addCustomerBtn.addEventListener('click', function () {
+        setAddCustomerFormOpen(true);
+    });
+}
+
+if (cancelAddCustomerBtn) {
+    cancelAddCustomerBtn.addEventListener('click', function () {
+        resetAddCustomerForm();
+        setAddCustomerFormOpen(false);
+    });
+}
+
+if (addCustomerForm) {
+    addCustomerForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (!window._supabase || typeof window.getCurrentUser !== 'function') {
+            alert('Could not add customer right now. Please reload and try again.');
+            return;
+        }
+
+        const user = await window.getCurrentUser();
+        if (!user || !user.id) {
+            alert('You need to be logged in to add a customer.');
+            return;
+        }
+
+        const customerName = normalizeOptionalField(newCustomerNameInput);
+        if (!customerName) {
+            alert('Customer name is required.');
+            if (newCustomerNameInput) newCustomerNameInput.focus();
+            return;
+        }
+
+        const customerEmail = normalizeOptionalField(newCustomerEmailInput);
+        const customerPhone = normalizeOptionalField(newCustomerPhoneInput);
+        if (!customerEmail && !customerPhone) {
+            alert('Please provide at least one contact method: email or phone.');
+            if (newCustomerEmailInput) newCustomerEmailInput.focus();
+            return;
+        }
+
+        const payload = {
+            user_id: user.id,
+            name: customerName,
+            email: customerEmail,
+            phone: customerPhone,
+            company: normalizeOptionalField(newCustomerCompanyInput),
+            address: normalizeOptionalField(newCustomerAddressInput)
+        };
+
+        const previousLabel = saveCustomerBtn ? saveCustomerBtn.textContent : '';
+        if (saveCustomerBtn) {
+            saveCustomerBtn.disabled = true;
+            saveCustomerBtn.textContent = 'Saving...';
+        }
+
+        try {
+            const { error } = await window._supabase
+                .from('clients')
+                .insert(payload);
+
+            if (error) throw error;
+
+            resetAddCustomerForm();
+            setAddCustomerFormOpen(false);
+            await loadClients();
+        } catch (error) {
+            alert('Failed to add customer: ' + (error && error.message ? error.message : 'Unknown error'));
+        } finally {
+            if (saveCustomerBtn) {
+                saveCustomerBtn.disabled = false;
+                saveCustomerBtn.textContent = previousLabel || 'Save customer';
+            }
+        }
     });
 }
 

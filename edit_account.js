@@ -3,7 +3,9 @@ const cancelBtn = document.getElementById('cancel-btn');
 const logoInput = document.getElementById('user-logo');
 const logoImage = document.getElementById('edit-logo-image');
 const logoPlaceholder = document.getElementById('edit-logo-placeholder');
+const deleteLogoBtn = document.getElementById('edit-delete-logo-btn');
 let currentProfile = {};
+let removeLogo = false;
 
 function getMergedProfile(profile, user) {
     const cachedProfile = typeof window.getProfileCache === 'function' ? window.getProfileCache() : {};
@@ -38,6 +40,7 @@ async function loadProfileData() {
 
     var { data: profile } = await window._supabase.from('users').select('*').eq('id', user.id).maybeSingle();
     currentProfile = getMergedProfile(profile, user);
+    removeLogo = false;
     if (typeof window.setProfileCache === 'function') {
         window.setProfileCache(currentProfile);
     }
@@ -71,7 +74,6 @@ if (editForm) {
         const phone = document.getElementById('ob-phone').value;
         const tvaNumber = document.getElementById('ob-tva-number').value;
         const defaultTva = document.getElementById('ob-default-tva').value;
-        const logoInput = document.getElementById('user-logo');
 
         try {
             let logo_url = null;
@@ -94,6 +96,7 @@ if (editForm) {
                     .getPublicUrl(filePath);
                     
                 logo_url = data.publicUrl;
+                removeLogo = false;
             }
 
             const updatePayload = {
@@ -107,6 +110,8 @@ if (editForm) {
 
             if (logo_url) {
                 updatePayload.logo_url = logo_url;
+            } else if (removeLogo) {
+                updatePayload.logo_url = null;
             }
 
             let { error: updateError } = await window._supabase
@@ -128,7 +133,7 @@ if (editForm) {
 
             currentProfile = Object.assign({}, currentProfile, updatePayload, {
                 email: user.email || currentProfile.email || '',
-                logo_url: logo_url || currentProfile.logo_url || ''
+                logo_url: removeLogo ? '' : (logo_url || currentProfile.logo_url || '')
             });
             if (typeof window.setProfileCache === 'function') {
                 window.setProfileCache(currentProfile);
@@ -158,11 +163,23 @@ if (logoInput) {
         const file = logoInput.files && logoInput.files[0];
         if (!file) return;
 
+        removeLogo = false;
+
         const reader = new FileReader();
         reader.onload = (event) => {
             setLogoPreview(event.target && event.target.result ? event.target.result : '');
         };
         reader.readAsDataURL(file);
+    });
+}
+
+if (deleteLogoBtn) {
+    deleteLogoBtn.addEventListener('click', () => {
+        removeLogo = true;
+        if (logoInput) {
+            logoInput.value = '';
+        }
+        setLogoPreview('');
     });
 }
 
