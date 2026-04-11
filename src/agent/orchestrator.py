@@ -10,9 +10,9 @@ import logging
 from enum import Enum
 from typing import Optional
 
-from src.agent.business_logic import build_invoice_lines, normalize_client_name, validate_invoice
+from src.agent.business_logic import apply_line_modifications, build_invoice_lines, normalize_client_name, validate_invoice
 from src.agent.events import EventType
-from src.agent.extractor import extract_from_transcript
+from src.agent.extractor import extract_from_transcript, parse_modification
 from src.agent.tools import (
     MANDATORY_FIELDS,
     InvoiceField,
@@ -155,37 +155,106 @@ async def _run_states(session_id: str, user_id: str, transcript: str, api_key: s
     # ── MISSING_FIELDS ──────────────────────────────────────────────────────
     _transition(session_id, AgentState.MISSING_FIELDS)
     session = session_store.get(session_id)
-    still_missing = [f for f in MANDATORY_FIELDS if not session["invoice_draft"].get(f)]
 
-    for field_name in still_missing:
-        if field_name == "tva_rate":
+    while True:
+        draft = session["invoice_draft"]
+        still_missing = [f for f in MANDATORY_FIELDS if not draft.get(f)]
+        
+        lines = draft.get("lines", [])
+        missing_prices = []
+        if isinstance(lines, list) and lines:
+            for i, line in enumerate(lines):
+                if isinstance(line, dict):
+                    if float(line.get("unit_price") or 0.0) <= 0.0:
+                        missing_prices.append(i)
+                elif isinstance(line, str):
+                    try:
+                        parsed = json.loads(line)
+                        if float(parsed.get("unit_price") or 0.0) <= 0.0:
+                            missing_prices.append(i)
+                    except Exception:
+                        pass
+
+        if not still_missing and not missing_prices:
+            break
+
+        if missing_prices:
+            field_name = "partial_line_price"
+        else:
+            field_name = still_missing[0]
+
+        if field_name == "partial_line_price":
+            idx = missing_prices[0]
+            line_obj = lines[idx] if isinstance(lines[idx], dict) else json.loads(lines[idx])
+            desc = line_obj.get("description", "the service")
+            reply = await tool_ask_user_question(f"What is the price for '{desc}'?", session_id)
+            
+            sub_extracted = await extract_from_transcript(reply, api_key)
+            price = sub_extracted.unit_price or sub_extracted.amount
+            if price:
+                line_obj["unit_price"] = float(price)
+            else:
+                import re
+                match = re.search(r'\d+(?:[.,]\d+)?', reply)
+                if match:
+                    line_obj["unit_price"] = float(match.group(0).replace(',', '.'))
+                else:
+                    await session_store.push_event(session_id, {
+                        "type": EventType.MESSAGE,
+                        "content": "I couldn't understand the price. Let's try again."
+                    })
+                    continue
+                    
+            lines[idx] = line_obj
+            await tool_update_invoice_field(InvoiceField.lines, lines, invoice_id, session_id)
+
+        elif field_name == "tva_rate":
             reply = await tool_ask_user_question("What's the VAT rate? (e.g. 20%)", session_id)
             try:
                 value = float(reply.replace("%", "").strip())
                 await tool_update_invoice_field(InvoiceField.tva_rate, value, invoice_id, session_id)
             except ValueError:
-                reply = await tool_ask_user_question("Please enter a numeric VAT rate (e.g. 20).", session_id)
-                try:
-                    value = float(reply.replace("%", "").strip())
-                    await tool_update_invoice_field(InvoiceField.tva_rate, value, invoice_id, session_id)
-                except ValueError:
-                    pass
+                await session_store.push_event(session_id, {
+                    "type": EventType.MESSAGE,
+                    "content": "I couldn't read that number. Let's try again."
+                })
 
         elif field_name == "lines":
             reply = await tool_ask_user_question(
-                "What services should be on this invoice? (e.g. '3 hours of consulting at 150€/h')",
+                "What services should be on this invoice? Please include the description and the price. (e.g. '3 hours of consulting at 150€/h')",
                 session_id,
             )
             sub_extracted = await extract_from_transcript(reply, api_key)
             sub_lines = build_invoice_lines(sub_extracted)
             if sub_lines:
                 await tool_update_invoice_field(InvoiceField.lines, sub_lines, invoice_id, session_id)
+            else:
+                await session_store.push_event(session_id, {
+                    "type": EventType.MESSAGE,
+                    "content": "I didn't catch enough details. I need at least a service description and a price (or total amount)."
+                })
 
         elif field_name == "client_id":
             reply = await tool_ask_user_question("I couldn't find the client. Please provide their full name.", session_id)
             sub_search = await tool_search_client(reply.strip(), user_id, session_id)
             if sub_search.get("found"):
                 await tool_update_invoice_field(InvoiceField.client_id, sub_search["client"].id, invoice_id, session_id)
+            elif sub_search.get("form_data"):
+                form_data = sub_search["form_data"]
+                created = await tool_create_client(
+                    name=form_data.get("name", reply.strip()),
+                    address=form_data.get("address", ""),
+                    user_id=user_id,
+                    session_id=session_id,
+                    email=form_data.get("email", ""),
+                    phone=form_data.get("phone", ""),
+                )
+                await tool_update_invoice_field(InvoiceField.client_id, created.id, invoice_id, session_id)
+            else:
+                 await session_store.push_event(session_id, {
+                    "type": EventType.MESSAGE,
+                    "content": "I couldn't resolve the client. Let's try again."
+                })
 
     # ── VALIDATION ──────────────────────────────────────────────────────────
     _transition(session_id, AgentState.VALIDATION)
@@ -202,20 +271,40 @@ async def _run_states(session_id: str, user_id: str, transcript: str, api_key: s
         _transition(session_id, AgentState.ERROR)
         return
 
-    confirm = await tool_ask_user_question(
-        "Your invoice is ready. Would you like to modify anything?", session_id
-    )
-    wants_change = confirm.strip().lower() not in ("no", "non", "nope", "n", "good", "ok", "yes please finalize")
+    _FINALIZE_WORDS = {"no", "non", "nope", "n", "ok", "good", "rien", "nothing", "finalize", "finalise", "c'est bon", "parfait"}
 
-    if wants_change:
-        what = await tool_ask_user_question("What would you like to change?", session_id)
-        change_extracted = await extract_from_transcript(what, api_key)
-        if change_extracted.tva_rate is not None:
-            await tool_update_invoice_field(InvoiceField.tva_rate, change_extracted.tva_rate, invoice_id, session_id)
-        new_lines = build_invoice_lines(change_extracted)
-        if new_lines:
-            await tool_update_invoice_field(InvoiceField.lines, new_lines, invoice_id, session_id)
-        await tool_ask_user_question("Got it. Anything else to change? (say 'no' to finalize)", session_id)
+    confirm = await tool_ask_user_question(
+        "Your invoice is ready. Would you like to add, remove, or modify any item? (say 'no' to finalize)",
+        session_id,
+    )
+
+    while confirm.strip().lower() not in _FINALIZE_WORDS:
+        session = session_store.get(session_id)
+        current_lines = session["invoice_draft"].get("lines", [])
+
+        mod = await parse_modification(confirm, current_lines, api_key)
+
+        if mod.line_modifications:
+            updated_lines = apply_line_modifications(current_lines, mod.line_modifications)
+            await tool_update_invoice_field(InvoiceField.lines, updated_lines, invoice_id, session_id)
+
+        if mod.tva_rate is not None:
+            await tool_update_invoice_field(InvoiceField.tva_rate, mod.tva_rate, invoice_id, session_id)
+        if mod.due_date:
+            await tool_update_invoice_field(InvoiceField.due_date, mod.due_date, invoice_id, session_id)
+        if mod.payment_terms:
+            await tool_update_invoice_field(InvoiceField.payment_terms, mod.payment_terms, invoice_id, session_id)
+
+        if not mod.line_modifications and mod.tva_rate is None and mod.due_date is None and mod.payment_terms is None:
+            await session_store.push_event(session_id, {
+                "type": EventType.MESSAGE,
+                "content": "I didn't catch what you'd like to change. Try: 'add design for 500€', 'remove consulting', or 'update qty to 5'.",
+            })
+
+        confirm = await tool_ask_user_question(
+            "Anything else to change? (say 'no' to finalize)",
+            session_id,
+        )
 
     # ── FINALIZATION ────────────────────────────────────────────────────────
     _transition(session_id, AgentState.FINALIZATION)
