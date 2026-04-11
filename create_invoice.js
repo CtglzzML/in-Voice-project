@@ -420,10 +420,6 @@ if (deleteLogoBtn) {
 }
 
 if (seePreviewBtn) {
-<<<<<<< HEAD
-    seePreviewBtn.addEventListener('click', () => {
-        saveDraftToSession(); // Save data first
-=======
     seePreviewBtn.addEventListener('click', (e) => {
         const state = getClientPreviewValidationState();
         if (!(state.hasClientName && state.hasClientContact && state.hasItem)) {
@@ -434,7 +430,6 @@ if (seePreviewBtn) {
         }
 
         saveDraftToSession();
->>>>>>> 2f92d6a7c29434e4c9d6824c8da484c15dc1d625
         window.location.href = 'invoice_preview.html';
     });
 }
