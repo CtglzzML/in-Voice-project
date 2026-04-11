@@ -1,8 +1,6 @@
 const contactForm = document.getElementById('contact-us-form');
-const buttons = contactForm.querySelectorAll('button[type="submit"]');
-
-const submitBtn = buttons[0];
-const returnBtn = buttons[1];
+const submitBtn = contactForm.querySelector('.submit-btn');
+const returnBtn = contactForm.querySelector('.return-btn');
 
 if (submitBtn) {
     submitBtn.addEventListener('click', (e) => {
