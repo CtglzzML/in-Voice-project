@@ -1,7 +1,7 @@
 // src/frontend/agent-stream.js
 import { formUpdater } from './form-updater.js';
 
-export const BASE_URL = window.INVOICE_BASE_URL ?? 'http://localhost:8000/api/v1';
+export const BASE_URL = window.INVOICE_BASE_URL ?? 'https://in-voice-project-givm.onrender.com/api/v1';
 
 export const agentStream = (() => {
   let sessionId = null;
