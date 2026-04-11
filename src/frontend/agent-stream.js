@@ -239,13 +239,16 @@ export const agentStream = (() => {
     if (input) { 
       input.classList.remove('hidden');
       input.value = ''; 
-      input.focus(); 
     }
     if (sendBtn) {
       sendBtn.classList.remove('hidden');
       sendBtn.disabled = false;
     }
-    if (micBtn)  micBtn.classList.add('auto-listening');
+    if (micBtn)  micBtn.style.display = 'none'; // hide buggy small mic
+    
+    const recordBtnLabel = document.querySelector('.record-btn-label');
+    if (recordBtnLabel) recordBtnLabel.textContent = 'Reply with voice';
+
     _setStatusBox('Waiting for your reply…');
     
     if (_statusBox) {
@@ -262,12 +265,11 @@ export const agentStream = (() => {
       
       const form = document.querySelector('#inline-client-form');
       if (form && !form.classList.contains('hidden')) {
-        // If inline form is visible, do not auto listen
         return;
       }
-
       _autoListenTimeout = setTimeout(() => {
         _listenForReplyFn?.();
+        const input = document.querySelector('#reply-input');
         if (input) {
           const oldPlaceholder = input.placeholder;
           input.placeholder = 'Listening...';
@@ -284,6 +286,8 @@ export const agentStream = (() => {
     if (box) box.classList.add('hidden');
     _hideClientSuggestions();
     _hideInlineClientForm();
+    const recordBtnLabel = document.querySelector('.record-btn-label');
+    if (recordBtnLabel && !isActive()) recordBtnLabel.textContent = 'Start recording';
   }
 
   function _showClientSuggestions(message, suggestions) {

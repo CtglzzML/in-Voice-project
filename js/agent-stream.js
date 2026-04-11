@@ -176,13 +176,21 @@ const agentStream = (() => {
     if (text)    text.textContent = message;
     if (input)   { input.value = ''; }
     if (sendBtn) sendBtn.disabled = false;
-    // Pulse the mic button to invite click — don't auto-start (browser blocks non-gesture)
-    if (micBtn)  micBtn.classList.add('auto-listening');
+    
+    // Hide the small mic button since we're using the main one
+    if (micBtn)  micBtn.style.display = 'none';
+
+    // Update main button label
+    const recordBtnLabel = document.querySelector('.record-btn-label');
+    if (recordBtnLabel) recordBtnLabel.textContent = 'Reply with voice';
   }
 
   function _hideQuestion() {
     const box = document.querySelector('#question-box');
     if (box) box.classList.add('hidden');
+    
+    const recordBtnLabel = document.querySelector('.record-btn-label');
+    if (recordBtnLabel) recordBtnLabel.textContent = 'Start recording';
   }
 
   function _resetRecordBtn() {

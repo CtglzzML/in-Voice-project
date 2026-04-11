@@ -14,8 +14,16 @@ export const recorder = (() => {
 
     if (!recordBtn) { return; }
 
+    function _stopCurrentCapture() {
+      if (recognition) { recognition.stop(); }
+      if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); }
+    }
+
     recordBtn.addEventListener('click', () => {
-      if (recognition || mediaRecorder) return;
+      if (recognition || mediaRecorder) {
+        _stopCurrentCapture();
+        return;
+      }
       if (typeof agentStream.isActive === 'function' && agentStream.isActive()) {
         listenForReply();
         return;
@@ -92,32 +100,62 @@ export const recorder = (() => {
     const r = new SpeechRecognition();
     recognition = r;
     r.lang = lang;
-    r.interimResults = false;
+    r.interimResults = true;
     r.maxAlternatives = 1;
+    r.continuous = true;
 
+    let finalTranscript = '';
+    let silenceTimer = null;
     let done = false;
-    const once = (fn) => (...args) => { if (done) return; done = true; recognition = null; fn(...args); };
 
-    r.onresult = once((e) => {
-      const transcript = e.results[0][0].transcript;
-      callback(transcript);
-    });
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(silenceTimer);
+      if (recognition) {
+        recognition.onend = null;
+        recognition.stop();
+        recognition = null;
+      }
+      callback(finalTranscript.trim());
+    };
 
-    r.onerror = once((err) => {
+    const resetSilenceTimer = () => {
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(finish, 2000); // 2 seconds pause
+    };
+
+    r.onresult = (e) => {
+      if (done) return;
+      resetSilenceTimer();
+      for (let i = e.resultIndex; i < e.results.length; ++i) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript + ' ';
+        }
+      }
+    };
+
+    r.onerror = (err) => {
       console.warn('SpeechRecognition error:', err.error);
       if (err.error === 'not-allowed') {
+        if (done) return; done = true; clearTimeout(silenceTimer); recognition = null;
         _showError('Access to microphone refused.');
         callback('');
+      } else if (err.error === 'no-speech') {
+        // ignore
       } else {
+        if (done) return; done = true; clearTimeout(silenceTimer); recognition = null;
         _startWhisper(callback);
       }
-    });
+    };
 
-    r.onend = once(() => {
-      console.warn('SpeechRecognition ended with no result. Falling back to Whisper.');
-      _startWhisper(callback);
-    });
+    r.onend = () => {
+      if (done) return;
+      finish();
+    };
+
     r.start();
+    resetSilenceTimer();
   }
 
   let vadContext = null;
@@ -141,7 +179,7 @@ export const recorder = (() => {
       const monBuf = new Float32Array(vadAnalyser.frequencyBinCount);
       const VAD_THRESHOLD = 0.005; // Lowered tuning threshold
       const MIN_SPEECH_MS = 400;
-      const SILENCE_MS = 1500;
+      const SILENCE_MS = 2000;
       
       let initialSilenceTimer = setTimeout(() => {
         if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
@@ -223,10 +261,12 @@ export const recorder = (() => {
   function _setRecordingState(active) {
     const btn = document.querySelector('#record-btn');
     if (!btn) return;
-    btn.disabled = active;
+    btn.disabled = false; // Always clickable to stop
     btn.classList.toggle('recording', active);
     const label = btn.querySelector('.record-btn-label');
-    if (label) label.textContent = active ? "I'm listening…" : 'Start recording';
+    const isActiveSession = typeof agentStream.isActive === 'function' && agentStream.isActive();
+    const defaultLabel = isActiveSession ? 'Reply with voice' : 'Start recording';
+    if (label) label.textContent = active ? "Listening… (click to stop)" : defaultLabel;
   }
 
   function _setAutoListenState(active) {

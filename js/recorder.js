@@ -19,7 +19,10 @@ const recorder = (() => {
     if (!recordBtn) { console.error('recorder.js: #record-btn not found'); return; }
 
     recordBtn.addEventListener('click', () => {
-      if (recognition || mediaRecorder) return;
+      if (recognition || mediaRecorder) {
+        _stopCurrentCapture();
+        return;
+      }
       _setRecordingState(true);
       _startCapture('en-US', _onMainTranscript);
     });
@@ -91,34 +94,63 @@ const recorder = (() => {
     const r = new SpeechRecognition();
     recognition = r;
     r.lang = lang;
-    r.interimResults = false;
+    r.interimResults = true; 
     r.maxAlternatives = 1;
+    r.continuous = true;
 
-    // `done` is local to this closure — prevents double-callback regardless
-    // of the order onresult / onerror / onend fire (onend always fires last in Chrome)
+    let finalTranscript = '';
+    let silenceTimer = null;
     let done = false;
-    const once = (fn) => (...args) => { if (done) return; done = true; recognition = null; fn(...args); };
 
-    r.onresult = once((e) => {
-      const transcript = e.results[0][0].transcript;
-      const confidence = e.results[0][0].confidence;
-      console.log('[recorder] transcript:', JSON.stringify(transcript), '| confidence:', confidence.toFixed(3));
-      callback(transcript);
-    });
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(silenceTimer);
+      if (recognition) {
+        recognition.onend = null;
+        recognition.stop();
+        recognition = null;
+      }
+      const t = finalTranscript.trim();
+      console.log('[recorder] final aggregated transcript:', JSON.stringify(t));
+      callback(t);
+    };
 
-    r.onerror = once((err) => {
+    const resetSilenceTimer = () => {
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(finish, 2000); // 2.0 seconds pause allowance
+    };
+
+    r.onresult = (e) => {
+      if (done) return;
+      resetSilenceTimer();
+      for (let i = e.resultIndex; i < e.results.length; ++i) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript + ' ';
+        }
+      }
+    };
+
+    r.onerror = (err) => {
       console.warn('[recorder] Web Speech error:', err.error);
       if (err.error === 'no-speech') {
-        callback('');
+        // Ignore. In continuous mode, this is just a silent pause.
       } else {
+        if (done) return;
+        done = true;
+        clearTimeout(silenceTimer);
+        recognition = null;
         _startWhisper(callback);
       }
-    });
+    };
 
-    // onend fires after onresult/onerror — only reaches callback if neither fired
-    r.onend = once(() => callback(''));
+    r.onend = () => {
+       if (done) return;
+       finish();
+    };
 
     r.start();
+    resetSilenceTimer();
   }
 
   function _startWhisper(callback) {
@@ -167,10 +199,15 @@ const recorder = (() => {
   function _setRecordingState(active) {
     const btn = document.querySelector('#record-btn');
     if (!btn) return;
-    btn.disabled = active;
+    btn.disabled = false; // keep clickable so user can stop manually
     btn.classList.toggle('recording', active);
     const label = btn.querySelector('.record-btn-label');
-    if (label) label.textContent = active ? 'Listening…' : 'Start recording';
+    
+    const questionBox = document.querySelector('#question-box');
+    const isReplying = questionBox && !questionBox.classList.contains('hidden');
+    const defaultLabel = isReplying ? 'Reply with voice' : 'Start recording';
+
+    if (label) label.textContent = active ? 'Listening… (click to stop)' : defaultLabel;
   }
 
   function _setAutoListenState(active) {
@@ -200,7 +237,17 @@ const recorder = (() => {
       _showError('No speech detected — try again.');
       return;
     }
-    agentStream.start(transcript);
+    
+    const questionBox = document.querySelector('#question-box');
+    const isReplying = questionBox && !questionBox.classList.contains('hidden');
+
+    if (isReplying) {
+      const replyInput = document.querySelector('#reply-input');
+      if (replyInput) replyInput.value = transcript;
+      agentStream.sendReply(transcript);
+    } else {
+      agentStream.start(transcript);
+    }
   }
 
   function _showError(msg) {

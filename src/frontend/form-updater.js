@@ -130,17 +130,29 @@ export const formUpdater = (() => {
   }
 
   function _renderLines(lines) {
+    console.log("FORM UPDATER _renderLines CALLED WITH:", lines);
     const tbody = document.querySelector('#item-list-body');
     const template = document.querySelector('#non-empty-row');
-    if (!tbody || !template) return;
+    
+    if (!tbody) { console.error("No tbody #item-list-body found!"); return; }
+    if (!template) { console.error("No template #non-empty-row found!"); return; }
 
     tbody.innerHTML = '';
 
     if (!lines || lines.length === 0) {
+      console.log("Lines are empty, rendering empty row.");
       const empty = document.querySelector('#empty-row');
-      if (empty) tbody.appendChild(empty.content.cloneNode(true));
+      if (empty) {
+          const clone = empty.content.cloneNode(true);
+          console.log("Appending empty row fragment:", clone);
+          tbody.appendChild(clone);
+      } else {
+          console.error("No #empty-row template found!");
+      }
       return;
     }
+
+    console.log("Rendering", lines.length, "lines");
 
     lines.forEach(line => {
       const row = template.content.cloneNode(true);
