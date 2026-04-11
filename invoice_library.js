@@ -737,36 +737,50 @@ async function getPdfSafeImageSrc(src) {
     }
 }
 
-async function createPdfExportNode(sourceNode) {
-    if (!sourceNode) return null;
+async function prepareImagesForPdf(root) {
+    if (!root) {
+        return () => {};
+    }
 
-    await waitForImages(sourceNode);
+    await waitForImages(root);
 
-    const exportNode = sourceNode.cloneNode(true);
-    const { width } = sourceNode.getBoundingClientRect();
-    exportNode.style.width = `${Math.ceil(width || 700)}px`;
-    exportNode.style.margin = '0';
-    exportNode.style.position = 'fixed';
-    exportNode.style.left = '-10000px';
-    exportNode.style.top = '0';
-    exportNode.style.zIndex = '-1';
-    exportNode.style.pointerEvents = 'none';
-    exportNode.style.background = '#ffffff';
-    exportNode.style.boxSizing = 'border-box';
+    const images = Array.from(root.querySelectorAll('img'));
+    const originalState = [];
 
-    document.body.appendChild(exportNode);
+    for (const img of images) {
+        originalState.push({
+            img,
+            src: img.getAttribute('src'),
+            srcset: img.getAttribute('srcset'),
+            crossOrigin: img.crossOrigin || ''
+        });
 
-    const images = Array.from(exportNode.querySelectorAll('img'));
-    await Promise.all(images.map(async (img) => {
         const safeSrc = await getPdfSafeImageSrc(img.currentSrc || img.src);
-        if (safeSrc) {
-            img.crossOrigin = 'anonymous';
-            img.src = safeSrc;
-        }
-        await waitForImageLoad(img);
-    }));
+        if (!safeSrc) continue;
 
-    return exportNode;
+        img.crossOrigin = 'anonymous';
+        img.removeAttribute('srcset');
+        img.src = safeSrc;
+        await waitForImageLoad(img);
+    }
+
+    return () => {
+        originalState.forEach(({ img, src, srcset, crossOrigin }) => {
+            if (src === null) {
+                img.removeAttribute('src');
+            } else {
+                img.setAttribute('src', src);
+            }
+
+            if (srcset === null) {
+                img.removeAttribute('srcset');
+            } else {
+                img.setAttribute('srcset', srcset);
+            }
+
+            img.crossOrigin = crossOrigin;
+        });
+    };
 }
 
 async function downloadInvoicePDF() {
@@ -807,16 +821,16 @@ async function downloadInvoicePDF() {
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    let exportNode = null;
+    let restoreImages = () => {};
 
     try {
-        exportNode = await createPdfExportNode(previewNode);
-        await window.html2pdf().set(opt).from(exportNode).save();
+        restoreImages = await prepareImagesForPdf(previewNode);
+        await window.html2pdf().set(opt).from(previewNode).save();
     } catch (error) {
         console.error('Failed to generate the invoice PDF:', error);
         alert('Could not generate the PDF. Please refresh and try again.');
     } finally {
-        exportNode?.remove();
+        restoreImages();
     }
 }
 
