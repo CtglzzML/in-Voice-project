@@ -16,8 +16,35 @@
 
 body {
   font-family: "Inter", sans-serif;
-  background: var(--bg) url("../images/cq6.jpg") center center / cover no-repeat fixed;
   color: var(--text-main);
   min-height: 100vh;
   position: relative;
+}
+
+body:not(.landing-page) {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(123, 102, 232, 0.12), transparent 26%),
+    radial-gradient(circle at 82% 72%, rgba(91, 70, 197, 0.1), transparent 28%),
+    linear-gradient(180deg, #fbfaff 0%, #f2effb 100%);
+  overflow-x: hidden;
+  isolation: isolate;
+}
+
+body:not(.landing-page)::before,
+body:not(.landing-page)::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: url("../images/hero-wave-violet.svg") center center / cover no-repeat;
+  z-index: -1;
+}
+
+body:not(.landing-page)::before {
+  opacity: 0.54;
+}
+
+body:not(.landing-page)::after {
+  opacity: 0.2;
+  transform: scaleY(-1) rotate(-5deg) scale(1.08);
 }

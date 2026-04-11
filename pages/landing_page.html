@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="../css/color_scheme.css" />
 </head>
 
-<body>
+<body class="landing-page">
   <header class="page-header page-header--guest" id="landing-header">
     <img src="../images/logo.png" alt="inVoice Logo">
     <div id="menu-container"></div>
@@ -55,7 +55,12 @@
         </span>
 
         <span class="mic-circle">
-          <span class="mic-icon"></span>
+          <svg class="mic-icon" viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="17" y="7" width="14" height="22" rx="7" class="mic-icon-fill" />
+            <path d="M12 24C12 30.6274 17.3726 36 24 36C30.6274 36 36 30.6274 36 24" class="mic-icon-stroke" />
+            <path d="M24 36V42" class="mic-icon-stroke" />
+            <path d="M18 42H30" class="mic-icon-stroke" />
+          </svg>
         </span>
       </button>
 

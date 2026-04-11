@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../css/color_scheme.css" />
     <link rel="stylesheet" href="../css/login_page.css" />
 </head>
-<body>
+<body class="auth-view auth-view--login">
 
     <header class="page-header">
         <div class="logo-wrapper">
@@ -25,28 +25,23 @@
     </header>
 
     <main class="login-page">
-        <section class="login-container">
+        <section class="login-container login-container--login">
             <div class="login-card">
                 <header class="login-card-header">
                     <h2>Log in</h2>
                 </header>
 
-                <div class="login-form" style="margin-top: 2rem; margin-bottom: 2rem;">
+                <div class="login-form login-form--login">
                     <div class="google-button-wrapper">
                         <button type="button" class="google-button">
                             <img src="../images/google-logo.svg" alt="" aria-hidden="true" class="google-icon" />
-                            <span>Sign in with Google</span>
+                            <span>Continue with Google</span>
                         </button>
                     </div>
+                    <a href="landing_page.html" class="back-to-landing-btn">
+                        Back to landing page
+                    </a>
                 </div>
-            </div>
-
-            <div class="signup-section">
-                <p>Don't have an account?</p>
-                <button type="button" class="signup-button">Sign Up</button>
-                <a href="landing_page.html" class="back-to-landing-btn">
-                    Go back to Landing Page
-                </a>
             </div>
         </section>
     </main>
